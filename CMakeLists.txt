@@ -8,7 +8,7 @@ aux_source_directory(source/port/posix PORT_SOURCES)
 aux_source_directory(source/test TEST_SOURCES)
 
 add_library(SPN ${SOURCES})
-target_include_directories(SPN PUBLIC source/include)
+target_include_directories(SPN PUBLIC source/inc)
 add_executable(main ${PORT_SOURCES})
 target_link_libraries(main SPN)
 
