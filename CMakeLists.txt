@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.10)
 project(SPN)
 
 include(cmake/CPM.cmake)
-CPMAddPackage("gh:lwip-tcpip/lwip#STABLE-2_0_3_RELEASE")
-
 aux_source_directory(source/src SOURCES)
 aux_source_directory(source/port/posix PORT_SOURCES)
 aux_source_directory(source/test TEST_SOURCES)
