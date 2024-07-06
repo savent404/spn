@@ -32,7 +32,7 @@ int spn_eth_input(spn_iface_t* iface, void* ethernet_frame, size_t len)
         res = spn_ip_input((void*)SPN_ETH_PAYLOAD(header), len - sizeof(spn_ethernet_t));
     case SPN_ETH_TYPE_PN:
         if (mac_cmp(dst_mac, (char*)iface->mac) || is_multicast_mac(SPN_ETH_DST_MAC(header))) {
-            res = spn_pn_rtc_input(SPN_ETH_PAYLOAD(header), len - sizeof(spn_ethernet_t));
+            // res = spn_pn_rtc_input(SPN_ETH_PAYLOAD(header), len - sizeof(spn_ethernet_t));
         } else {
             res = -SPN_EAGAIN;
         }

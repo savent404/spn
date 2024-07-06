@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef SPN_EIDIAN
-#define SPN_EIDIAN (0) // Little-endian
+#define SPN_EIDIAN (0) /* Little-endian */
 #endif
 
 #if SPN_EIDIAN == 0

@@ -22,7 +22,7 @@ extern "C" {
 #endif
 
 #ifndef SPN_IFACE_REALTIME_TIMEOUT
-#define SPN_IFACE_REALTIME_TIMEOUT (10) // 10us
+#define SPN_IFACE_REALTIME_TIMEOUT (10)
 #endif
 
 #ifndef SPN_IFACE_FRAME_MAX_LEN

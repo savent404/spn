@@ -29,8 +29,15 @@ typedef struct ip_hdr {
 } ip_hdr_t;
 #pragma pack(pop)
 
+typedef struct ip_addr {
+    union {
+        uint8_t addr_u8[4];
+        uint32_t addr_u32;
+    } address;
+} spn_ip_addr_t;
+
 int spn_ip_input(void* ip_frame, size_t len);
-int spn_ip_output(void* ip_frame, size_t len);
+int spn_ip_output(void* ip_frame, spn_ip_addr_t addr, size_t len);
 
 #ifdef __cplusplus
 }

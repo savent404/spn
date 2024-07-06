@@ -27,7 +27,7 @@ int spn_ip_input(void* ip_frame, size_t len)
     return -SPN_EAGAIN;
 }
 
-int spn_ip_output(void* ip_frame, size_t len)
+int spn_ip_output(void* ip_frame, spn_ip_addr_t addr, size_t len)
 {
     ip_hdr_t* ip_hdr = (ip_hdr_t*)ip_frame;
     spn_ethernet_t* eth_hdr = (spn_ethernet_t*)((char*)ip_frame - sizeof(spn_ethernet_t));
