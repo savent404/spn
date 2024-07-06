@@ -17,10 +17,10 @@ extern "C" {
 /**
  */
 
-#define SPN_ETH_SRC_MAC(f) ((f)->src_mac)
-#define SPN_ETH_DST_MAC(f) ((f)->dst_mac)
+#define SPN_ETH_SRC_MAC(f) ((char*)((f)->src_mac))
+#define SPN_ETH_DST_MAC(f) ((char*)((f)->dst_mac))
 #define SPN_ETH_TYPE(f) ((f)->ethertype)
-#define SPN_ETH_PAYLOAD(f) (&((f)->payload[0]))
+#define SPN_ETH_PAYLOAD(f) ((void*)(&((f)->payload[0])))
 
 /**
  * \brief Ethernet frame structure
@@ -46,7 +46,7 @@ typedef struct spn_iface spn_iface_t;
  * \param iface
  * \param ethernet_frame
  * \param len
- * \return \c SPN_AGAIN - if the frame is not for us
+ * \return \c SPN_EAGAIN - if the frame is not for us
  *         \c SPN_OK    - if the frame is for us
  *
  */
@@ -58,8 +58,10 @@ int spn_eth_input(spn_iface_t* iface, void* ethernet_frame, size_t len);
  * \param iface
  * \param ethernet_frame
  * \param len
+ * \return \c SPN_OK    - if the frame is sent successfully
+ *         \c SPN_EIO   - if the frame is not sent successfully
  */
-void spn_eth_output(spn_iface_t* iface, const void* ethernet_frame, size_t len);
+int spn_eth_output(spn_iface_t* iface, const void* ethernet_frame, size_t len);
 
 #ifdef __cplusplus
 }

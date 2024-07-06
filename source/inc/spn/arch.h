@@ -15,3 +15,6 @@
 #define SPN_NTOHS(x) (x)
 #define SPN_NTOHL(x) (x)
 #endif
+
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
