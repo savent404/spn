@@ -432,4 +432,7 @@ void sys_check_core_locking(void);
 #define LWIP_ASSERT_CORE_LOCKED()  sys_check_core_locking()
 #endif
 
+int spn_input_hook(void* frame, void* netif);
+#define LWIP_HOOK_IP4_INPUT(p, netif) spn_input_hook(p, netif)
+
 #endif /* LWIP_LWIPOPTS_H */

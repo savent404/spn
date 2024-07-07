@@ -1,40 +1,16 @@
-#include <spn.h>
-#include <spn/errno.h>
-#include <stdlib.h>
-#include <string.h>
+#include <spn/spn.h>
 
-static spn_instance_t* g_inst = NULL;
-
-int spn_init(spn_instance_t* inst, const uint8_t* mac, const uint8_t* ip)
+int spn_init(struct spn_ctx *ctx, const struct spn_cfg *cfg)
 {
-    if (g_inst) {
-        return -SPN_EEXIST;
+    if (!ctx || !cfg) {
+        return SPN_EINVAL;
     }
-
-    memset(inst, 0, sizeof(spn_instance_t));
-    for (int i = 0; i < SPN_IFACE_MAX_NUM; i++) {
-        inst->ifaces[i].port = i;
-        inst->ifaces[i].inst = inst;
-        memcpy(inst->ifaces[i].mac, mac, 6);
-        if (ip) {
-            memcpy(inst->ifaces[i].ip, ip, 4);
-        }
-    }
-
-    g_inst = inst;
     return SPN_OK;
 }
 
-int spn_deinit(spn_instance_t* inst)
+int spn_input_hook(void *frame, void *iface)
 {
-    if (!g_inst || g_inst != inst) {
-        return -SPN_EINVAL;
-    }
-    g_inst = NULL;
-    return SPN_OK;
-}
-
-spn_instance_t* spn_get_inst()
-{
-    return g_inst;
+    frame = frame;
+    iface = iface;
+    return -1;
 }
