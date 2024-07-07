@@ -20,6 +20,8 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "posix_port_netif.h"
+
 struct raw_posix_iface {
     int sockfd;
     char ifname[8];
@@ -34,7 +36,7 @@ static void* raw_socket_background_thread(void* arg);
 
 static pthread_t background_thread;
 
-void netif_init(void)
+void default_netif_init(void)
 {
     ip4_addr_t ipaddr, netmask, gw;
     static struct netif netif[2];

@@ -4,8 +4,8 @@ project(SPN)
 
 include(cmake/CPM.cmake)
 include(cmake/lwip.cmake)
-add_subdirectory(third-part/lwip/contrib/ports/unix/lib)
 
+# POSIX MAIN
 aux_source_directory(source/src SOURCES)
 aux_source_directory(source/port/posix PORT_SOURCES)
 aux_source_directory(source/test TEST_SOURCES)
