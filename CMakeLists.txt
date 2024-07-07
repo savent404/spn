@@ -8,6 +8,7 @@ include(cmake/lwip.cmake)
 # SPN library
 aux_source_directory(source/src SOURCES)
 add_library(SPN ${SOURCES})
+target_compile_options(SPN PRIVATE ${LWIP_COMPILER_FLAGS})
 target_include_directories(SPN PUBLIC source/inc)
 target_link_libraries(SPN PUBLIC lwip)
 
@@ -19,7 +20,6 @@ target_link_libraries(main lwip)
 
 # Test part
 aux_source_directory(source/test TEST_SOURCES)
-# CPMAddPackage("gh:google/googletest#v1.14.0")
-# add_executable(tests ${TEST_SOURCES})
-# target_link_libraries(tests SPN gtest_main)
-# target_include_directories(tests PUBLIC source/include)
+CPMAddPackage("gh:google/googletest#v1.14.0")
+add_executable(tests ${TEST_SOURCES})
+target_link_libraries(tests PRIVATE gtest_main SPN)
