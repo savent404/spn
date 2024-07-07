@@ -23,3 +23,9 @@ aux_source_directory(source/test TEST_SOURCES)
 CPMAddPackage("gh:google/googletest#v1.14.0")
 add_executable(tests ${TEST_SOURCES})
 target_link_libraries(tests PRIVATE gtest_main SPN)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Coverage")
+    include(cmake/CodeCoverage.cmake)
+    # For tests
+    setup_target_for_coverage(tests_cov tests coverage)
+endif()
