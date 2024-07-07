@@ -31,15 +31,17 @@ bool spn_dcp_support_multicast(uint8_t service_id, uint8_t service_type)
     return is_req && (service_id == SPN_DCP_SERVICE_ID_IDENTIFY || service_id == SPN_DCP_SERVICE_ID_HELLO);
 }
 
-int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, iface_t* iface)
+int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr *hw_hdr, iface_t* iface)
 {
     struct spn_dcp_header* dcp_hdr = (struct spn_dcp_header*)frame;
+    struct spn_dcp_general_type* dcp_type = (struct spn_dcp_general_type*)((uint8_t*)dcp_hdr + sizeof(struct spn_dcp_header));
+    void* payload = (uint8_t*)dcp_type + sizeof(struct spn_dcp_general_type);
     uint16_t dcp_data_len = PP_HTONS(dcp_hdr->dcp_data_length);
     uint8_t dcp_service_id = dcp_hdr->service_id;
 
-    LWIP_UNUSED_ARG(len);
-    LWIP_UNUSED_ARG(frame_id);
     LWIP_UNUSED_ARG(iface);
+    LWIP_UNUSED_ARG(hw_hdr);
+    LWIP_UNUSED_ARG(payload);
 
     /* General check go firstly */
     if (dcp_data_len + sizeof(struct spn_dcp_header) > len || dcp_data_len >= SPN_DCP_DATA_MAX_LENGTH) {
@@ -58,8 +60,18 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, iface_t* iface)
         }
         break;
     case FRAME_ID_DCP_IDENT_REQ:
+        /* Available type:
+         * IdentifyAll-Req(NameOfStationBlock^AliasNameBlock^IdentifyReqBlock)
+         * IdentifyFilter-Req(AllSelectorBlock) */
         if (dcp_service_id != SPN_DCP_SERVICE_ID_IDENTIFY) {
             goto err_invalid_service_id;
+        }
+
+        if (dcp_type->option == SPN_DCP_OPTION_ALL_SELECTOR && dcp_type->sub_option == SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR) {
+            /* TODO: Response Identify.Res */
+        } else {
+            /* TODO: Find other available PDU */
+            /* TODO: Handle general error frame */
         }
         break;
     case FRAME_ID_DCP_IDENT_RES:

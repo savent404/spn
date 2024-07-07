@@ -1,5 +1,6 @@
 #pragma once
 
+#include <lwip/prot/ethernet.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -41,4 +42,4 @@ struct pn_pdu {
 };
 #pragma pack(pop)
 
-int spn_pdu_input(void* frame, size_t len, iface_t* iface);
+int spn_pdu_input(void* frame, size_t len, struct eth_hdr* hw_hdr, iface_t* iface);

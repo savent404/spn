@@ -10,7 +10,7 @@
 #define FRAME_ID_IN_RANGE(frame_id, RANGE) \
     _FRAME_ID_IN_RANGE(frame_id, FRAME_ID_##RANGE##_BEGIN, FRAME_ID_##RANGE##_END)
 
-int spn_pdu_input(void* frame, size_t len, iface_t* iface)
+int spn_pdu_input(void* frame, size_t len, struct eth_hdr* hw_hdr, iface_t* iface)
 {
     struct pn_pdu* pdu = (struct pn_pdu*)frame;
     uint16_t frame_id = ntohs(pdu->frame_id);
@@ -37,7 +37,7 @@ int spn_pdu_input(void* frame, size_t len, iface_t* iface)
     } else if (frame_id == FRAME_ID_RTA || frame_id == FRAME_ID_RTA_SECURITY) {
         /* TODO: RTA input */
     } else if (frame_id == FRAME_ID_DCP_HELLO_REQ || frame_id == FRAME_ID_DCP_GET_SET || frame_id == FRAME_ID_DCP_IDENT_REQ || frame_id == FRAME_ID_DCP_IDENT_RES) {
-        return spn_dcp_input(payload, payload_len, frame_id, iface);
+        return spn_dcp_input(payload, payload_len, frame_id, hw_hdr, iface);
     } else if (frame_id == FRAME_ID_PTCP_ANNOUCE || frame_id == FRAME_ID_PTCP_FOLLOW_UP || frame_id == FRAME_ID_PTCP_DELAY_REQ || frame_id == FRAME_ID_PTCP_DELAY_RES_1 || frame_id == FRAME_ID_PTCP_DELAY_RES_2 || frame_id == FRAME_ID_PTCP_DELAY_RES_3) {
         /* TODO: PTCP input */
     } else {

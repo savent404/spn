@@ -13,6 +13,7 @@
 #include <spn/iface.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <lwip/prot/ethernet.h>
 /*
  * DCP-PDU
  *   DCP-Unicast-PDU
@@ -87,6 +88,8 @@
 
 #define SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR 0x01
 
+#define SPN_DCP_COMBINED_OPTION(option, sub_option) ((option << 8) | sub_option)
+
 #pragma pack(push, 1)
 struct spn_dcp_header {
     uint8_t service_id;
@@ -142,7 +145,9 @@ uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor);
  */
 bool spn_dcp_support_multicast(uint8_t service_id, uint8_t service_type);
 
-int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, iface_t* iface);
+int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr *hw_hdr, iface_t* iface);
+
+int spn_dcp_resp_ident(uint32_t xid, uint16_t resp_delay_factor, iface_t* iface);
 
 #ifdef __cplusplus
 }

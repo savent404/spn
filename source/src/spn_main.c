@@ -38,7 +38,7 @@ int spn_input_hook(void* frame, void* iface)
     if (p && i) {
         if (hdr->type == PP_HTONS(ETHTYPE_PROFINET)) {
             if (memcpy(&(hdr->dest.addr), &(i->hwaddr), 6) || p->flags & (PBUF_FLAG_LLBCAST | PBUF_FLAG_LLMCAST)) {
-                return spn_pdu_input((char*)p->payload + SIZEOF_ETH_HDR, p->len - SIZEOF_ETH_HDR, i);
+                return spn_pdu_input((char*)p->payload + SIZEOF_ETH_HDR, p->len - SIZEOF_ETH_HDR, hdr, i);
             }
         }
     } else {
