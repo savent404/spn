@@ -31,7 +31,7 @@ bool spn_dcp_support_multicast(uint8_t service_id, uint8_t service_type)
     return is_req && (service_id == SPN_DCP_SERVICE_ID_IDENTIFY || service_id == SPN_DCP_SERVICE_ID_HELLO);
 }
 
-int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr *hw_hdr, iface_t* iface)
+int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface)
 {
     struct spn_dcp_header* dcp_hdr = (struct spn_dcp_header*)frame;
     struct spn_dcp_general_type* dcp_type = (struct spn_dcp_general_type*)((uint8_t*)dcp_hdr + sizeof(struct spn_dcp_header));

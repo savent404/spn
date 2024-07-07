@@ -45,3 +45,22 @@ int spn_pdu_input(void* frame, size_t len, struct eth_hdr* hw_hdr, iface_t* ifac
     }
     return SPN_OK;
 }
+
+extern err_t
+ethernet_output(struct netif* netif, struct pbuf* p,
+    const struct eth_addr* src, const struct eth_addr* dst,
+    u16_t eth_type);
+
+int spn_pdu_rtc_output(struct pbuf* p, struct eth_addr* src, struct eth_addr* dest, uint16_t frame_id, iface_t* iface)
+{
+    struct pn_pdu* pdu;
+
+    if (pbuf_add_header(p, SPN_PDU_HDR_SIZE)) {
+        return -SPN_ENOMEM;
+    }
+
+    pdu = (struct pn_pdu*)p->payload;
+    pdu->frame_id = PP_HTONS(frame_id);
+
+    return ethernet_output(iface, p, src, dest, PP_HTONS(ETHTYPE_PROFINET));
+}

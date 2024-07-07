@@ -147,7 +147,7 @@ bool spn_dcp_support_multicast(uint8_t service_id, uint8_t service_type);
 
 int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr *hw_hdr, iface_t* iface);
 
-int spn_dcp_resp_ident(uint32_t xid, uint16_t resp_delay_factor, iface_t* iface);
+int spn_dcp_resp_ident(uint32_t xid, uint16_t resp_delay_factor, uint8_t *dst_mac, iface_t* iface);
 
 #ifdef __cplusplus
 }

@@ -6,6 +6,8 @@
 
 #include <spn/iface.h>
 
+#define SPN_PDU_HDR_SIZE (2)
+
 #define FRAME_ID_PTCP_1 0x0020
 #define FRAME_ID_PTCP_2 0x0080
 #define FRAME_ID_RTC3_BEGIN 0x0100
@@ -43,3 +45,6 @@ struct pn_pdu {
 #pragma pack(pop)
 
 int spn_pdu_input(void* frame, size_t len, struct eth_hdr* hw_hdr, iface_t* iface);
+
+int spn_pdu_rtc_output(struct pbuf* p, struct eth_addr* src, struct eth_addr* dest, uint16_t frame_id, iface_t* iface);
+int spn_pdu_rta_output();
