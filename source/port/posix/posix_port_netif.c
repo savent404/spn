@@ -36,10 +36,10 @@ static void* raw_socket_background_thread(void* arg);
 
 static pthread_t background_thread;
 
-void default_netif_init(void)
+void default_netif_init(struct netif *netifs)
 {
     ip4_addr_t ipaddr, netmask, gw;
-    static struct netif netif[2];
+    struct netif* netif = netifs;
     static struct raw_posix_iface iface[2];
 
     strcpy(iface[0].ifname, "ens37");
@@ -54,12 +54,12 @@ void default_netif_init(void)
     IP4_ADDR((&gw), 192, 168, 31, 1);
     printf("Starting lwIP, local interface(%s) IP is %s\n", iface[0].ifname, ip4addr_ntoa(&ipaddr));
     /* TODO: add second port */
-    netif_add(&netif[0], &ipaddr, &netmask, &gw, &iface[0], raw_socket_low_level_init, tcpip_input);
-    netif_set_default(&netif[0]);
-    netif_set_link_up(&netif[0]);
-    netif_set_up(&netif[0]);
+    netif_add(netif, &ipaddr, &netmask, &gw, &iface[0], raw_socket_low_level_init, tcpip_input);
+    netif_set_default(netif);
+    netif_set_link_up(netif);
+    netif_set_up(netif);
 
-    pthread_create(&background_thread, NULL, raw_socket_background_thread, &netif[0]);
+    pthread_create(&background_thread, NULL, raw_socket_background_thread, netif);
 }
 
 err_t raw_socket_low_level_init(struct netif* netif)
@@ -98,8 +98,8 @@ err_t raw_socket_low_level_init(struct netif* netif)
     netif->hwaddr[1] = 0x0c;
     netif->hwaddr[2] = 0x29;
     netif->hwaddr[3] = 0xcd;
-    netif->hwaddr[4] = 0x5d;
-    netif->hwaddr[5] = 0x83;
+    netif->hwaddr[4] = 0xDD;
+    netif->hwaddr[5] = 0xFF;
     iface->sockfd = sockfd;
 
     netif_set_link_up(netif);

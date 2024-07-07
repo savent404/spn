@@ -75,7 +75,7 @@
  *    4 byte alignment -> #define MEM_ALIGNMENT 4
  *    2 byte alignment -> #define MEM_ALIGNMENT 2
  */
-#define MEM_ALIGNMENT                   1U
+#define MEM_ALIGNMENT                   4U
 
 /**
  * MEM_SIZE: the size of the heap memory. If the application will send
@@ -266,7 +266,7 @@
 /**
  * LWIP_RAW==1: Enable application layer to hook into the IP layer itself.
  */
-#define LWIP_RAW                        1
+#define LWIP_RAW                        0
 
 /*
    ----------------------------------
@@ -432,7 +432,7 @@ void sys_check_core_locking(void);
 #define LWIP_ASSERT_CORE_LOCKED()  sys_check_core_locking()
 #endif
 
-int spn_input_hook(void* frame, void* netif);
-#define LWIP_HOOK_IP4_INPUT(p, netif) spn_input_hook(p, netif)
+extern int spn_input_hook(void* frame, void* netif);
+#define LWIP_HOOK_UNKNOWN_ETH_PROTOCOL(p, netif) spn_input_hook(p, netif)
 
 #endif /* LWIP_LWIPOPTS_H */

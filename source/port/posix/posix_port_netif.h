@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-void default_netif_init(void);
+void default_netif_init(struct netif* ifaces);
 
 #ifdef __cplusplus
 }
