@@ -52,10 +52,12 @@ void default_netif_init(void)
     IP4_ADDR((&ipaddr), 192, 168, 31, 249);
     IP4_ADDR((&netmask), 255, 255, 255, 0);
     IP4_ADDR((&gw), 192, 168, 31, 1);
-    printf("Starting lwIP, local interface IP is %s\n", ip4addr_ntoa(&ipaddr));
+    printf("Starting lwIP, local interface(%s) IP is %s\n", iface[0].ifname, ip4addr_ntoa(&ipaddr));
     /* TODO: add second port */
     netif_add(&netif[0], &ipaddr, &netmask, &gw, &iface[0], raw_socket_low_level_init, tcpip_input);
     netif_set_default(&netif[0]);
+    netif_set_link_up(&netif[0]);
+    netif_set_up(&netif[0]);
 
     pthread_create(&background_thread, NULL, raw_socket_background_thread, &netif[0]);
 }
@@ -75,6 +77,8 @@ err_t raw_socket_low_level_init(struct netif* netif)
 
     memset(&ifr, 0, sizeof(ifr));
     memset(&iface->sockaddr, 0, sizeof(iface->sockaddr));
+    iface->sockaddr.sll_family = AF_PACKET;
+    iface->sockaddr.sll_protocol = htons(ETH_P_ALL);
     iface->sockaddr.sll_ifindex = if_nametoindex(iface->ifname);
     strcpy(ifr.ifr_name, iface->ifname);
     if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0) {
@@ -89,13 +93,13 @@ err_t raw_socket_low_level_init(struct netif* netif)
     /* Setup netif's default value */
     netif->mtu = 1500;
     netif->hwaddr_len = 6;
-    netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP;
+    netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_IGMP;
     netif->hwaddr[0] = 0x00;
     netif->hwaddr[1] = 0x0c;
     netif->hwaddr[2] = 0x29;
-    netif->hwaddr[3] = 0x55;
-    netif->hwaddr[4] = 0x44;
-    netif->hwaddr[5] = 0x33;
+    netif->hwaddr[3] = 0xcd;
+    netif->hwaddr[4] = 0x5d;
+    netif->hwaddr[5] = 0x83;
     iface->sockfd = sockfd;
 
     netif_set_link_up(netif);
@@ -109,12 +113,19 @@ struct pbuf* raw_low_level_input(struct netif* netif)
     ssize_t len;
     struct pbuf* q;
     static char buf[1518];
+    const char none_mac[6] = { 0, 0, 0, 0, 0, 0 };
 
     len = recvfrom(iface->sockfd, buf, sizeof(buf), 0, NULL, NULL);
     if (len < 0) {
         perror("recvfrom");
         return NULL;
     }
+
+    /* NOTE: Drop packets sent by this interface */
+    if (!memcmp(buf, none_mac, 6) || !memcmp(buf + 6, netif->hwaddr, 6)) {
+        return NULL;
+    }
+
     MIB2_STATS_NETIF_ADD(netif, ifinoctets, len);
 
     q = pbuf_alloc(PBUF_RAW, len, PBUF_POOL);
