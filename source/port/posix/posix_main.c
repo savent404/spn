@@ -14,6 +14,7 @@
 #include "lwip/timeouts.h"
 #include "lwip/udp.h"
 #include "netif/ethernet.h"
+#include "lwip/apps/snmp.h"
 
 #include "posix_port_netif.h"
 #include <spn/spn.h>
@@ -52,10 +53,12 @@ int main(void)
 void tcpip_init_cb(void* arg)
 {
     sys_sem_t* sem = (sys_sem_t*)arg;
+
     sys_sem_signal(sem);
 
     default_netif_init((struct netif*)ifaces);
 
     etharp_init();
     udp_init();
+    snmp_init();
 }

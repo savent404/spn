@@ -406,7 +406,7 @@
 /**
  * LWIP_STATS==1: Enable statistics collection in lwip_stats.
  */
-#define LWIP_STATS                      0
+#define LWIP_STATS                      1
 /*
    ---------------------------------
    ---------- PPP options ----------
@@ -434,5 +434,7 @@ void sys_check_core_locking(void);
 
 extern int spn_input_hook(void* frame, void* netif);
 #define LWIP_HOOK_UNKNOWN_ETH_PROTOCOL(p, netif) spn_input_hook(p, netif)
+
+#define MIB2_STATS 1
 
 #endif /* LWIP_LWIPOPTS_H */
