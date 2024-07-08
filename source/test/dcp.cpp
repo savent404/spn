@@ -14,8 +14,6 @@ struct DcpTest : public SpnInstance {
     {
         cfg.dual_port = false;
 
-        input_frames.push_back(std::make_pair(test_data::dcp::kDcpAllSelector, sizeof(test_data::dcp::kDcpAllSelector)));
-
         this->cb_low_level_output = [](struct netif* netif, struct pbuf* p) -> err_t {
             return ERR_OK;
         };
@@ -50,8 +48,8 @@ struct DcpTest : public SpnInstance {
 
 TEST_F(DcpTest, init)
 {
+    this->input_frames.push_back({test_data::dcp::kDcpAllSelector, sizeof(test_data::dcp::kDcpAllSelector)});
     this->step();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 
 TEST(DCP, resp_delay_default)
