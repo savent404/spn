@@ -50,6 +50,7 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
 
     /* General check go firstly */
     if (dcp_data_len + sizeof(struct spn_dcp_header) > len || dcp_data_len >= SPN_DCP_DATA_MAX_LENGTH) {
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: invalid dcp_data_len=%d, frame_len=%ld\n", dcp_data_len, len));
         return -SPN_EBADMSG;
     }
 
@@ -58,11 +59,13 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
         if (dcp_service_id != SPN_DCP_SERVICE_ID_HELLO) {
             goto err_invalid_service_id;
         }
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Hello.Req\n"));
         break;
     case FRAME_ID_DCP_GET_SET:
         if (dcp_service_id != SPN_DCP_SERVICE_ID_GET && dcp_service_id != SPN_DCP_SERVICE_ID_SET) {
             goto err_invalid_service_id;
         }
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Get/Set\n"));
         break;
     case FRAME_ID_DCP_IDENT_REQ:
         /* Available type:
@@ -74,25 +77,30 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
 
         if (dcp_type->option == SPN_DCP_OPTION_ALL_SELECTOR && dcp_type->sub_option == SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR) {
             LWIP_ASSERT("dcp_data_len must be 4", dcp_data_len == 4);
-            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: IdentifyFilter-Req\n"));
+            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: IdentifyAllSelector-Req\n"));
             /* TODO: Response Identify.Res */
         } else {
             /* TODO: Find other available PDU */
             /* TODO: Handle general error frame */
+            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: IdentifyFilter-Req\n"));
         }
         break;
     case FRAME_ID_DCP_IDENT_RES:
         if (dcp_service_id != SPN_DCP_SERVICE_ID_IDENTIFY) {
             goto err_invalid_service_id;
         }
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Identify.Res\n"));
+        /* TODO: Response Identify parsing. Recorded it in db */
         break;
     default:
         /* TODO: drop unknow frame_id */
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: unknown frame_id=0x%04x\n", frame_id));
         break;
     }
     return SPN_OK;
 
 err_invalid_service_id:
+    LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_HALT, ("DCP: invalid service_id=%d\n", dcp_service_id));
     /* TODO: send error response */
     return SPN_OK;
 }

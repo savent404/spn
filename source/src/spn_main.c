@@ -46,13 +46,13 @@ int spn_input_hook(void* frame, void* iface)
 
     if (p && i) {
         if (hdr->type == PP_HTONS(ETHTYPE_PROFINET)) {
-            LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("SPN: input pn frame\n"));
+            LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("SPN: pn frame...\n"));
             return spn_pdu_input((char*)p->payload + SIZEOF_ETH_HDR, p->len - SIZEOF_ETH_HDR, hdr, i);
         }
     } else {
         return -SPN_EINVAL;
     }
-    LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("SPN: input non pn frame\n"));
+    LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("SPN: unknow ethernet type: %X\n", PP_HTONS(hdr->type)));
     return -SPN_EAGAIN;
 }
 

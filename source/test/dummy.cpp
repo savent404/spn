@@ -80,10 +80,15 @@ void SpnInstance::SetUp()
 {
     LOCK_TCPIP_CORE();
     spn_init(&ctx, &cfg, &ifaces[0], NULL);
+
     for (auto& iface : ifaces) {
         netif_add(&iface, NULL, NULL, NULL, (void*)this, low_level_init, tcpip_input);
         netif_set_link_up(&iface);
         netif_set_up(&iface);
+
+        if (!cfg.dual_port) {
+            break;
+        }
     }
     UNLOCK_TCPIP_CORE();
 }

@@ -7,6 +7,7 @@
 #include <lwip/errno.h>
 #include <spn/dcp.h>
 #include <thread>
+#include <deque>
 
 namespace {
 struct DcpTest : public SpnInstance {
@@ -30,10 +31,12 @@ struct DcpTest : public SpnInstance {
             auto res = netif->input(pbuf, netif);
 
             if (res != ERR_OK) {
+                input_frames.pop_front();
                 pbuf_free(pbuf);
                 return res;
             }
 
+            input_frames.pop_front();
             return ERR_OK;
         };
 
@@ -42,14 +45,24 @@ struct DcpTest : public SpnInstance {
         };
     }
 
-    std::vector<std::pair<const char*, size_t>> input_frames;
+    std::deque<std::pair<const char*, size_t>> input_frames;
 };
 }
 
-TEST_F(DcpTest, init)
+TEST_F(DcpTest, inputAllSelector)
 {
-    this->input_frames.push_back({test_data::dcp::kDcpAllSelector, sizeof(test_data::dcp::kDcpAllSelector)});
+    this->input_frames.push_back({ test_data::dcp::kDcpAllSelector, sizeof(test_data::dcp::kDcpAllSelector) });
     this->step();
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
+    // TODO: check the response
+}
+
+TEST_F(DcpTest, inputIdentRes)
+{
+    this->input_frames.push_back({ test_data::dcp::kDcpIdentRespX208, sizeof(test_data::dcp::kDcpIdentRespX208) });
+    while (this->step()) { }
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
+    // TODO: check the response
 }
 
 TEST(DCP, resp_delay_default)
