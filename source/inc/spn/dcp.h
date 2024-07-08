@@ -10,10 +10,10 @@
  */
 #pragma once
 
+#include <lwip/prot/ethernet.h>
 #include <spn/iface.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <lwip/prot/ethernet.h>
 /*
  * DCP-PDU
  *   DCP-Unicast-PDU
@@ -106,14 +106,18 @@ struct spn_dcp_header {
     uint16_t dcp_data_length; /* total length of data followed by the DCP-UC-Header or DCP-MC-Header, max 1432 */
 };
 
-struct spn_dcp_general_type {
+struct spn_dcp_general_block {
     uint8_t option;
     uint8_t sub_option;
     uint16_t dcp_block_length; /* additional data length at the end of this struct */
 };
 
 struct spn_dcp_all_selector_block {
-  struct spn_dcp_general_type base;
+    struct spn_dcp_general_block base;
+};
+
+struct spn_dcp_identify_block {
+    int reserved;
 };
 
 #pragma pack(pop)
@@ -141,6 +145,19 @@ uint16_t spn_dcp_resp_delay(uint16_t rand, uint16_t resp_delay_factor);
 uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor);
 
 /**
+ * @brief Parse DCP Identify response
+ *
+ * @param dcp_hdr \c spn_dcp_header
+ * @param payload \c spn_dcp_general_type or other dcp_type structure
+ * @param len \c payload length
+ * @param offset current offset
+ * @param[out] ident_block identify results
+ * @return int \c SPN_OK on success
+ *             \c SPN_EBADMSG on parsing error
+ */
+int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, struct spn_dcp_identify_block* ident_block);
+
+/**
  * @brief Check if service id supports multicast mac address
  *
  * @param service_id \c SPN_DCP_SERVICE_ID_XXX
@@ -151,9 +168,9 @@ uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor);
  */
 bool spn_dcp_support_multicast(uint8_t service_id, uint8_t service_type);
 
-int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr *hw_hdr, iface_t* iface);
+int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface);
 
-int spn_dcp_resp_ident(uint32_t xid, uint16_t resp_delay_factor, uint8_t *dst_mac, iface_t* iface);
+int spn_dcp_resp_ident(uint32_t xid, uint16_t resp_delay_factor, uint8_t* dst_mac, iface_t* iface);
 
 #ifdef __cplusplus
 }
