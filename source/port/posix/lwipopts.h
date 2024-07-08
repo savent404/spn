@@ -437,4 +437,10 @@ extern int spn_input_hook(void* frame, void* netif);
 
 #define MIB2_STATS 1
 
+#define LWIP_DEBUG 1
+#define NETIF_DEBUG LWIP_DBG_ON
+#define SPN_DEBUG LWIP_DBG_ON
+#define SPN_DCP_DEBUG LWIP_DBG_ON
+#define ICMP_DEBUG LWIP_DBG_ON
+
 #endif /* LWIP_LWIPOPTS_H */

@@ -39,6 +39,8 @@ extern "C" {
  */
 int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg, iface_t* iface1, iface_t* iface2);
 
+void spn_deinit(struct spn_ctx* ctx);
+
 #if 0
 /**
  * @brief input hook of ethernet frame

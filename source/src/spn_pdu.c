@@ -1,6 +1,7 @@
 #include <lwip/opt.h>
 #include <spn/errno.h>
 
+#include <lwip/debug.h>
 #include <lwip/prot/ethernet.h>
 #include <spn/dcp.h>
 #include <spn/pdu.h>
@@ -20,6 +21,8 @@ int spn_pdu_input(void* frame, size_t len, struct eth_hdr* hw_hdr, iface_t* ifac
     LWIP_UNUSED_ARG(len);
     LWIP_UNUSED_ARG(iface);
 
+    LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("PDU: frame_id=0x%04x\n", frame_id));
+
     if (frame_id == FRAME_ID_PTCP_1 || frame_id == FRAME_ID_PTCP_2) {
         /* TODO: PTCP input */
     } else if (FRAME_ID_IN_RANGE(frame_id, RTC3)) {
@@ -37,6 +40,7 @@ int spn_pdu_input(void* frame, size_t len, struct eth_hdr* hw_hdr, iface_t* ifac
     } else if (frame_id == FRAME_ID_RTA || frame_id == FRAME_ID_RTA_SECURITY) {
         /* TODO: RTA input */
     } else if (frame_id == FRAME_ID_DCP_HELLO_REQ || frame_id == FRAME_ID_DCP_GET_SET || frame_id == FRAME_ID_DCP_IDENT_REQ || frame_id == FRAME_ID_DCP_IDENT_RES) {
+        LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("PDU: found dcp frame, frame_id=0x%04x\n", frame_id));
         return spn_dcp_input(payload, payload_len, frame_id, hw_hdr, iface);
     } else if (frame_id == FRAME_ID_PTCP_ANNOUCE || frame_id == FRAME_ID_PTCP_FOLLOW_UP || frame_id == FRAME_ID_PTCP_DELAY_REQ || frame_id == FRAME_ID_PTCP_DELAY_RES_1 || frame_id == FRAME_ID_PTCP_DELAY_RES_2 || frame_id == FRAME_ID_PTCP_DELAY_RES_3) {
         /* TODO: PTCP input */

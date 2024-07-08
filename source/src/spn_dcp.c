@@ -1,4 +1,7 @@
+#include <lwip/opt.h>
+
 #include <lwip/arch.h>
+#include <lwip/debug.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
 #include <spn/pdu.h>
@@ -43,6 +46,8 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
     LWIP_UNUSED_ARG(hw_hdr);
     LWIP_UNUSED_ARG(payload);
 
+    LWIP_DEBUGF(0x80 | LWIP_DBG_TRACE, ("DCP: frame_id=0x%04x, service_id=%d, dcp_data_len=%d\n", frame_id, dcp_service_id, dcp_data_len));
+
     /* General check go firstly */
     if (dcp_data_len + sizeof(struct spn_dcp_header) > len || dcp_data_len >= SPN_DCP_DATA_MAX_LENGTH) {
         return -SPN_EBADMSG;
@@ -68,6 +73,10 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
         }
 
         if (dcp_type->option == SPN_DCP_OPTION_ALL_SELECTOR && dcp_type->sub_option == SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR) {
+            struct spn_dcp_all_selector_block* all_selector = (struct spn_dcp_all_selector_block*)payload;
+            LWIP_ASSERT("dcp_data_len must be 4", dcp_data_len == 4);
+            LWIP_ASSERT("all_selector_block invalid", all_selector->base.option == SPN_DCP_OPTION_ALL_SELECTOR && all_selector->base.sub_option == SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR);
+            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: IdentifyFilter-Req\n"));
             /* TODO: Response Identify.Res */
         } else {
             /* TODO: Find other available PDU */

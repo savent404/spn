@@ -36,22 +36,22 @@ static void* raw_socket_background_thread(void* arg);
 
 static pthread_t background_thread;
 
-void default_netif_init(struct netif *netifs)
+void default_netif_init(struct netif* netifs, const char* port1, const char* port2, const uint32_t ip)
 {
     ip4_addr_t ipaddr, netmask, gw;
     struct netif* netif = netifs;
     static struct raw_posix_iface iface[2];
 
-    strcpy(iface[0].ifname, "ens37");
-    strcpy(iface[1].ifname, "ens38");
+    strcpy(iface[0].ifname, port1);
+    strcpy(iface[1].ifname, port2);
 
     ip4_addr_set_zero(&gw);
     ip4_addr_set_zero(&ipaddr);
     ip4_addr_set_zero(&netmask);
 
-    IP4_ADDR((&ipaddr), 192, 168, 31, 249);
+    ipaddr.addr = ip;
+    gw.addr = ip & 0x00FFFFFF | 0x01000000;
     IP4_ADDR((&netmask), 255, 255, 255, 0);
-    IP4_ADDR((&gw), 192, 168, 31, 1);
     printf("Starting lwIP, local interface(%s) IP is %s\n", iface[0].ifname, ip4addr_ntoa(&ipaddr));
     /* TODO: add second port */
     netif_add(netif, &ipaddr, &netmask, &gw, &iface[0], raw_socket_low_level_init, tcpip_input);

@@ -29,6 +29,14 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg, iface_t* if1, iface
     return SPN_OK;
 }
 
+void spn_deinit(struct spn_ctx* ctx)
+{
+    if (ctx) {
+        ctx->iface_port1 = NULL;
+        ctx->iface_port2 = NULL;
+    }
+}
+
 int spn_input_hook(void* frame, void* iface)
 {
     struct pbuf* p = (struct pbuf*)frame;
@@ -37,9 +45,8 @@ int spn_input_hook(void* frame, void* iface)
 
     if (p && i) {
         if (hdr->type == PP_HTONS(ETHTYPE_PROFINET)) {
-            if (memcpy(&(hdr->dest.addr), &(i->hwaddr), 6) || p->flags & (PBUF_FLAG_LLBCAST | PBUF_FLAG_LLMCAST)) {
-                return spn_pdu_input((char*)p->payload + SIZEOF_ETH_HDR, p->len - SIZEOF_ETH_HDR, hdr, i);
-            }
+            LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("SPN: input pn frame\n"));
+            return spn_pdu_input((char*)p->payload + SIZEOF_ETH_HDR, p->len - SIZEOF_ETH_HDR, hdr, i);
         }
     } else {
         return -SPN_EINVAL;
