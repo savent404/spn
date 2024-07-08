@@ -15,8 +15,8 @@ int spn_pdu_input(void* frame, size_t len, struct eth_hdr* hw_hdr, iface_t* ifac
 {
     struct pn_pdu* pdu = (struct pn_pdu*)frame;
     uint16_t frame_id = ntohs(pdu->frame_id);
-    void* payload = (void*)((char*)pdu + 2);
-    size_t payload_len = len - 2;
+    void* payload = (void*)((char*)pdu + sizeof(*pdu));
+    size_t payload_len = len - sizeof(*pdu);
 
     LWIP_UNUSED_ARG(len);
     LWIP_UNUSED_ARG(iface);
@@ -40,7 +40,7 @@ int spn_pdu_input(void* frame, size_t len, struct eth_hdr* hw_hdr, iface_t* ifac
     } else if (frame_id == FRAME_ID_RTA || frame_id == FRAME_ID_RTA_SECURITY) {
         /* TODO: RTA input */
     } else if (frame_id == FRAME_ID_DCP_HELLO_REQ || frame_id == FRAME_ID_DCP_GET_SET || frame_id == FRAME_ID_DCP_IDENT_REQ || frame_id == FRAME_ID_DCP_IDENT_RES) {
-        LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("PDU: found dcp frame, frame_id=0x%04x\n", frame_id));
+        LWIP_DEBUGF(SPN_PDU_DEBUG | LWIP_DBG_TRACE, ("PDU: found dcp frame, frame_id=0x%04x\n", frame_id));
         return spn_dcp_input(payload, payload_len, frame_id, hw_hdr, iface);
     } else if (frame_id == FRAME_ID_PTCP_ANNOUCE || frame_id == FRAME_ID_PTCP_FOLLOW_UP || frame_id == FRAME_ID_PTCP_DELAY_REQ || frame_id == FRAME_ID_PTCP_DELAY_RES_1 || frame_id == FRAME_ID_PTCP_DELAY_RES_2 || frame_id == FRAME_ID_PTCP_DELAY_RES_3) {
         /* TODO: PTCP input */

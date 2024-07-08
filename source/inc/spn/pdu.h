@@ -38,9 +38,6 @@
 #pragma pack(push, 1)
 struct pn_pdu {
     uint16_t frame_id;
-    union {
-        uint32_t _reserved;
-    } payload;
 };
 #pragma pack(pop)
 

@@ -38,15 +38,15 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
 {
     struct spn_dcp_header* dcp_hdr = (struct spn_dcp_header*)frame;
     struct spn_dcp_general_type* dcp_type = (struct spn_dcp_general_type*)((uint8_t*)dcp_hdr + sizeof(struct spn_dcp_header));
-    void* payload = (uint8_t*)dcp_type + sizeof(struct spn_dcp_general_type);
     uint16_t dcp_data_len = PP_HTONS(dcp_hdr->dcp_data_length);
+    uint32_t dcp_xid = PP_HTONL(dcp_hdr->xid);
     uint8_t dcp_service_id = dcp_hdr->service_id;
+    uint8_t dcp_service_type = dcp_hdr->service_type;
 
     LWIP_UNUSED_ARG(iface);
     LWIP_UNUSED_ARG(hw_hdr);
-    LWIP_UNUSED_ARG(payload);
 
-    LWIP_DEBUGF(0x80 | LWIP_DBG_TRACE, ("DCP: frame_id=0x%04x, service_id=%d, dcp_data_len=%d\n", frame_id, dcp_service_id, dcp_data_len));
+    LWIP_DEBUGF(0x80 | LWIP_DBG_TRACE, ("DCP: frame_id=0x%04x, service_id=%d, service_type=%d, xid=0x%08x, dcp_data_len=%d\n", frame_id, dcp_service_id, dcp_service_type, dcp_xid, dcp_data_len));
 
     /* General check go firstly */
     if (dcp_data_len + sizeof(struct spn_dcp_header) > len || dcp_data_len >= SPN_DCP_DATA_MAX_LENGTH) {
@@ -73,9 +73,7 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
         }
 
         if (dcp_type->option == SPN_DCP_OPTION_ALL_SELECTOR && dcp_type->sub_option == SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR) {
-            struct spn_dcp_all_selector_block* all_selector = (struct spn_dcp_all_selector_block*)payload;
             LWIP_ASSERT("dcp_data_len must be 4", dcp_data_len == 4);
-            LWIP_ASSERT("all_selector_block invalid", all_selector->base.option == SPN_DCP_OPTION_ALL_SELECTOR && all_selector->base.sub_option == SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR);
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: IdentifyFilter-Req\n"));
             /* TODO: Response Identify.Res */
         } else {
@@ -92,7 +90,7 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
         /* TODO: drop unknow frame_id */
         break;
     }
-    return -SPN_EINVAL;
+    return SPN_OK;
 
 err_invalid_service_id:
     /* TODO: send error response */

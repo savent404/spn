@@ -440,6 +440,7 @@ extern int spn_input_hook(void* frame, void* netif);
 #define LWIP_DEBUG 1
 #define NETIF_DEBUG LWIP_DBG_ON
 #define SPN_DEBUG LWIP_DBG_ON
+#define SPN_PDU_DEBUG LWIP_DBG_ON
 #define SPN_DCP_DEBUG LWIP_DBG_ON
 #define ICMP_DEBUG LWIP_DBG_ON
 

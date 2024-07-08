@@ -94,8 +94,8 @@
 struct spn_dcp_header {
     uint8_t service_id;
     uint8_t service_type;
-    uint16_t xid; /* It shall contain a transaction identification chosen by the client */
-    uint32_t response_delay_factor; /* Its reserved as DCP-Unicast-PDU.
+    uint32_t xid; /* It shall contain a transaction identification chosen by the client */
+    uint16_t response_delay_factor; /* Its reserved as DCP-Unicast-PDU.
                                      * As a DCP-Multicast-PDU, if the responder doesn't have RNG, then the responder MAC address[4:5] equals to
                                        random() % response_delay_factor, mac address[4] is the higher-order octet.
                                        And the minimal response delay equals to 10ms * (random() % response_delay_factor)

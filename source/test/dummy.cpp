@@ -1,9 +1,11 @@
+#include <chrono>
 #include <lwip/opt.h>
 
 #include "dummy.hpp"
+#include <gtest/gtest.h>
 #include <lwip/etharp.h>
 #include <lwip/tcpip.h>
-#include <gtest/gtest.h>
+#include <thread>
 
 extern "C" {
 
@@ -99,21 +101,20 @@ bool SpnInstance::step()
 {
     err_t res;
 
-    ASSERT_NE(cb_low_level_poll, nullptr);
+    assert(cb_low_level_poll);
 
     res = cb_low_level_poll(&ifaces[0]);
+    std::this_thread::yield();
     if (res != ERR_OK) {
-        UNLOCK_TCPIP_CORE();
         return false;
     }
 
     if (cfg.dual_port) {
         res = cb_low_level_poll(&ifaces[1]);
+        std::this_thread::yield();
         if (res != ERR_OK) {
-            UNLOCK_TCPIP_CORE();
             return false;
         }
     }
-
     return true;
 }

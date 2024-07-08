@@ -4,6 +4,7 @@
 #include <spn/pdu.h>
 #include <spn/spn.h>
 #include <string.h>
+#include <lwip/debug.h>
 
 #include <lwip/prot/ethernet.h>
 
@@ -51,6 +52,7 @@ int spn_input_hook(void* frame, void* iface)
     } else {
         return -SPN_EINVAL;
     }
+    LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("SPN: input non pn frame\n"));
     return -SPN_EAGAIN;
 }
 
