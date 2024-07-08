@@ -1,0 +1,48 @@
+@startmindmap DCP-PDU
+* DCP-PDU
+** DCP-MC-PDU
+*** DCP-Identify-ReqPDU
+**** DCP-IdentifyFilter-ReqPDU
+*****[#lightblue] DCP-MC-Header + 
+*****[#lightblue] NameOfStationBlockRes
+*****[#lightblue] AliasNameBlockRes
+**** DCP-IdentifyAll-ReqPDU
+*****[#lightblue] DCP-MC-Header+AllSelectorBlock
+*** DCP-Hello-ReqPDU
+****[#lightblue] DCP-UC-Header + NameOfStationBlockRes + IPParameterBlockRes + \nDeviceIDBlockRes + DeviceRoleBlockRes + DeviceInitiativeBlockRes
+*****[#lightblue] DeviceOptionsBlockRes
+*****[#lightblue] DeviceVendorBlockRes
+** DCP-UC-PDU
+*** DCP-Get-ReqPDU
+****[#lightblue] DCP-UC-Header + GetReqBlock
+*** DCP-Get-ResPDU
+****[#lightblue]  DCP-UC-Header + 
+*****[#lightblue] GetResBlock
+*****[#lightblue] GetNegResBlock
+*** DCP-Set-ReqPDU
+****[#lightblue] DCP-UC-Header + [StartTransactionBlock] + [BlockQualifier] \n+ ... + [StopTransactionBlock] + [BlockQualifier]
+*****[#lightblue] SetResetReqBlock
+*****[#lightblue] SetReqBlock
+*** DCP-Set-ResPDU
+****[#lightblue] DCP-UC-Header + 
+*****[#lightblue] SetResBlock
+*****[#lightblue] SetNegResBlock
+*** DCP-Identify-ResPDU
+****[#lightblue] DCP-UC-Header +
+*****[#lightblue] IdentifyResBlock
+*****[#lightblue] IPParameterBlockRes
+*****[#lightblue] DeviceVendorBlockRes
+*****[#lightblue] NameOfStationBlockRes
+*****[#lightblue] DeviceIDBlockRes
+*****[#lightblue] DeviceRoleBlockRes
+*****[#lightblue] DeviceOptionsBlockRes
+*****[#lightblue] DeviceInstanceBlockRes
+*****[#lightblue] OEMDeviceIDBlockRes
+*****[#lightblue] RsiPropertiesBlockRes
+*****[#lightblue] DeviceInitiativeBlockRes
+*****[#lightblue] NMEDomainBlockRes
+*****[#lightblue] NMEPrioBlockRes
+*****[#lightblue] NMEParameterUUIDBlockRes
+*****[#lightblue] NMENameBlockRes
+*****[#lightblue] CIMInterfaceBlockRes
+@endmindmap
