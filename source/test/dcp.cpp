@@ -74,21 +74,29 @@ TEST_F(DcpTest, inputAllSelector)
     // TODO: check the response
 }
 
-TEST_F(DcpTest, inputIdentRes)
+TEST_F(DcpTest, inputIdentResX208)
 {
-    std::vector<frame_t> arr = {
-        { decode_frame(test_data::dcp::kDcpIdentResp200smt) },
-        { decode_frame(test_data::dcp::kDcpIdentRespEcoPn) },
-        { decode_frame(test_data::dcp::kDcpIdentRespX208) },
-    };
-    for (auto& v : arr) {
-        this->input_frames.push_back(v);
-    }
+    this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentRespX208) });
+    // this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentRespEcoPn) });
+    // this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentResp200smt) });
     while (this->step()) { }
     std::this_thread::sleep_for(std::chrono::microseconds(100));
     // TODO: check the response
 }
-
+TEST_F(DcpTest, inputIdentResEcoPn)
+{
+    this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentRespEcoPn) });
+    while (this->step()) { }
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
+    // TODO: check the response
+}
+TEST_F(DcpTest, inputIdentRes200smt)
+{
+    this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentResp200smt) });
+    while (this->step()) { }
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
+    // TODO: check the response
+}
 TEST_F(DcpTest, inputSetReq)
 {
     this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpSetReqX208) });

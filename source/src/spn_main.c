@@ -52,7 +52,7 @@ int spn_input_hook(void* frame, void* iface)
     } else {
         return -SPN_EINVAL;
     }
-    LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("SPN: unknow ethernet type: %X\n", PP_HTONS(hdr->type)));
+    LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("SPN: unknow ethernet type: %X\n", lwip_htons(hdr->type)));
     return -SPN_EAGAIN;
 }
 

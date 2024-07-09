@@ -88,7 +88,14 @@
 
 #define SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR 0xFF /* +F */
 
+#define SPN_DCP_BLOCK_TOUCHED 0x80
+#define SPN_DCP_BLOCK_EMPTY 0x00
+
 #define SPN_DCP_COMBINED_OPTION(option, sub_option) ((option << 8) | sub_option)
+
+#define SPN_DCP_BLOCK_TOUCH(block) ((block)->touched |= SPN_DCP_BLOCK_TOUCHED)
+#define SPN_DCP_IS_BLOCK_TOUCHED(block) ((block)->touched & SPN_DCP_BLOCK_TOUCHED)
+#define SPN_DCP_IS_BLOCK_EMPTY(block) ((block)->touched == SPN_DCP_BLOCK_EMPTY)
 
 #pragma pack(push, 1)
 struct spn_dcp_header {
@@ -115,12 +122,52 @@ struct spn_dcp_general_block {
 struct spn_dcp_all_selector_block {
     struct spn_dcp_general_block base;
 };
+#pragma pack(pop)
 
 struct spn_dcp_identify_block {
-    int reserved;
-};
+    struct {
+        uint16_t block_info;
+        uint32_t ip_addr;
+        uint32_t mask;
+        uint32_t gw;
+        uint8_t touched;
+    } ip_param;
 
-#pragma pack(pop)
+    struct {
+        char name[32];
+        uint8_t name_len;
+        uint8_t touched;
+    } dev_prop_vendor;
+
+    struct {
+        char name[32];
+        uint8_t name_len;
+        uint8_t touched;
+    } dev_prop_name_of_station;
+
+    struct {
+        uint16_t vendor_id;
+        uint16_t device_id;
+        uint8_t touched;
+    } dev_prop_device_id;
+
+    struct {
+        uint8_t role;
+        uint8_t touched;
+    } dev_prop_role;
+
+    struct {
+        uint16_t options[32]; /* MSB: | option(8) | suboption(8) */
+        uint16_t option_num;
+        uint8_t touched;
+    } dev_prop_device_options;
+
+    struct {
+        char alias_name[32];
+        uint8_t alias_name_len;
+        uint8_t touched;
+    } dev_prop_alias_name;
+};
 
 #ifdef __cplusplus
 extern "C" {

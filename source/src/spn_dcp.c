@@ -72,13 +72,12 @@ uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor)
     return (uint16_t)(t & 0xFFFF);
 }
 
-int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, struct spn_dcp_identify_block* ident_block)
+int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, struct spn_dcp_identify_block* block)
 {
     struct spn_dcp_general_block* gen_block;
     uint16_t block_len;
     uint16_t block_type;
     void* r_payload;
-    static char str_buf[64]; /* Use static variable to avoid stack overflow */
 
     LWIP_UNUSED_ARG(dcp_hdr);
 
@@ -103,60 +102,72 @@ int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t 
         break;
     case BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_PARAMETER):
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing IP.Parameter\n"));
-        {
-            uint16_t block_info = lwip_ntohs(GET_VALUE(r_payload, uint16_t, 0));
-            uint32_t ip_addr = lwip_ntohl(GET_VALUE(r_payload, uint32_t, 2));
-            uint32_t mask = lwip_ntohl(GET_VALUE(r_payload, uint32_t, 6));
-            uint32_t gw = lwip_ntohl(GET_VALUE(r_payload, uint32_t, 10));
-            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: IP.Parameter=0x%04x, ip=0x%08x, mask=0x%08x, gw=0x%08x\n", block_info, ip_addr, mask, gw));
-        }
+        SPN_DCP_BLOCK_TOUCH(&block->ip_param);
+        block->ip_param.block_info = lwip_ntohs(GET_VALUE(r_payload, uint16_t, 0));
+        block->ip_param.ip_addr = lwip_ntohl(GET_VALUE(r_payload, uint32_t, 2));
+        block->ip_param.mask = lwip_ntohl(GET_VALUE(r_payload, uint32_t, 6));
+        block->ip_param.gw = lwip_ntohl(GET_VALUE(r_payload, uint32_t, 10));
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: IP.Parameter=0x%04x, ip=0x%08x, mask=0x%08x, gw=0x%08x\n", block->ip_param.block_info, block->ip_param.ip_addr, block->ip_param.mask, block->ip_param.gw));
         break;
     case BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_FULL_IP_SUITE):
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing IP.Full.IPSuite\n"));
         break;
     case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR):
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.Vendor\n"));
-        LWIP_ASSERT("Vender too long", (int)sizeof(str_buf) > block_len - 3);
-        strncpy(str_buf, (char*)r_payload + 2, block_len - 2);
-        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Vender=%s\n", str_buf));
+        LWIP_ASSERT("Vendor too long", (int)sizeof(block->dev_prop_vendor.name) > block_len - 3);
+        SPN_DCP_BLOCK_TOUCH(&block->dev_prop_vendor);
+        strncpy(block->dev_prop_vendor.name, (char*)r_payload + 2, block_len - 2);
+        block->dev_prop_vendor.name[block_len - 2] = '\0';
+        block->dev_prop_vendor.name_len = block_len - 2;
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Vendor=%s\n", block->dev_prop_vendor.name));
         break;
     case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION):
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.NameOfStation\n"));
-        LWIP_ASSERT("NameOfStation too long", (int)sizeof(str_buf) > block_len - 3);
-        strncpy(str_buf, (char*)r_payload + 2, block_len - 2);
-        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: NameOfStation=%s\n", str_buf));
+        LWIP_ASSERT("NameOfStation too long", (int)sizeof(block->dev_prop_name_of_station.name) > block_len - 3);
+        SPN_DCP_BLOCK_TOUCH(&block->dev_prop_name_of_station);
+        strncpy(block->dev_prop_name_of_station.name, (char*)r_payload + 2, block_len - 2);
+        block->dev_prop_name_of_station.name[block_len - 2] = '\0';
+        block->dev_prop_name_of_station.name_len = block_len - 2;
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: NameOfStation=%s\n", block->dev_prop_name_of_station.name));
         break;
     case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ID):
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.DeviceID\n"));
-        {
-            uint16_t vendor_id = lwip_ntohs(GET_VALUE(r_payload, uint16_t, 2));
-            uint16_t device_id = lwip_ntohs(GET_VALUE(r_payload, uint16_t, 4));
-            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DeviceID=0x%04x:0x%04x\n", vendor_id, device_id));
-        }
+        SPN_DCP_BLOCK_TOUCH(&block->dev_prop_device_id);
+        block->dev_prop_device_id.vendor_id = lwip_ntohs(GET_VALUE(r_payload, uint16_t, 2));
+        block->dev_prop_device_id.device_id = lwip_ntohs(GET_VALUE(r_payload, uint16_t, 4));
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DeviceID=0x%04x:0x%04x\n", block->dev_prop_device_id.vendor_id, block->dev_prop_device_id.device_id));
         break;
     case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ROLE):
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.DeviceRole\n"));
-        {
-            uint8_t role = GET_VALUE(r_payload, uint8_t, 2);
-            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DeviceRole=%d\n", role));
-        }
+        SPN_DCP_BLOCK_TOUCH(&block->dev_prop_role);
+        block->dev_prop_role.role = GET_VALUE(r_payload, uint8_t, 2);
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DeviceRole=%d\n", block->dev_prop_role.role));
         break;
     case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_OPTIONS):
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.DeviceOptions\n"));
+        SPN_DCP_BLOCK_TOUCH(&block->dev_prop_device_options);
         {
             uint16_t* block_info = (uint16_t*)((uintptr_t)r_payload + 2);
             int left_index = (block_len - 2) / 2;
             int i;
+
+            LWIP_ASSERT("DeviceOptions too long", left_index <= (int)(sizeof(block->dev_prop_device_options.options) / sizeof(block->dev_prop_device_options.options[0])));
             for (i = 0; i < left_index; i++) {
+                block->dev_prop_device_options.options[i] = lwip_ntohs(block_info[i]);
                 LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DeviceOptions[%d]=0x%04x\n", i, lwip_ntohs(block_info[i])));
             }
+            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DeviceOptions num=%d\n", left_index));
+            block->dev_prop_device_options.option_num = left_index;
         }
         break;
     case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME):
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.AliasName\n"));
-        LWIP_ASSERT("AliasName too long", (int)sizeof(str_buf) > block_len - 3);
-        strncpy(str_buf, (char*)r_payload + 2, block_len - 2);
-        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: AliasName=%s\n", str_buf));
+        LWIP_ASSERT("AliasName too long", (int)sizeof(block->dev_prop_alias_name.alias_name) > block_len - 3);
+        SPN_DCP_BLOCK_TOUCH(&block->dev_prop_alias_name);
+        strncpy(block->dev_prop_alias_name.alias_name, (char*)r_payload + 2, block_len - 2);
+        block->dev_prop_alias_name.alias_name[block_len - 2] = '\0';
+        block->dev_prop_alias_name.alias_name_len = block_len - 2;
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: AliasName=%s\n", block->dev_prop_alias_name.alias_name));
         break;
     case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_INSTANCE):
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.DeviceInstance\n"));
@@ -217,7 +228,7 @@ int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t 
     }
 
     offset = spn_dcp_block_walk(payload, offset);
-    return spn_dcp_block_parse(dcp_hdr, payload, len, offset, ident_block);
+    return spn_dcp_block_parse(dcp_hdr, payload, len, offset, block);
 }
 
 int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface)
@@ -228,6 +239,7 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
     uint32_t dcp_xid = PP_HTONL(dcp_hdr->xid);
     uint8_t dcp_service_id = dcp_hdr->service_id;
     uint8_t dcp_service_type = dcp_hdr->service_type;
+    struct spn_dcp_identify_block blocks;
 
     LWIP_UNUSED_ARG(iface);
     LWIP_UNUSED_ARG(hw_hdr);
@@ -276,7 +288,11 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
     }
 
     /* Seems frame's grammar is satisfied, let's do the real job */
-    return spn_dcp_block_parse(dcp_hdr, dcp_type, dcp_data_len, 0, NULL);
+    spn_dcp_block_parse(dcp_hdr, dcp_type, dcp_data_len, 0, &blocks);
+
+    /* TODO: Handle blocks */
+
+    return SPN_OK;
 
 err_invalid_service_id:
     LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_HALT, ("DCP: invalid service_id=%d\n", dcp_service_id));
