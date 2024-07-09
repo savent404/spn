@@ -157,17 +157,6 @@ uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor);
  */
 int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, struct spn_dcp_identify_block* ident_block);
 
-/**
- * @brief Check if service id supports multicast mac address
- *
- * @param service_id \c SPN_DCP_SERVICE_ID_XXX
- * @param service_type \c SPN_DCP_SERVICE_TYPE_XXX
- * @note only Ident.req and Hello.req support multicast mac address
- * @return true Support multicast mac address
- * @return false Not support multicast mac address
- */
-bool spn_dcp_support_multicast(uint8_t service_id, uint8_t service_type);
-
 int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface);
 
 int spn_dcp_resp_ident(uint32_t xid, uint16_t resp_delay_factor, uint8_t* dst_mac, iface_t* iface);

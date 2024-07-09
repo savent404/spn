@@ -220,12 +220,6 @@ int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t 
     return spn_dcp_block_parse(dcp_hdr, payload, len, offset, ident_block);
 }
 
-bool spn_dcp_support_multicast(uint8_t service_id, uint8_t service_type)
-{
-    bool is_req = service_type == SPN_DCP_SERVICE_TYPE_REQUEST;
-    return is_req && (service_id == SPN_DCP_SERVICE_ID_IDENTIFY || service_id == SPN_DCP_SERVICE_ID_HELLO);
-}
-
 int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface)
 {
     struct spn_dcp_header* dcp_hdr = (struct spn_dcp_header*)frame;
