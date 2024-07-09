@@ -17,13 +17,26 @@
             }
         },
         {
-            "name": "clang-x64-Debug",
+            "name": "gcc-x64-Release",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/clang-x64-Debug",
+            "binaryDir": "${sourceDir}/build/gcc-x64-Release",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++",
+                "CMAKE_C_FLAGS": "-march=x86-64",
+                "CMAKE_CXX_FLAGS": "-march=x86-64",
+                "CMAKE_SIZE_TOOL": "size"
+            }
+        },
+        {
+            "name": "gcc-x64-Cov",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/gcc-x64-Cov",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Coverage",
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++",
                 "CMAKE_C_FLAGS": "-march=x86-64",
                 "CMAKE_CXX_FLAGS": "-march=x86-64",
                 "ENABLE_EXAMPLES": "ON",
@@ -32,11 +45,11 @@
             }
         },
         {
-            "name": "clang-x64-Cov",
+            "name": "clang-x64-Debug",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/clang-x64-Cov",
+            "binaryDir": "${sourceDir}/build/clang-x64-Debug",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Coverage",
+                "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_C_FLAGS": "-march=x86-64",

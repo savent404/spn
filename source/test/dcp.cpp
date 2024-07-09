@@ -3,13 +3,29 @@
 
 #include "dummy.hpp"
 #include "test_data.hpp"
+#include <deque>
 #include <gtest/gtest.h>
 #include <lwip/errno.h>
 #include <spn/dcp.h>
 #include <thread>
-#include <deque>
 
 namespace {
+
+using frame_t = std::shared_ptr<std::vector<uint8_t>>;
+std::shared_ptr<std::vector<uint8_t>> decode_frame(const char* frame)
+{
+    auto len = strlen(frame);
+    char sbuf[3];
+    auto buf = std::make_shared<std::vector<uint8_t>>(len / 2);
+    for (size_t i = 0; i < len; i += 2) {
+        sbuf[0] = frame[i];
+        sbuf[1] = frame[i + 1];
+        sbuf[2] = 0;
+        buf->at(i / 2) = strtol(sbuf, nullptr, 16);
+    }
+    return buf;
+}
+
 struct DcpTest : public SpnInstance {
     explicit DcpTest()
     {
@@ -26,8 +42,8 @@ struct DcpTest : public SpnInstance {
 
             auto& frame = input_frames.front();
 
-            auto pbuf = pbuf_alloc(PBUF_RAW, frame.second, PBUF_RAM);
-            memcpy(pbuf->payload, frame.first, frame.second);
+            auto pbuf = pbuf_alloc(PBUF_RAW, frame->size(), PBUF_RAM);
+            memcpy(pbuf->payload, frame->data(), frame->size());
             auto res = netif->input(pbuf, netif);
 
             if (res != ERR_OK) {
@@ -45,13 +61,14 @@ struct DcpTest : public SpnInstance {
         };
     }
 
-    std::deque<std::pair<const char*, size_t>> input_frames;
+    std::deque<frame_t> input_frames;
 };
-}
+
+} // namespace
 
 TEST_F(DcpTest, inputAllSelector)
 {
-    this->input_frames.push_back({ test_data::dcp::kDcpAllSelector, sizeof(test_data::dcp::kDcpAllSelector) });
+    this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpAllSelector) });
     this->step();
     std::this_thread::sleep_for(std::chrono::microseconds(100));
     // TODO: check the response
@@ -59,10 +76,31 @@ TEST_F(DcpTest, inputAllSelector)
 
 TEST_F(DcpTest, inputIdentRes)
 {
-    this->input_frames.push_back({ test_data::dcp::kDcpIdentRespX208, sizeof(test_data::dcp::kDcpIdentRespX208) });
+    std::vector<frame_t> arr = {
+        { decode_frame(test_data::dcp::kDcpIdentResp200smt) },
+        { decode_frame(test_data::dcp::kDcpIdentRespEcoPn) },
+        { decode_frame(test_data::dcp::kDcpIdentRespX208) },
+    };
+    for (auto& v : arr) {
+        this->input_frames.push_back(v);
+    }
     while (this->step()) { }
     std::this_thread::sleep_for(std::chrono::microseconds(100));
     // TODO: check the response
+}
+
+TEST_F(DcpTest, inputSetReq)
+{
+    this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpSetReqX208) });
+    this->step();
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
+}
+
+TEST_F(DcpTest, inputSetResp)
+{
+    this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpSetRespX208) });
+    this->step();
+    std::this_thread::sleep_for(std::chrono::microseconds(100));
 }
 
 TEST(DCP, resp_delay_default)
