@@ -8,14 +8,14 @@
 #include <string.h>
 
 #define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
-#define GET_VALUE(ptr, type, offset) (*(type*)((char*)ptr + offset))
+#define GET_VALUE(ptr, type, offset) (*(type*)((uintptr_t)ptr + offset))
 
 /**
  * @brief Find the next block offset
  *
- * @param payload
- * @param offset
- * @return int offset
+ * @param payload payload points to the first block
+ * @param offset payload offset
+ * @return int new offset
  */
 static inline int spn_dcp_block_walk(void* payload, int offset)
 {
@@ -144,7 +144,7 @@ int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t 
     case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_OPTIONS):
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.DeviceOptions\n"));
         {
-            uint16_t* block_info = (uint16_t*)((char*)r_payload + 2);
+            uint16_t* block_info = (uint16_t*)((uintptr_t)r_payload + 2);
             int left_index = (block_len - 2) / 2;
             int i;
             for (i = 0; i < left_index; i++) {
