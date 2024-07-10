@@ -10,6 +10,8 @@
  */
 #pragma once
 
+#include <spn/config.h>
+
 #include <lwip/prot/ethernet.h>
 #include <spn/iface.h>
 #include <stdbool.h>
@@ -234,6 +236,10 @@ struct spn_dcp_block {
     } dev_initiative;
 };
 
+struct spn_dcp_ident_req {
+    uint16_t option_sub_option[6]; /* MSB: | option(8) | suboption(8) */
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -261,7 +267,6 @@ uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor);
  *
  * @warning This is a recursive function, it will parse all blocks in the payload.
  * @note For limited depth, add \c deep parameter to control the depth of parsing.
- * @param dcp_hdr \c spn_dcp_header
  * @param payload \c spn_dcp_general_type or other dcp_type structure
  * @param len \c payload length
  * @param offset current offset
@@ -271,7 +276,32 @@ uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor);
  *             \c SPN_EBADMSG on parsing error
  *             \c SPN_EMSGSIZE on depth of recursion exceeds the limit
  */
-int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, int deep, struct spn_dcp_block* ident_block);
+int spn_dcp_block_parse(void* payload, uint16_t len, uint16_t offset, int deep, struct spn_dcp_block* ident_block);
+
+/**
+ * @brief Parse ident.req message
+ *
+ * @param payload dcp blocks
+ * @param len dcp blocks total length
+ * @param[out] reqs request list
+ * @return \c SPN_OK on success
+ *         \c SPN_ENXIO on filter meets mismatch
+ *         \c SPN_EBADMSG on parsing error
+ *         \c SPN_ENOSYS on not supported feature
+ */
+int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_req* reqs);
+
+bool spn_dcp_filter_ip(uint32_t ip, uint32_t mask, uint32_t gw);
+bool spn_dcp_filter_dns(uint32_t dns1, uint32_t dns2, uint32_t dns3, uint32_t dns4);
+bool spn_dcp_filter_station_of_name(const char *name, uint16_t len);
+bool spn_dcp_filter_alias(const char *name, uint16_t len);
+bool spn_dcp_filter_vendor_name(const char *name, uint16_t len);
+bool spn_dcp_filter_vendor_id(uint16_t vendor_id, uint16_t device_id);
+bool spn_dcp_filter_oem_id(uint16_t vendor_id, uint16_t device_id);
+bool spn_dcp_filter_role(uint8_t role);
+bool spn_dcp_filter_options(const uint16_t *options, uint16_t num);
+bool spn_dcp_filter_instance(uint16_t instance);
+bool spn_dcp_filter_device_initiative(uint16_t value);
 
 /**
  * @brief Dump DCP Blocks to payload

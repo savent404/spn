@@ -2,15 +2,15 @@
 
 #include <lwip/opt.h>
 
-#ifndef SPN_DCP_ROLE_DEVICE
-#define SPN_DCP_ROLE_DEVICE 1
+#ifndef SPN_CONF_ROLE_DEVICE
+#define SPN_CONF_ROLE_DEVICE 1
 #endif
 
-#ifndef SPN_DCP_ROLE_CONTROL
-#define SPN_DCP_ROLE_CONTROL 1
+#ifndef SPN_CONF_ROLE_CONTROL
+#define SPN_CONF_ROLE_CONTROL 1
 #endif
 
-#if !SPN_DCP_ROLE_DEVICE && !SPN_DCP_ROLE_CONTROL
+#if !SPN_CONF_ROLE_CONTROL && !SPN_CONF_ROLE_CONTROL
 #error "At least one role must be enabled"
 #endif
 
