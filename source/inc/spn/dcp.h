@@ -98,6 +98,22 @@
 #define SPN_DCP_IS_BLOCK_TOUCHED(block) ((block)->touched & SPN_DCP_BLOCK_TOUCHED)
 #define SPN_DCP_IS_BLOCK_EMPTY(block) ((block)->touched == SPN_DCP_BLOCK_EMPTY)
 
+/** block_info is only works for option IP_Parameter */
+#define SPN_DCP_BLOCK_INFO_NO_IP 0x00
+#define SPN_DCP_BLOCK_INFO_STATIC_IP 0x01
+#define SPN_DCP_BLOCK_INFO_DHCP_IP 0x02
+#define SPN_DCP_BLOCK_INFO_IP_CONFLICT 0x80 /* NOTE: Device detected ip conflict, should handle by controller */
+
+#define SPN_DCP_ROLE_IOD 0x01
+#define SPN_DCP_ROLE_IOC 0x02
+#define SPN_DCP_ROLE_MULTI_IOD 0x04 /* multiple IO device instance */
+#define SPN_DCP_ROLE_SUPERVISOR 0x08
+
+#define SPN_DCP_DHCP_PARAM_VAL_FILTER (61) /* Add Filter for DHCP, possible: MAC, NameOfStation, arbitrary */
+#define SPN_DCP_DHCP_PARAM_VAL_POLICY (255) /* DHCP Control */
+
+#define SPN_DCP_DEV_INITIATIVE_VAL_FLASH_ONCE 0x0100 /* Flash an LED (for example the Ethernet Link LED) or an alternative signaling with duration of 3s with a frequency of, for example, 1Hz */
+
 #pragma pack(push, 1)
 struct spn_dcp_header {
     uint8_t service_id;
@@ -128,11 +144,26 @@ struct spn_dcp_all_selector_block {
 struct spn_dcp_block {
     struct {
         uint16_t block_info;
+        uint8_t mac_address[6];
+        uint8_t touched;
+    } ip_mac;
+
+    struct {
+        uint16_t block_info;
         uint32_t ip_addr;
         uint32_t mask;
         uint32_t gw;
         uint8_t touched;
     } ip_param;
+
+    struct {
+        uint32_t block_info;
+        uint32_t ip_addr;
+        uint32_t mask;
+        uint32_t gw;
+        uint32_t dns_address[4];
+        uint8_t touched;
+    } ip_full_suit;
 
     struct {
         char name[32];
@@ -168,6 +199,39 @@ struct spn_dcp_block {
         uint8_t alias_name_len;
         uint8_t touched;
     } dev_prop_alias_name;
+
+    struct {
+        uint16_t instance;
+        uint8_t touched;
+    } dev_prop_dev_instance;
+
+    struct {
+        uint16_t vendor_id;
+        uint16_t device_id;
+        uint8_t touched;
+    } dev_prop_dev_oem_id;
+
+    struct {
+        uint16_t standard_gateway;
+        uint8_t touched;
+    } dev_prop_dev_std_gateway;
+
+    struct {
+        uint16_t rsi_prop_value;
+        uint8_t touched;
+    } dev_prop_rsi_prop;
+
+    struct {
+        uint8_t option;
+        uint8_t dhcp_param_length;
+        uint8_t dhcp_param_data[1]; /* TODO: support flex array */
+        uint8_t touched;
+    } dhcp;
+
+    struct {
+        uint16_t value;
+        uint8_t touched;
+    } dev_initiative;
 };
 
 #ifdef __cplusplus
