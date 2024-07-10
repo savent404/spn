@@ -294,7 +294,7 @@ int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t 
 int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface)
 {
     struct spn_dcp_header* dcp_hdr = (struct spn_dcp_header*)frame;
-    struct spn_dcp_general_block* dcp_type = (struct spn_dcp_general_block*)((uint8_t*)dcp_hdr + sizeof(struct spn_dcp_header));
+    struct spn_dcp_general_block* dcp_blocks = (struct spn_dcp_general_block*)((uint8_t*)dcp_hdr + sizeof(struct spn_dcp_header));
     uint16_t dcp_data_len = PP_HTONS(dcp_hdr->dcp_data_length);
     uint32_t dcp_xid = PP_HTONL(dcp_hdr->xid);
     uint8_t dcp_service_id = dcp_hdr->service_id;
@@ -332,7 +332,7 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
             goto err_invalid_service_id;
         }
         /* TODO: Add a recursive routine to find/check the filters */
-        if (dcp_type->option == SPN_DCP_OPTION_ALL_SELECTOR && dcp_type->sub_option == SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR) {
+        if (dcp_blocks->option == SPN_DCP_OPTION_ALL_SELECTOR && dcp_blocks->sub_option == SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR) {
             LWIP_ASSERT("dcp_data_len must be 4", dcp_data_len == 4);
         }
         break;
@@ -348,7 +348,7 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
     }
 
     /* Seems frame's grammar is satisfied, let's do the real job */
-    spn_dcp_block_parse(dcp_hdr, dcp_type, dcp_data_len, 0, 0, &blocks);
+    spn_dcp_block_parse(dcp_hdr, dcp_blocks, dcp_data_len, 0, 0, &blocks);
 
     /* TODO: Handle blocks */
 
