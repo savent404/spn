@@ -72,7 +72,7 @@ uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor)
     return (uint16_t)(t & 0xFFFF);
 }
 
-int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, struct spn_dcp_block* block)
+int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, int deep, struct spn_dcp_block* block)
 {
     struct spn_dcp_general_block* gen_block;
     uint16_t block_len;
@@ -94,6 +94,11 @@ int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t 
     if (block_len + sizeof(*gen_block) + offset > len) {
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: invalid block_len=%d, len=%d, offset=%d\n", block_len, len, offset));
         return -SPN_EBADMSG;
+    }
+
+    if (deep > 32) {
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: too deep\n"));
+        return -SPN_EMSGSIZE;
     }
 
     switch (block_type) {
@@ -228,7 +233,7 @@ int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t 
     }
 
     offset = spn_dcp_block_walk(payload, offset);
-    return spn_dcp_block_parse(dcp_hdr, payload, len, offset, block);
+    return spn_dcp_block_parse(dcp_hdr, payload, len, offset, deep + 1, block);
 }
 
 int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface)
@@ -288,7 +293,7 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
     }
 
     /* Seems frame's grammar is satisfied, let's do the real job */
-    spn_dcp_block_parse(dcp_hdr, dcp_type, dcp_data_len, 0, &blocks);
+    spn_dcp_block_parse(dcp_hdr, dcp_type, dcp_data_len, 0, 0, &blocks);
 
     /* TODO: Handle blocks */
 

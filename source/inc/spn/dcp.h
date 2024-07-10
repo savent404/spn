@@ -195,15 +195,19 @@ uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor);
 /**
  * @brief Parse DCP blocks from payload
  *
+ * @warning This is a recursive function, it will parse all blocks in the payload.
+ * @note For limited depth, add \c deep parameter to control the depth of parsing.
  * @param dcp_hdr \c spn_dcp_header
  * @param payload \c spn_dcp_general_type or other dcp_type structure
  * @param len \c payload length
  * @param offset current offset
+ * @param deep depth of parsing, 0 for top level.
  * @param[out] ident_block identify results
  * @return int \c SPN_OK on success
  *             \c SPN_EBADMSG on parsing error
+ *             \c SPN_EMSGSIZE on depth of recursion exceeds the limit
  */
-int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, struct spn_dcp_block* ident_block);
+int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, int deep, struct spn_dcp_block* ident_block);
 
 /**
  * @brief Dump DCP Blocks to payload
