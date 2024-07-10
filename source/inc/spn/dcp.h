@@ -13,6 +13,7 @@
 #include <lwip/prot/ethernet.h>
 #include <spn/iface.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 /*
  * DCP-PDU
@@ -124,7 +125,7 @@ struct spn_dcp_all_selector_block {
 };
 #pragma pack(pop)
 
-struct spn_dcp_identify_block {
+struct spn_dcp_block {
     struct {
         uint16_t block_info;
         uint32_t ip_addr;
@@ -192,7 +193,7 @@ uint16_t spn_dcp_resp_delay(uint16_t rand, uint16_t resp_delay_factor);
 uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor);
 
 /**
- * @brief Parse DCP Identify response
+ * @brief Parse DCP blocks from payload
  *
  * @param dcp_hdr \c spn_dcp_header
  * @param payload \c spn_dcp_general_type or other dcp_type structure
@@ -202,9 +203,37 @@ uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor);
  * @return int \c SPN_OK on success
  *             \c SPN_EBADMSG on parsing error
  */
-int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, struct spn_dcp_identify_block* ident_block);
+int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, struct spn_dcp_block* ident_block);
 
+/**
+ * @brief Dump DCP Blocks to payload
+ *
+ * @param blocks
+ * @param[out] payload
+ * @param max_len
+ * @param offset
+ * @return payload actual length
+ */
+int spn_dcp_block_dump(const struct spn_dcp_block* blocks, void* payload, uint16_t max_len, uint16_t offset);
+
+/**
+ * @brief main entry of dcp protocol
+ *
+ * @param frame payload of RTC frame
+ * @param len   payload length of RTC frame
+ * @param frame_id PN frame id
+ * @param hw_hdr ethernet header
+ * @param iface net interface
+ * @return \c SPN_OK on success
+ */
 int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface);
+
+/**
+ * @brief Send DCP Identify request
+ *
+ * @return \c SPN_OK on success
+ */
+int spn_dcp_discovery_packet(void* payload, size_t max_len, const struct spn_dcp_block* blocks);
 
 int spn_dcp_resp_ident(uint32_t xid, uint16_t resp_delay_factor, uint8_t* dst_mac, iface_t* iface);
 

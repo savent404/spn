@@ -72,7 +72,7 @@ uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor)
     return (uint16_t)(t & 0xFFFF);
 }
 
-int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, struct spn_dcp_identify_block* block)
+int spn_dcp_block_parse(struct spn_dcp_header* dcp_hdr, void* payload, uint16_t len, uint16_t offset, struct spn_dcp_block* block)
 {
     struct spn_dcp_general_block* gen_block;
     uint16_t block_len;
@@ -239,7 +239,7 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
     uint32_t dcp_xid = PP_HTONL(dcp_hdr->xid);
     uint8_t dcp_service_id = dcp_hdr->service_id;
     uint8_t dcp_service_type = dcp_hdr->service_type;
-    struct spn_dcp_identify_block blocks;
+    struct spn_dcp_block blocks;
 
     LWIP_UNUSED_ARG(iface);
     LWIP_UNUSED_ARG(hw_hdr);
