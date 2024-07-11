@@ -1,10 +1,10 @@
 #include "lwip/pbuf.h"
 #include "spn/errno.h"
+#include <lwip/debug.h>
 #include <lwip/opt.h>
 #include <spn/pdu.h>
 #include <spn/spn.h>
 #include <string.h>
-#include <lwip/debug.h>
 
 #include <lwip/prot/ethernet.h>
 
@@ -43,16 +43,22 @@ int spn_input_hook(void* frame, void* iface)
     struct pbuf* p = (struct pbuf*)frame;
     struct eth_hdr* hdr = (struct eth_hdr*)p->payload;
     iface_t* i = (iface_t*)iface;
+    int res;
 
     if (p && i) {
         if (hdr->type == PP_HTONS(ETHTYPE_PROFINET)) {
             LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("SPN: pn frame...\n"));
-            return spn_pdu_input((char*)p->payload + SIZEOF_ETH_HDR, p->len - SIZEOF_ETH_HDR, hdr, i);
+            res = spn_pdu_input((char*)p->payload + SIZEOF_ETH_HDR, p->len - SIZEOF_ETH_HDR, hdr, i);
+        } else {
+            LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("SPN: unknow ethernet type: %X\n", lwip_htons(hdr->type)));
+            res = -SPN_EAGAIN;
         }
     } else {
-        return -SPN_EINVAL;
+        res = -SPN_EINVAL;
     }
-    LWIP_DEBUGF(SPN_DEBUG | LWIP_DBG_TRACE, ("SPN: unknow ethernet type: %X\n", lwip_htons(hdr->type)));
-    return -SPN_EAGAIN;
-}
 
+    if (res == SPN_OK) {
+        pbuf_free(p);
+    }
+    return res;
+}
