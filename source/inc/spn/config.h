@@ -10,6 +10,20 @@
 #define SPN_CONF_ROLE_CONTROL 1
 #endif
 
+/**
+ * @brief SPN_CONFIG_MAX_DEVICE maximum number of devices that supported
+ *
+ * @note if SPN_CONF_ROLE_CONTROL is diabled, SPN_CONFIG_MAX_DEVICE will be set to 0
+ */
+#ifndef SPN_CONF_ROLE_CONTROL
+#undef SPN_CONFIG_MAX_DEVICE
+#define SPN_CONFIG_MAX_DEVICE 0
+#else
+#ifndef SPN_CONFIG_MAX_DEVICE
+#define SPN_CONFIG_MAX_DEVICE 8
+#endif
+#endif
+
 #if !SPN_CONF_ROLE_CONTROL && !SPN_CONF_ROLE_CONTROL
 #error "At least one role must be enabled"
 #endif

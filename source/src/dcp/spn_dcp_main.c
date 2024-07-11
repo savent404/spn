@@ -1,5 +1,6 @@
 #include <spn/dcp.h>
 #include <spn/errno.h>
+#include <string.h>
 
 struct spn_dcp_ctx dcp_ctx;
 
@@ -91,4 +92,19 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
 
 ret:
     return SPN_OK;
+}
+
+void spn_dcp_init(void)
+{
+    memset(&dcp_ctx, 0, sizeof(dcp_ctx));
+}
+
+/**
+ * @brief Get DCP context
+ *
+ * @return struct spn_dcp_ctx*
+ */
+struct spn_dcp_ctx* spn_dcp_get_ctx(void)
+{
+    return &dcp_ctx;
 }

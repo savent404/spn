@@ -310,6 +310,19 @@ void spn_dcp_pack_device_initiative(void* dest);
  */
 int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface);
 
+/**
+ * @brief Initialize DCP context
+ * 
+ */
+void spn_dcp_init(void);
+
+/**
+ * @brief Get DCP context
+ * 
+ * @return struct spn_dcp_ctx* 
+ */
+struct spn_dcp_ctx* spn_dcp_get_ctx(void);
+
 #ifdef __cplusplus
 }
 #endif

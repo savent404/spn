@@ -88,8 +88,6 @@ struct DcpTest : public SpnInstance {
 
 } // namespace
 
-extern "C" struct spn_dcp_ctx dcp_ctx;
-
 TEST_F(DcpTest, inputAllSelector)
 {
     this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpAllSelector) });
@@ -101,15 +99,18 @@ TEST_F(DcpTest, inputAllSelector)
     // TODO: add assert to check frame valid
 #else
     // Put resp input stack again to verify the ident.resp parser
-    dcp_ctx.dev_session[0].resp.xid = 0x01000001;
-    dcp_ctx.dev_session[0].state = dcp_dev_state_ident;
+    auto ctx = spn_dcp_get_ctx();
+    auto dev_session = &ctx->dev_session[0];
+    dev_session->resp.xid = 0x01000001;
+    dev_session->state = dcp_dev_state_ident;
     this->input_frames.push_back(f);
     this->step();
     std::this_thread::sleep_for(std::chrono::microseconds(100));
     ASSERT_TRUE(this->output_frames.empty());
-    ASSERT_EQ(dcp_ctx.dev_session[0].state, dcp_dev_state_active);
-    ASSERT_STREQ(dcp_ctx.dev_session[0].resp.station_of_name, spn_sys_get_station_name());
-    ASSERT_STREQ(dcp_ctx.dev_session[0].resp.vendor_of_name, spn_sys_get_vendor_name());
+
+    ASSERT_EQ(dev_session->state, dcp_dev_state_active);
+    ASSERT_STREQ(dev_session->resp.station_of_name, spn_sys_get_station_name());
+    ASSERT_STREQ(dev_session->resp.vendor_of_name, spn_sys_get_vendor_name());
 #endif
 }
 
