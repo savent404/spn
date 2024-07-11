@@ -16,7 +16,7 @@ target_include_directories(SPN PUBLIC source/inc)
 target_link_libraries(SPN PUBLIC lwip)
 
 add_custom_target(size ALL
-    COMMAND ${CMAKE_SIZE_TOOL} $<TARGET_FILE:SPN>
+    COMMAND ${CMAKE_SIZE_TOOL} $<TARGET_FILE:SPN> -t
     DEPENDS SPN
     COMMENT "Print size of SPN"
 )
