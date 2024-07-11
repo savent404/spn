@@ -239,7 +239,12 @@ struct spn_dcp_block {
 };
 
 struct spn_dcp_ident_req {
+    uint32_t xid; /* Session id */
     uint16_t option_sub_option[6]; /* MSB: | option(8) | suboption(8) */
+};
+struct spn_dcp_ident_resp {
+    uint32_t xid; /* Session id */
+    uint32_t reserved;
 };
 
 #ifdef __cplusplus
@@ -292,9 +297,16 @@ int spn_dcp_block_parse(void* payload, uint16_t len, uint16_t offset, int deep, 
  *         \c SPN_ENOSYS on not supported feature
  */
 int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_req* reqs);
-
+int spn_dcp_ident_req_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_resp* resp, iface_t* iface);
+int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_ident_resp* resp);
 int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req* reqs, iface_t* iface);
+int spn_dcp_hello_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_req* reqs);
+int spn_dcp_hello_req_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req* reqs);
 
+/**
+ * @defgroup dcp_filter DCP filter
+ * @{
+ */
 bool spn_dcp_filter_ip(uint32_t ip, uint32_t mask, uint32_t gw);
 bool spn_dcp_filter_dns(uint32_t dns1, uint32_t dns2, uint32_t dns3, uint32_t dns4);
 bool spn_dcp_filter_station_of_name(const char* name, uint16_t len);
@@ -306,7 +318,14 @@ bool spn_dcp_filter_role(uint8_t role);
 bool spn_dcp_filter_options(const uint16_t* options, uint16_t num);
 bool spn_dcp_filter_instance(uint16_t instance);
 bool spn_dcp_filter_device_initiative(uint16_t value);
+/**
+ * @}
+ */
 
+/**
+ * @defgroup dcp_pack DCP pack
+ * @{
+ */
 void spn_dcp_pack_block(void* dest, uint16_t option_sub_option, uint16_t payload_len, uint16_t block_info);
 void spn_dcp_pack_ip(void* dest, iface_t* iface);
 void spn_dcp_pack_dns(void* dest, iface_t* iface);
@@ -319,17 +338,9 @@ void spn_dcp_pack_role(void* dest);
 int spn_dcp_pack_options(void* dest);
 void spn_dcp_pack_instance(void* dest);
 void spn_dcp_pack_device_initiative(void* dest);
-
 /**
- * @brief Dump DCP Blocks to payload
- *
- * @param blocks
- * @param[out] payload
- * @param max_len
- * @param offset
- * @return payload actual length
+ * @}
  */
-int spn_dcp_block_dump(const struct spn_dcp_block* blocks, void* payload, uint16_t max_len, uint16_t offset);
 
 /**
  * @brief main entry of dcp protocol
