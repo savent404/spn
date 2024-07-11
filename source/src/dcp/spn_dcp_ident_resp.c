@@ -109,7 +109,7 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_ident_r
                 res = -SPN_ENOMEM;
                 goto free_out;
             }
-            strncpy(resp->station_of_name, r_payload + 1, block_len - 2);
+            strncpy(resp->station_of_name, r_payload + 2, block_len - 2);
             resp->station_of_name[block_len - 2] = '\0';
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: NameOfStation=%s\n", resp->station_of_name));
             break;
