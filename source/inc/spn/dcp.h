@@ -114,7 +114,9 @@
 #define SPN_DCP_DHCP_PARAM_VAL_FILTER (61) /* Add Filter for DHCP, possible: MAC, NameOfStation, arbitrary */
 #define SPN_DCP_DHCP_PARAM_VAL_POLICY (255) /* DHCP Control */
 
-#define SPN_DCP_DEV_INITIATIVE_VAL_FLASH_ONCE 0x0100 /* Flash an LED (for example the Ethernet Link LED) or an alternative signaling with duration of 3s with a frequency of, for example, 1Hz */
+#define SPN_DCP_DEV_INITIATIVE_ENABLE_HELLO 0x01 /* Device issues a Hello.req after power on */
+
+#define SPN_DCP_DEV_SIGNAL_FLASH_ONCE 0x0100 /* Flash an LED (for example the Ethernet Link LED) or an alternative signaling with duration of 3s with a frequency of, for example, 1Hz */
 
 #pragma pack(push, 1)
 struct spn_dcp_header {
