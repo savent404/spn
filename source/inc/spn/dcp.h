@@ -96,10 +96,6 @@
 
 #define SPN_DCP_COMBINED_OPTION(option, sub_option) ((option << 8) | sub_option)
 
-#define SPN_DCP_BLOCK_TOUCH(block) ((block)->touched |= SPN_DCP_BLOCK_TOUCHED)
-#define SPN_DCP_IS_BLOCK_TOUCHED(block) ((block)->touched & SPN_DCP_BLOCK_TOUCHED)
-#define SPN_DCP_IS_BLOCK_EMPTY(block) ((block)->touched == SPN_DCP_BLOCK_EMPTY)
-
 /** block_info is only works for option IP_Parameter */
 #define SPN_DCP_BLOCK_INFO_NO_IP 0x00
 #define SPN_DCP_BLOCK_INFO_STATIC_IP 0x01
@@ -117,6 +113,12 @@
 #define SPN_DCP_DEV_INITIATIVE_ENABLE_HELLO 0x01 /* Device issues a Hello.req after power on */
 
 #define SPN_DCP_DEV_SIGNAL_FLASH_ONCE 0x0100 /* Flash an LED (for example the Ethernet Link LED) or an alternative signaling with duration of 3s with a frequency of, for example, 1Hz */
+
+#define SPN_DCP_BLOCK_TOUCH(block) ((block)->touched |= SPN_DCP_BLOCK_TOUCHED)
+#define SPN_DCP_IS_BLOCK_TOUCHED(block) ((block)->touched & SPN_DCP_BLOCK_TOUCHED)
+#define SPN_DCP_IS_BLOCK_EMPTY(block) ((block)->touched == SPN_DCP_BLOCK_EMPTY)
+#define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
+#define GET_VALUE(ptr, type, offset) (*(type*)((uintptr_t)ptr + offset))
 
 #pragma pack(push, 1)
 struct spn_dcp_header {
@@ -268,6 +270,24 @@ uint16_t spn_dcp_resp_delay(uint16_t rand, uint16_t resp_delay_factor);
  * @return delay in milliseconds
  */
 uint16_t spn_dcp_resp_delay_timeout(uint16_t rand, uint16_t resp_delay_factor);
+
+/**
+ * @brief Find the next block offset
+ *
+ * @param payload payload points to the first block
+ * @param offset payload offset
+ * @return int new offset
+ */
+static inline int spn_dcp_block_walk(void* payload, int offset)
+{
+    struct spn_dcp_general_block* gen_block;
+    uint16_t block_len;
+    gen_block = (struct spn_dcp_general_block*)((uint8_t*)payload + offset);
+    block_len = lwip_htons(gen_block->dcp_block_length);
+    offset += sizeof(*gen_block) + block_len;
+    offset = (offset + 1) & ~1; /* align to 2 bytes */
+    return offset;
+}
 
 /**
  * @brief Parse DCP blocks from payload
