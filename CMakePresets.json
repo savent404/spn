@@ -80,7 +80,7 @@
         {
             "name": "gcc-arm-size",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/gcc-arm64-Release",
+            "binaryDir": "${sourceDir}/build/gcc-arm-size",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_C_COMPILER": "arm-linux-gnueabi-gcc",
@@ -95,7 +95,7 @@
         {
             "name": "gcc-arm64-size",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/gcc-arm64-Release",
+            "binaryDir": "${sourceDir}/build/gcc-arm64-size",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_C_COMPILER": "aarch64-linux-gnu-gcc",

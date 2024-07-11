@@ -88,7 +88,7 @@ int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_re
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_OPTIONS):
             LWIP_ASSERT("Invalid block length", block_len >= 2);
-            if (spn_dcp_filter_options((const uint16_t*)r_payload, block_len / 2)) {
+            if (spn_dcp_filter_options((const uint16_t*)((uintptr_t)r_payload & ~1), block_len / 2)) {
                 goto filter_miss_match;
             }
             break;

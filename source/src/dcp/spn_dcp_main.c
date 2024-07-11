@@ -4,7 +4,7 @@
 
 struct spn_dcp_ctx dcp_ctx;
 
-int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface)
+int spn_dcp_input(void* frame, uint16_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface)
 {
     struct spn_dcp_header* dcp_hdr = (struct spn_dcp_header*)frame;
     struct spn_dcp_general_block* dcp_blocks = (struct spn_dcp_general_block*)((uint8_t*)dcp_hdr + sizeof(struct spn_dcp_header));
@@ -22,7 +22,7 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
 
     /* General check go firstly */
     if (dcp_data_len + sizeof(struct spn_dcp_header) > len || dcp_data_len >= SPN_DCP_DATA_MAX_LENGTH) {
-        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: invalid dcp_data_len=%d, frame_len=%ld\n", dcp_data_len, len));
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: invalid dcp_data_len=%d, frame_len=%d\n", dcp_data_len, len));
         return -SPN_EBADMSG;
     }
 

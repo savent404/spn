@@ -308,7 +308,7 @@ void spn_dcp_pack_device_initiative(void* dest);
  * @param iface net interface
  * @return \c SPN_OK on success
  */
-int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface);
+int spn_dcp_input(void* frame, uint16_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface);
 
 /**
  * @brief Initialize DCP context

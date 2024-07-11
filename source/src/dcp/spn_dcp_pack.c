@@ -10,7 +10,7 @@ extern uint16_t* spn_dcp_supported_options;
 void spn_dcp_pack_block(void* dest, uint16_t option_sub_option, uint16_t payload_len, uint16_t block_info)
 {
     struct spn_dcp_general_block* block = (struct spn_dcp_general_block*)dest;
-    uint16_t* block_info_ptr = (uint16_t*)(block + 1);
+    uint16_t* block_info_ptr = (uint16_t*)((uintptr_t)(block + 1) & ~1);
     block->option = (option_sub_option >> 8);
     block->sub_option = option_sub_option & 0xFF;
     block->dcp_block_length = lwip_htons(payload_len + 2);
