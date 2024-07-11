@@ -1,7 +1,7 @@
+#include <lwip/dns.h>
 #include <spn/spn_sys.h>
 #include <stdlib.h>
 #include <string.h>
-#include <lwip/dns.h>
 
 SPN_WEAK_FN void spn_sys_init(void)
 {
@@ -61,22 +61,22 @@ SPN_WEAK_FN const char* spn_sys_get_vendor_name(void)
 
 SPN_WEAK_FN uint16_t spn_sys_get_vendor_id(void)
 {
-    return 0x1234;
+    return PP_NTOHS(0x1234);
 }
 
 SPN_WEAK_FN uint16_t spn_sys_get_device_id(void)
 {
-    return 0x4321;
+    return PP_NTOHS(0x5678);
 }
 
 SPN_WEAK_FN uint16_t spn_sys_get_oem_vendor_id(void)
 {
-    return 0;
+    return PP_NTOHS(0xBEEF);
 }
 
 SPN_WEAK_FN uint16_t spn_sys_get_oem_device_id(void)
 {
-    return 0;
+    return PP_NTOHS(0x1234);
 }
 
 SPN_WEAK_FN enum spn_role spn_sys_get_role(void)

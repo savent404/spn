@@ -3,6 +3,7 @@
 #include <lwip/opt.h>
 
 #include "dummy.hpp"
+#include "spn/spn_sys.h"
 #include "test_data.hpp"
 #include <deque>
 #include <gtest/gtest.h>
@@ -101,11 +102,14 @@ TEST_F(DcpTest, inputAllSelector)
 #else
     // Put resp input stack again to verify the ident.resp parser
     dcp_ctx.dev_session[0].resp.xid = 0x01000001;
-    dcp_ctx.dev_session[0].waiting = true;
+    dcp_ctx.dev_session[0].state = dcp_dev_state_ident;
     this->input_frames.push_back(f);
     this->step();
     std::this_thread::sleep_for(std::chrono::microseconds(100));
     ASSERT_TRUE(this->output_frames.empty());
+    ASSERT_EQ(dcp_ctx.dev_session[0].state, dcp_dev_state_active);
+    ASSERT_STREQ(dcp_ctx.dev_session[0].resp.station_of_name, spn_sys_get_station_name());
+    ASSERT_STREQ(dcp_ctx.dev_session[0].resp.vendor_of_name, spn_sys_get_vendor_name());
 #endif
 }
 

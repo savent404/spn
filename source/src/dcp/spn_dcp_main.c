@@ -1,8 +1,7 @@
 #include <spn/dcp.h>
 #include <spn/errno.h>
 
-
-struct spn_dcp_ctx dcp_ctx = { 0 };
+struct spn_dcp_ctx dcp_ctx;
 
 int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface)
 {
@@ -65,22 +64,32 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
          */
         unsigned session_idx = 0;
         for (session_idx = 0; session_idx < sizeof(dcp_ctx.dev_session) / sizeof(dcp_ctx.dev_session[0]); session_idx++) {
-            if (dcp_ctx.dev_session[session_idx].waiting && dcp_ctx.dev_session[session_idx].resp.xid == dcp_xid) {
-                break;
+            if (dcp_ctx.dev_session[session_idx].resp.xid == dcp_xid) {
+                if (dcp_ctx.dev_session[session_idx].state != dcp_dev_state_ident) {
+                    LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: xid=%08x is already in used\n", dcp_xid));
+                    goto ret;
+                }
+                goto found_xid;
             }
         }
-        if (session_idx == sizeof(dcp_ctx.dev_session) / sizeof(dcp_ctx.dev_session[0])) {
-            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: no session found for xid=0x%08x\n", dcp_xid));
+        LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: no session found for xid=0x%08x\n", dcp_xid));
+        break;
+
+    found_xid:
+        res = spn_dcp_ident_resp_parse(dcp_blocks, dcp_data_len, &dcp_ctx.dev_session[session_idx].resp);
+
+        if (res == SPN_OK) {
+            dcp_ctx.dev_session[session_idx].state = dcp_dev_state_active;
+        } else {
+            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: spn_dcp_ident_resp_parse failed, res=%d\n", res));
             break;
         }
-
-        res = spn_dcp_ident_resp_parse(dcp_blocks, dcp_data_len, &dcp_ctx.dev_session[session_idx].resp);
-        /* TODO: register device */
     } break;
     default:
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: unknown dcp frame, frame_id=0x%04x, service_id=%d\n", frame_id, dcp_service_id));
         break;
     }
 
+ret:
     return SPN_OK;
 }

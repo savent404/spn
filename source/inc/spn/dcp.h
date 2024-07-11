@@ -278,8 +278,15 @@ struct spn_dcp_ident_resp {
     uint16_t dev_initiative_flag;
 };
 
+enum spn_dcp_dev_state {
+    dcp_dev_state_hollow,
+    dcp_dev_state_ident,
+    dcp_dev_state_query,
+    dcp_dev_state_active
+};
+
 struct spn_dcp_dev_session {
-    bool waiting;
+    enum spn_dcp_dev_state state;
     struct spn_dcp_ident_resp resp;
 };
 
