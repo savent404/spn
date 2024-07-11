@@ -308,14 +308,12 @@ bool spn_dcp_filter_instance(uint16_t instance);
 bool spn_dcp_filter_device_initiative(uint16_t value);
 
 void spn_dcp_pack_block(void* dest, uint16_t option_sub_option, uint16_t payload_len, uint16_t block_info);
-uint16_t spn_dcp_pack_block_info(void);
-void spn_dcp_pack_ip(void* dest);
-void spn_dcp_pack_dns(void* dest);
+void spn_dcp_pack_ip(void* dest, iface_t* iface);
+void spn_dcp_pack_dns(void* dest, iface_t* iface);
 int spn_dcp_pack_station_of_name(void* dest);
 int spn_dcp_pack_alias(void* dest);
 int spn_dcp_pack_vendor_name(void* dest);
 void spn_dcp_pack_device_id(void* dest);
-void spn_dcp_pack_vendor_id(void* dest);
 void spn_dcp_pack_oem_id(void* dest);
 void spn_dcp_pack_role(void* dest);
 int spn_dcp_pack_options(void* dest);

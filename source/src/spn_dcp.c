@@ -2,15 +2,18 @@
 
 #include <lwip/arch.h>
 #include <lwip/debug.h>
-#include <netif/ethernet.h>
 #include <lwip/prot/ethernet.h>
+#include <netif/ethernet.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
 #include <spn/pdu.h>
+#include <spn/spn_sys.h>
 #include <string.h>
 
 #define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
 #define GET_VALUE(ptr, type, offset) (*(type*)((uintptr_t)ptr + offset))
+
+extern const uint16_t* spn_dcp_mandatory_reqs;
 
 /**
  * @brief Find the next block offset
@@ -29,28 +32,6 @@ static inline int spn_dcp_block_walk(void* payload, int offset)
     offset = (offset + 1) & ~1; /* align to 2 bytes */
     return offset;
 }
-
-const uint16_t dcp_filter_blocks[] = {
-    BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_MAC_ADDRESS),
-    BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_PARAMETER),
-    BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_FULL_IP_SUITE),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ID),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ROLE),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_OPTIONS),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_INSTANCE),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_OEM_DEVICE_ID),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_STANDARD_GATEWAY),
-    BLOCK_TYPE(SPN_DCP_OPTION_DHCP, SPN_DCP_SUB_OPT_DHCP_DHCP),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_INITIATIVE, SPN_DCP_SUB_OPT_DEVICE_INITIATIVE_DEVICE_INITIATIVE),
-    BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_DOMAIN),
-    BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_PRIO),
-    BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_NAME),
-    BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_CIM_INTERFACE),
-    BLOCK_TYPE(SPN_DCP_OPTION_ALL_SELECTOR, SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR),
-};
 
 uint16_t spn_dcp_resp_delay(uint16_t rand, uint16_t resp_delay_factor)
 {
@@ -279,10 +260,10 @@ int spn_dcp_block_parse(void* payload, uint16_t len, uint16_t offset, int deep, 
     case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_CIM_INTERFACE):
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing NMEDomain.CIMInterface\n"));
         break;
+#endif
     case BLOCK_TYPE(SPN_DCP_OPTION_ALL_SELECTOR, SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR):
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing AllSelector.AllSelector\n"));
         break;
-#endif
     default:
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: unknown block_type=0x%04x\n", block_type));
     }
@@ -319,14 +300,16 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
         if (dcp_service_id != SPN_DCP_SERVICE_ID_HELLO) {
             goto err_invalid_service_id;
         }
+        spn_dcp_block_parse(dcp_blocks, dcp_data_len, 0, 0, &blocks);
         break;
     case FRAME_ID_DCP_GET_SET:
         if (dcp_service_id != SPN_DCP_SERVICE_ID_GET && dcp_service_id != SPN_DCP_SERVICE_ID_SET) {
             goto err_invalid_service_id;
         }
+        spn_dcp_block_parse(dcp_blocks, dcp_data_len, 0, 0, &blocks);
         break;
     case FRAME_ID_DCP_IDENT_REQ: {
-        struct spn_dcp_ident_req req;
+        struct spn_dcp_ident_req req = { 0 };
         /* Available type:
          * IdentifyAll-Req(NameOfStationBlock^AliasNameBlock^IdentifyReqBlock)
          * IdentifyFilter-Req(AllSelectorBlock) */
@@ -335,7 +318,9 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
         }
         res = spn_dcp_ident_req_parse(dcp_blocks, dcp_data_len, &req);
 
-        if (res != SPN_OK) {
+        if (res == SPN_OK) {
+            res = spn_dcp_ident_resp_assemble(hw_hdr, &req, iface);
+        } else {
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: spn_dcp_ident_req_parse failed, res=%d\n", res));
             break;
         }
@@ -345,18 +330,13 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
         if (dcp_service_id != SPN_DCP_SERVICE_ID_IDENTIFY) {
             goto err_invalid_service_id;
         }
+        spn_dcp_block_parse(dcp_blocks, dcp_data_len, 0, 0, &blocks);
         break;
     default:
         /* TODO: drop unknow frame_id */
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: unknown frame_id=0x%04x\n", frame_id));
         return SPN_OK;
     }
-
-    /* Seems frame's grammar is satisfied, let's do the real job */
-    spn_dcp_block_parse(dcp_blocks, dcp_data_len, 0, 0, &blocks);
-
-    /* TODO: Handle blocks */
-
     return SPN_OK;
 
 err_invalid_service_id:
@@ -516,15 +496,34 @@ filter_miss_match:
     return -SPN_ENXIO;
 }
 
-static const uint16_t spn_dcp_mandatory_reqs[] = {
-    BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_PARAMETER),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ID),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ROLE),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_OPTIONS),
-    BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_INSTANCE),
-};
+/**
+ * @brief Merge to line into line
+ *
+ * @param[out] dest
+ * @param[in] s1
+ * @param[in] s2
+ * @param max_len dest max length
+ * @return int
+ */
+static inline int spn_dcp_merge_options(uint16_t* dest, const uint16_t* s1, const uint16_t* s2, uint16_t max_len)
+{
+    int idx = 0;
+    while (*s1 != 0 || *s2 != 0) {
+        if (*s1 == 0) {
+            dest[idx++] = *s2++;
+        } else if (*s2 == 0) {
+            dest[idx++] = *s1++;
+        } else if (*s1 < *s2) {
+            dest[idx++] = *s1++;
+        } else {
+            dest[idx++] = *s2++;
+        }
+        if (idx >= max_len) {
+            break;
+        }
+    }
+    return idx;
+}
 
 int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req* reqs, iface_t* iface)
 {
@@ -535,20 +534,14 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
     uint16_t offset = 0;
     const int16_t header_size = sizeof(struct spn_dcp_header) + sizeof(struct pn_pdu) + SIZEOF_ETH_HDR;
     const uint16_t hdr_size = sizeof(struct spn_dcp_general_block) + 2;
-    uint16_t block_info = spn_dcp_pack_block_info();
+    uint16_t block_info = (uint16_t)spn_sys_get_ip_status();
     struct spn_dcp_header* dcp_hdr;
     struct pn_pdu* pn_hdr;
 
-    /* merge two list into one in asc order */
+    /* merge two list into one in asc order, list EOF check: value==0 */
     uint16_t merged[32];
-    unsigned i = 0, j = 0, k = 0;
-    while (i < sizeof(spn_dcp_mandatory_reqs) / sizeof(spn_dcp_mandatory_reqs[0]) && j < sizeof(reqs->option_sub_option) / sizeof(reqs->option_sub_option[0])) {
-        if (spn_dcp_mandatory_reqs[i] < reqs->option_sub_option[j]) {
-            merged[k++] = spn_dcp_mandatory_reqs[i++];
-        } else {
-            merged[k++] = reqs->option_sub_option[j++];
-        }
-    }
+    unsigned i, k;
+    k = spn_dcp_merge_options(merged, reqs->option_sub_option, spn_dcp_mandatory_reqs, sizeof(merged) / sizeof(merged[0]));
 
     p = pbuf_alloc(PBUF_RAW, SPN_DCP_DATA_MAX_LENGTH + SIZEOF_ETH_HDR + sizeof(struct pn_pdu), PBUF_RAM);
     if (!p) {
@@ -565,13 +558,13 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
         switch (block_type) {
         case BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_PARAMETER):
             spn_dcp_pack_block(r_payload + offset, block_type, 12, block_info);
-            spn_dcp_pack_ip(r_payload + offset + hdr_size);
+            spn_dcp_pack_ip(r_payload + offset + hdr_size, iface);
             offset += hdr_size + 12;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_FULL_IP_SUITE):
             spn_dcp_pack_block(r_payload + offset, block_type, 28, block_info);
-            spn_dcp_pack_ip(r_payload + offset + hdr_size);
-            spn_dcp_pack_dns(r_payload + offset + hdr_size + 12);
+            spn_dcp_pack_ip(r_payload + offset + hdr_size, iface);
+            spn_dcp_pack_dns(r_payload + offset + hdr_size + 12, iface);
             offset += hdr_size + 12;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR):
@@ -651,7 +644,7 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
 
     pbuf_header(p, sizeof(*pn_hdr));
     pn_hdr = (struct pn_pdu*)p->payload;
-    pn_hdr->frame_id = PP_HTONS(FRAME_ID_DCP_IDENT_REQ);
+    pn_hdr->frame_id = PP_HTONS(FRAME_ID_DCP_IDENT_RES);
 
     ethernet_output(iface, p, (const struct eth_addr*)iface->hwaddr, &hw_hdr->src, ETHTYPE_PROFINET);
 free_out:
