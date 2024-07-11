@@ -151,7 +151,7 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
     dcp_hdr->service_id = SPN_DCP_SERVICE_ID_IDENTIFY;
     dcp_hdr->service_type = SPN_DCP_SERVICE_TYPE_RESPONSE;
     dcp_hdr->dcp_data_length = lwip_htons(offset);
-    dcp_hdr->xid = lwip_htonl(0x12345678); /* TODO: Resp the same xid as ident.req */
+    dcp_hdr->xid = lwip_ntohl(reqs->xid);
 
     pbuf_header(p, sizeof(*pn_hdr));
     pn_hdr = (struct pn_pdu*)p->payload;
