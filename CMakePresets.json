@@ -76,6 +76,37 @@
                 "CMAKE_SIZE_TOOL": "size",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             }
+        },
+        {
+            "name": "gcc-arm-size",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/gcc-arm64-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_C_COMPILER": "arm-linux-gnueabi-gcc",
+                "CMAKE_CXX_COMPILER": "arm-linux-gnueabi-g++",
+                "CMAKE_C_FLAGS": "-march=armv7-a",
+                "CMAKE_CXX_FLAGS": "-march=armv7-a",
+                "CMAKE_SIZE_TOOL": "arm-linux-gnueabi-size",
+                "CMAKE_SYSTEM_NAME": "baremetal",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+            }
+        },
+        {
+            "name": "gcc-arm64-size",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/gcc-arm64-Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_C_COMPILER": "aarch64-linux-gnu-gcc",
+                "CMAKE_CXX_COMPILER": "aarch64-linux-gnu-g++",
+                "CMAKE_C_FLAGS": "-march=armv8-a",
+                "CMAKE_CXX_FLAGS": "-march=armv8-a",
+                "CMAKE_SIZE_TOOL": "aarch64-linux-gnu-size",
+                "CMAKE_SYSTEM_NAME": "baremetal",
+                "ENABLE_EXAMPLES": "OFF",
+                "ENABLE_TESTS": "OFF"
+            }
         }
     ]
 }

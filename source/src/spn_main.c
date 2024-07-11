@@ -1,7 +1,10 @@
-#include "lwip/pbuf.h"
-#include "spn/errno.h"
+#include <lwip/opt.h>
+
 #include <lwip/debug.h>
 #include <lwip/opt.h>
+#include <lwip/pbuf.h>
+#include <spn/config.h>
+#include <spn/errno.h>
 #include <spn/pdu.h>
 #include <spn/spn.h>
 #include <string.h>

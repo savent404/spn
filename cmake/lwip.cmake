@@ -20,6 +20,3 @@ target_compile_options(lwip PRIVATE ${LWIP_COMPILER_FLAGS})
 target_compile_definitions(lwip PUBLIC ${LWIP_DEFINITIONS} ${LWIP_MBEDTLS_DEFINITIONS})
 target_include_directories(lwip PUBLIC ${LWIP_INCLUDE_DIRS} ${LWIP_MBEDTLS_INCLUDE_DIRS})
 target_link_libraries(lwip ${LWIP_SANITIZER_LIBS})
-
-find_library(LIBPTHREAD pthread)
-target_link_libraries(lwip ${LIBPTHREAD})
