@@ -27,7 +27,7 @@ struct SpnInstance : public ::testing::Test {
 
     ~SpnInstance();
 
-    bool step(); // returns true until cb_low_level_pool returns error code
+    virtual bool step(); // returns true until cb_low_level_pool returns error code
     void SetUp() override;
     void TearDown() override;
 

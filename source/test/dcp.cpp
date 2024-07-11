@@ -1,4 +1,5 @@
 #include <chrono>
+#include <cstddef>
 #include <lwip/opt.h>
 
 #include "dummy.hpp"
@@ -12,6 +13,7 @@
 namespace {
 
 using frame_t = std::shared_ptr<std::vector<uint8_t>>;
+using frame_value_t = std::vector<uint8_t>;
 std::shared_ptr<std::vector<uint8_t>> decode_frame(const char* frame)
 {
     auto len = strlen(frame);
@@ -31,7 +33,11 @@ struct DcpTest : public SpnInstance {
     {
         cfg.dual_port = false;
 
-        this->cb_low_level_output = [](struct netif* netif, struct pbuf* p) -> err_t {
+        this->cb_low_level_output = [this](struct netif* netif, struct pbuf* p) -> err_t {
+            auto vec_ptr = std::make_shared<frame_value_t>(p->len);
+            memcpy(vec_ptr->data(), p->payload, p->len);
+            this->promise.set_value();
+            output_frames.push_back(vec_ptr);
             return ERR_OK;
         };
 
@@ -43,9 +49,11 @@ struct DcpTest : public SpnInstance {
             auto& frame = input_frames.front();
 
             auto pbuf = pbuf_alloc(PBUF_RAW, frame->size(), PBUF_RAM);
+            if (pbuf == nullptr) {
+                return -ERR_MEM;
+            }
             memcpy(pbuf->payload, frame->data(), frame->size());
             auto res = netif->input(pbuf, netif);
-
             if (res != ERR_OK) {
                 input_frames.pop_front();
                 pbuf_free(pbuf);
@@ -59,9 +67,22 @@ struct DcpTest : public SpnInstance {
         this->cb_low_level_poll = [this](struct netif* netif) -> err_t {
             return cb_low_level_input(netif, nullptr);
         };
+
+        future = promise.get_future();
     }
 
+    frame_t get_output()
+    {
+        future.get();
+        auto f = output_frames.front();
+        output_frames.pop_front();
+        return f;
+    }
+
+    std::promise<void> promise;
+    std::future<void> future;
     std::deque<frame_t> input_frames;
+    std::deque<frame_t> output_frames;
 };
 
 } // namespace
@@ -70,8 +91,18 @@ TEST_F(DcpTest, inputAllSelector)
 {
     this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpAllSelector) });
     this->step();
+
+    auto f = this->get_output();
+    ASSERT_NE(f, nullptr);
+#if 0
+    // TODO: add assert to check frame valid
+#else
+    // Put resp input stack again to verify the ident.resp parser
+    this->input_frames.push_back(f);
+    this->step();
     std::this_thread::sleep_for(std::chrono::microseconds(100));
-    // TODO: check the response
+    ASSERT_TRUE(this->output_frames.empty());
+#endif
 }
 
 TEST_F(DcpTest, inputIdentResX208)
