@@ -9,7 +9,8 @@ option(ENABLE_TESTS "Enable test" OFF)
 option(ENABLE_EXAMPLES "Enable example" OFF)
 
 # SPN library
-aux_source_directory(source/src SOURCES)
+# recursive search for source files and set to SOURCES
+file(GLOB_RECURSE SOURCES source/src/*.c)
 add_library(SPN ${SOURCES})
 target_compile_options(SPN PRIVATE ${LWIP_COMPILER_FLAGS})
 target_include_directories(SPN PUBLIC source/inc)
