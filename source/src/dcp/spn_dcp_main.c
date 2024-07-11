@@ -1,6 +1,9 @@
 #include <spn/dcp.h>
 #include <spn/errno.h>
 
+
+struct spn_dcp_ctx dcp_ctx = { 0 };
+
 int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface)
 {
     struct spn_dcp_header* dcp_hdr = (struct spn_dcp_header*)frame;
@@ -53,9 +56,27 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
         }
         break;
     }
-    case FRAME_ID_DCP_IDENT_RES << 8 | SPN_DCP_SERVICE_ID_IDENTIFY:
-        spn_dcp_block_parse(dcp_blocks, dcp_data_len, 0, 0, &blocks);
-        break;
+    case FRAME_ID_DCP_IDENT_RES << 8 | SPN_DCP_SERVICE_ID_IDENTIFY: {
+        /**
+         * Steps:
+         * 1. Check if the response is for me
+         * 2. Parse the DCP blocks
+         * 3. Register the device
+         */
+        unsigned session_idx = 0;
+        for (session_idx = 0; session_idx < sizeof(dcp_ctx.dev_session) / sizeof(dcp_ctx.dev_session[0]); session_idx++) {
+            if (dcp_ctx.dev_session[session_idx].waiting && dcp_ctx.dev_session[session_idx].resp.xid == dcp_xid) {
+                break;
+            }
+        }
+        if (session_idx == sizeof(dcp_ctx.dev_session) / sizeof(dcp_ctx.dev_session[0])) {
+            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: no session found for xid=0x%08x\n", dcp_xid));
+            break;
+        }
+
+        res = spn_dcp_ident_resp_parse(dcp_blocks, dcp_data_len, &dcp_ctx.dev_session[session_idx].resp);
+        /* TODO: register device */
+    } break;
     default:
         LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: unknown dcp frame, frame_id=0x%04x, service_id=%d\n", frame_id, dcp_service_id));
         break;

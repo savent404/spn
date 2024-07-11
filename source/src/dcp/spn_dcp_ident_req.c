@@ -19,7 +19,7 @@ int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_re
     r_payload = (const char*)payload;
 
     for (offset = 0; offset < len;) {
-        LWIP_ASSERT("DCP: At least 16bit align", (offset & 2) == 0);
+        LWIP_ASSERT("DCP: At least 16bit align", (offset & 1) == 0);
         r_payload = (const char*)((uintptr_t)payload + offset);
         block_ptr = (const struct spn_dcp_general_block*)r_payload;
         block_len = lwip_htons(block_ptr->dcp_block_length);

@@ -87,6 +87,8 @@ struct DcpTest : public SpnInstance {
 
 } // namespace
 
+extern "C" struct spn_dcp_ctx dcp_ctx;
+
 TEST_F(DcpTest, inputAllSelector)
 {
     this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpAllSelector) });
@@ -98,6 +100,8 @@ TEST_F(DcpTest, inputAllSelector)
     // TODO: add assert to check frame valid
 #else
     // Put resp input stack again to verify the ident.resp parser
+    dcp_ctx.dev_session[0].resp.xid = 0x01000001;
+    dcp_ctx.dev_session[0].waiting = true;
     this->input_frames.push_back(f);
     this->step();
     std::this_thread::sleep_for(std::chrono::microseconds(100));

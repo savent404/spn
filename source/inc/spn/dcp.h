@@ -244,9 +244,47 @@ struct spn_dcp_ident_req {
     uint32_t xid; /* Session id */
     uint16_t option_sub_option[6]; /* MSB: | option(8) | suboption(8) */
 };
+
 struct spn_dcp_ident_resp {
     uint32_t xid; /* Session id */
-    uint32_t reserved;
+
+    uint16_t block_info;
+
+    uint8_t mac_addr[6];
+    uint32_t ip_addr;
+    uint32_t ip_mask;
+    uint32_t ip_gw;
+    uint32_t ip_dns[4];
+    char* station_of_name;
+    char* vendor_of_name;
+    char* alias_of_name;
+
+    uint16_t vendor_id;
+    uint16_t device_id;
+
+    uint16_t oem_vendor_id;
+    uint16_t oem_device_id;
+
+    uint16_t* options; /* MSB: | option(8) | sub_option(8), end with (0,0) */
+
+    uint16_t dev_instance;
+    uint16_t rsi_prop_value;
+    uint8_t device_role;
+    uint8_t std_gw_flag;
+    uint8_t dhcp_option;
+    uint8_t dhcp_param_len;
+    uint8_t* dhcp_param;
+
+    uint16_t dev_initiative_flag;
+};
+
+struct spn_dcp_dev_session {
+    bool waiting;
+    struct spn_dcp_ident_resp resp;
+};
+
+struct spn_dcp_ctx {
+    struct spn_dcp_dev_session dev_session[8];
 };
 
 #ifdef __cplusplus
