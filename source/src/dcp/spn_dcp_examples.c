@@ -3,6 +3,114 @@
 #include <stdlib.h>
 #include <string.h>
 
+struct spn_dcp_block {
+    struct {
+        uint16_t block_info;
+        uint8_t mac_address[6];
+        uint8_t touched;
+    } ip_mac;
+
+    struct {
+        uint16_t block_info;
+        uint32_t ip_addr;
+        uint32_t mask;
+        uint32_t gw;
+        uint8_t touched;
+    } ip_param;
+
+    struct {
+        uint32_t block_info;
+        uint32_t ip_addr;
+        uint32_t mask;
+        uint32_t gw;
+        uint32_t dns_address[4];
+        uint8_t touched;
+    } ip_full_suit;
+
+    struct {
+        char name[32];
+        uint8_t name_len;
+        uint8_t touched;
+    } dev_prop_vendor;
+
+    struct {
+        char name[32];
+        uint8_t name_len;
+        uint8_t touched;
+    } dev_prop_name_of_station;
+
+    struct {
+        uint16_t vendor_id;
+        uint16_t device_id;
+        uint8_t touched;
+    } dev_prop_device_id;
+
+    struct {
+        uint8_t role;
+        uint8_t touched;
+    } dev_prop_role;
+
+    struct {
+        uint16_t options[32]; /* MSB: | option(8) | suboption(8) */
+        uint16_t option_num;
+        uint8_t touched;
+    } dev_prop_device_options;
+
+    struct {
+        char alias_name[32];
+        uint8_t alias_name_len;
+        uint8_t touched;
+    } dev_prop_alias_name;
+
+    struct {
+        uint16_t instance;
+        uint8_t touched;
+    } dev_prop_dev_instance;
+
+    struct {
+        uint16_t vendor_id;
+        uint16_t device_id;
+        uint8_t touched;
+    } dev_prop_dev_oem_id;
+
+    struct {
+        uint16_t standard_gateway;
+        uint8_t touched;
+    } dev_prop_dev_std_gateway;
+
+    struct {
+        uint16_t rsi_prop_value;
+        uint8_t touched;
+    } dev_prop_rsi_prop;
+
+    struct {
+        uint8_t option;
+        uint8_t dhcp_param_length;
+        uint8_t dhcp_param_data[1]; /* TODO: support flex array */
+        uint8_t touched;
+    } dhcp;
+
+    struct {
+        uint16_t value;
+        uint8_t touched;
+    } dev_initiative;
+};
+
+/**
+ * @brief Parse DCP blocks from payload
+ *
+ * @warning This is a recursive function, it will parse all blocks in the payload.
+ * @note For limited depth, add \c deep parameter to control the depth of parsing.
+ * @param payload \c spn_dcp_general_type or other dcp_type structure
+ * @param len \c payload length
+ * @param offset current offset
+ * @param deep depth of parsing, 0 for top level.
+ * @param[out] ident_block identify results
+ * @return int \c SPN_OK on success
+ *             \c SPN_EBADMSG on parsing error
+ *             \c SPN_EMSGSIZE on depth of recursion exceeds the limit
+ */
+int spn_dcp_block_parse(void* payload, uint16_t len, uint16_t offset, int deep, struct spn_dcp_block* block);
 int spn_dcp_block_parse(void* payload, uint16_t len, uint16_t offset, int deep, struct spn_dcp_block* block)
 {
     struct spn_dcp_general_block* gen_block;

@@ -11,7 +11,6 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
     uint32_t dcp_xid = lwip_htonl(dcp_hdr->xid);
     uint8_t dcp_service_id = dcp_hdr->service_id;
     uint8_t dcp_service_type = dcp_hdr->service_type;
-    struct spn_dcp_block blocks;
     int res;
     uint32_t frame_id_service_id = (frame_id << 8) | dcp_service_id;
 
@@ -30,12 +29,12 @@ int spn_dcp_input(void* frame, size_t len, uint16_t frame_id, struct eth_hdr* hw
     switch (frame_id_service_id) {
     case FRAME_ID_DCP_HELLO_REQ << 8 | SPN_DCP_SERVICE_ID_HELLO:
         /* TODO: Use spn_dcp_hello_req_parse */
-        spn_dcp_block_parse(dcp_blocks, dcp_data_len, 0, 0, &blocks);
+        /* spn_dcp_block_parse(dcp_blocks, dcp_data_len, 0, 0, &blocks); */
         break;
     case FRAME_ID_DCP_GET_SET << 8 | SPN_DCP_SERVICE_ID_GET:
     case FRAME_ID_DCP_GET_SET << 8 | SPN_DCP_SERVICE_ID_SET:
         /* TODO: Use spn_dcp_get_set_parse */
-        spn_dcp_block_parse(dcp_blocks, dcp_data_len, 0, 0, &blocks);
+        /* spn_dcp_block_parse(dcp_blocks, dcp_data_len, 0, 0, &blocks); */
         break;
     case FRAME_ID_DCP_IDENT_REQ << 8 | SPN_DCP_SERVICE_ID_IDENTIFY: {
         /**
