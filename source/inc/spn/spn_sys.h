@@ -3,25 +3,12 @@
 #include <spn/config.h>
 
 #include <spn/dcp.h> /* TODO: Give a public header to include, instead of private header */
+#include <spn/dcp.h>
 #include <spn/iface.h>
 
 #ifndef SPN_WEAK_FN
 #define SPN_WEAK_FN __attribute__((weak))
 #endif
-
-enum spn_ip_status {
-    ip_status_none = SPN_DCP_BLOCK_INFO_NO_IP,
-    ip_status_static = SPN_DCP_BLOCK_INFO_STATIC_IP,
-    ip_status_auto = SPN_DCP_BLOCK_INFO_DHCP_IP,
-    ip_status_conflict = SPN_DCP_BLOCK_INFO_IP_CONFLICT
-};
-
-enum spn_role {
-    role_iod = SPN_DCP_ROLE_IOD,
-    role_ioc = SPN_DCP_ROLE_IOC,
-    role_mult_iod = SPN_DCP_ROLE_MULTI_IOD,
-    role_supervisor = SPN_DCP_ROLE_SUPERVISOR
-};
 
 #ifdef __cplusplus
 extern "C" {
@@ -107,14 +94,14 @@ uint16_t spn_sys_get_device_id(void);
 
 /**
  * @brief Get device's oem vendor id
- * 
+ *
  * @return uint16_t oem vendor id
  */
 uint16_t spn_sys_get_oem_vendor_id(void);
 
 /**
  * @brief Get device's oem device id
- * 
+ *
  * @return uint16_t oem vendor id
  */
 uint16_t spn_sys_get_oem_device_id(void);
@@ -135,10 +122,10 @@ enum spn_ip_status spn_sys_get_ip_status(void);
 
 /**
  * @brief Get device's netif
- * 
+ *
  * @param interface instance of pn
  * @param port      port of instance
- * @return struct netif* 
+ * @return struct netif*
  */
 struct netif* spn_sys_get_netif(int interface, int port);
 

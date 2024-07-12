@@ -7,6 +7,7 @@
 #include <string.h>
 
 extern const uint16_t* spn_dcp_mandatory_reqs;
+extern const uint16_t* spn_dcp_supported_options;
 
 /**
  * @brief Merge to line into line
@@ -272,54 +273,64 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
 
         switch (block_type) {
         case BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_PARAMETER):
-            spn_dcp_pack_block(r_payload + offset, block_type, 12, block_info);
-            spn_dcp_pack_ip(r_payload + offset + hdr_size, iface);
+            spn_dcp_pack_resp_block(r_payload + offset, block_type, 12, block_info);
+            spn_dcp_pack_ip(r_payload + offset + hdr_size,
+                spn_sys_get_ip_addr(iface),
+                spn_sys_get_ip_mask(iface),
+                spn_sys_get_ip_gw(iface));
             offset += hdr_size + 12;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_FULL_IP_SUITE):
-            spn_dcp_pack_block(r_payload + offset, block_type, 28, block_info);
-            spn_dcp_pack_ip(r_payload + offset + hdr_size, iface);
-            spn_dcp_pack_dns(r_payload + offset + hdr_size + 12, iface);
+            spn_dcp_pack_resp_block(r_payload + offset, block_type, 28, block_info);
+            spn_dcp_pack_ip(r_payload + offset + hdr_size,
+                spn_sys_get_ip_addr(iface),
+                spn_sys_get_ip_mask(iface),
+                spn_sys_get_ip_gw(iface));
+            spn_dcp_pack_dns(r_payload + offset + hdr_size + 12,
+                spn_sys_get_dns(iface, 0),
+                spn_sys_get_dns(iface, 1),
+                spn_sys_get_dns(iface, 2),
+                spn_sys_get_dns(iface, 3));
             offset += hdr_size + 12;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR):
-            len = spn_dcp_pack_vendor_name(r_payload + offset + hdr_size);
-            spn_dcp_pack_block(r_payload + offset, block_type, len, block_info);
+            len = spn_dcp_pack_vendor_name(r_payload + offset + hdr_size, spn_sys_get_vendor_name());
+            spn_dcp_pack_resp_block(r_payload + offset, block_type, len, block_info);
             offset += hdr_size + len;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION):
-            len = spn_dcp_pack_station_of_name(r_payload + offset + hdr_size);
-            spn_dcp_pack_block(r_payload + offset, block_type, len, block_info);
+            len = spn_dcp_pack_station_of_name(r_payload + offset + hdr_size, spn_sys_get_station_name());
+            spn_dcp_pack_resp_block(r_payload + offset, block_type, len, block_info);
             offset += hdr_size + len;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ID):
-            spn_dcp_pack_block(r_payload + offset, block_type, 4, block_info);
-            spn_dcp_pack_device_id(r_payload + offset + hdr_size);
+            spn_dcp_pack_resp_block(r_payload + offset, block_type, 4, block_info);
+            spn_dcp_pack_device_id(r_payload + offset + hdr_size, spn_sys_get_vendor_id(), spn_sys_get_device_id());
             offset += hdr_size + 4;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ROLE):
-            spn_dcp_pack_block(r_payload + offset, block_type, 2, block_info);
-            spn_dcp_pack_role(r_payload + offset + hdr_size);
+            spn_dcp_pack_resp_block(r_payload + offset, block_type, 2, block_info);
+            spn_dcp_pack_role(r_payload + offset + hdr_size, spn_sys_get_role());
             offset += hdr_size + 2;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_OPTIONS):
-            len = spn_dcp_pack_options(r_payload + offset + hdr_size);
-            spn_dcp_pack_block(r_payload + offset, block_type, len, block_info);
+            len = spn_dcp_pack_options(r_payload + offset + hdr_size, spn_dcp_supported_options);
+            spn_dcp_pack_resp_block(r_payload + offset, block_type, len, block_info);
             offset += hdr_size + len;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME):
-            len = spn_dcp_pack_alias(r_payload + offset + hdr_size);
-            spn_dcp_pack_block(r_payload + offset, block_type, len, block_info);
+            len = spn_dcp_pack_alias(r_payload + offset + hdr_size, spn_sys_get_alias_name());
+            spn_dcp_pack_resp_block(r_payload + offset, block_type, len, block_info);
             offset += hdr_size + len;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_INSTANCE):
-            spn_dcp_pack_block(r_payload + offset, block_type, 2, block_info);
-            spn_dcp_pack_instance(r_payload + offset + hdr_size);
+            spn_dcp_pack_resp_block(r_payload + offset, block_type, 2, block_info);
+            spn_dcp_pack_instance(r_payload + offset + hdr_size, 0); /* TOD: As default, we only support single instance */
             offset += hdr_size + 2;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_OEM_DEVICE_ID):
-            spn_dcp_pack_block(r_payload + offset, block_type, 4, block_info);
-            spn_dcp_pack_oem_id(r_payload + offset + hdr_size);
+            spn_dcp_pack_resp_block(r_payload + offset, block_type, 4, block_info);
+            spn_dcp_pack_oem_id(r_payload + offset + hdr_size, spn_sys_get_oem_vendor_id(), spn_sys_get_oem_device_id());
             offset += hdr_size + 4;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_STANDARD_GATEWAY):
@@ -328,6 +339,8 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
             res = -SPN_ENOSYS;
             goto free_out;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_INITIATIVE, SPN_DCP_SUB_OPT_DEVICE_INITIATIVE_DEVICE_INITIATIVE):
+            spn_dcp_pack_resp_block(r_payload + offset, block_type, 2, block_info);
+            spn_dcp_pack_device_initiative(r_payload + offset, lwip_htons(SPN_DCP_DEV_INITIATIVE_ENABLE_HELLO));
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_DOMAIN):
         case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_PRIO):

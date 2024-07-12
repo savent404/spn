@@ -3,11 +3,9 @@
 #include <spn/dcp.h>
 #include <string.h>
 
-extern uint16_t* spn_dcp_supported_options;
-
 /* All use spn_dcp_pack.c's impl */
 
-void spn_dcp_pack_block(void* dest, uint16_t option_sub_option, uint16_t payload_len, uint16_t block_info)
+void spn_dcp_pack_resp_block(void* dest, uint16_t option_sub_option, uint16_t payload_len, uint16_t block_info)
 {
     struct spn_dcp_general_block* block = (struct spn_dcp_general_block*)dest;
     uint16_t* block_info_ptr = (uint16_t*)((uintptr_t)(block + 1) & ~1);
@@ -17,29 +15,29 @@ void spn_dcp_pack_block(void* dest, uint16_t option_sub_option, uint16_t payload
     *block_info_ptr = lwip_ntohs(block_info);
 }
 
-void spn_dcp_pack_ip(void* dest, iface_t* iface)
+void spn_dcp_pack_ip(void* dest, uint32_t ip, uint32_t mask, uint32_t gw)
 {
-    uint32_t* ip = (uint32_t*)dest;
-    uint32_t* mask = ip + 1;
-    uint32_t* gw = mask + 1;
+    uint32_t* _ip = (uint32_t*)dest;
+    uint32_t* _mask = _ip + 1;
+    uint32_t* _gw = _mask + 1;
 
-    *ip = spn_sys_get_ip_addr(iface);
-    *mask = spn_sys_get_ip_mask(iface);
-    *gw = spn_sys_get_ip_gw(iface);
+    *_ip = ip;
+    *_mask = mask;
+    *_gw = gw;
 }
 
-void spn_dcp_pack_dns(void* dest, iface_t* iface)
+void spn_dcp_pack_dns(void* dest, uint32_t dns1, uint32_t dns2, uint32_t dns3, uint32_t dns4)
 {
     uint32_t* dns = (uint32_t*)dest;
-    int idx = 0;
-    for (idx = 0; idx < 4; idx++) {
-        dns[idx] = spn_sys_get_dns(iface, idx);
-    }
+    dns[0] = dns1;
+    dns[1] = dns2;
+    dns[2] = dns3;
+    dns[3] = dns4;
 }
 
-int spn_dcp_pack_station_of_name(void* dest)
+int spn_dcp_pack_station_of_name(void* dest, const char* name)
 {
-    const char* station_name = spn_sys_get_station_name();
+    const char* station_name = name;
     int len;
     if (station_name == NULL) {
         return -1;
@@ -49,9 +47,9 @@ int spn_dcp_pack_station_of_name(void* dest)
     return len;
 }
 
-int spn_dcp_pack_alias(void* dest)
+int spn_dcp_pack_alias(void* dest, const char* name)
 {
-    const char* alias_name = spn_sys_get_alias_name();
+    const char* alias_name = name;
     int len;
     if (alias_name == NULL) {
         return -1;
@@ -61,9 +59,9 @@ int spn_dcp_pack_alias(void* dest)
     return len;
 }
 
-int spn_dcp_pack_vendor_name(void* dest)
+int spn_dcp_pack_vendor_name(void* dest, const char* name)
 {
-    const char* vendor_name = spn_sys_get_vendor_name();
+    const char* vendor_name = name;
     int len;
     if (vendor_name == NULL) {
         return -1;
@@ -73,36 +71,35 @@ int spn_dcp_pack_vendor_name(void* dest)
     return len;
 }
 
-void spn_dcp_pack_device_id(void* dest)
+void spn_dcp_pack_device_id(void* dest, uint16_t vendor_id, uint16_t device_id)
 {
-    uint16_t* vendor_id = (uint16_t*)dest;
-    uint16_t* device_id = vendor_id + 1;
-    *vendor_id = spn_sys_get_vendor_id();
-    *device_id = spn_sys_get_device_id();
+    uint16_t* p_vendor_id = (uint16_t*)dest;
+    uint16_t* p_device_id = p_vendor_id + 1;
+    *p_vendor_id = vendor_id;
+    *p_device_id = device_id;
 }
 
-void spn_dcp_pack_oem_id(void* dest)
+void spn_dcp_pack_oem_id(void* dest, uint16_t vendor_id, uint16_t device_id)
 {
-    uint16_t* vendor_id = (uint16_t*)dest;
-    uint16_t* device_id = vendor_id + 1;
-    *vendor_id = spn_sys_get_oem_vendor_id();
-    *device_id = spn_sys_get_oem_device_id();
+    uint16_t* p_vendor_id = (uint16_t*)dest;
+    uint16_t* p_device_id = p_vendor_id + 1;
+    *p_vendor_id = vendor_id;
+    *p_device_id = device_id;
 }
 
-void spn_dcp_pack_role(void* dest)
+void spn_dcp_pack_role(void* dest, enum spn_role role)
 {
-    enum spn_role role = spn_sys_get_role();
     uint8_t* role_ptr = (uint8_t*)dest;
 
     *role_ptr = (uint8_t)role;
     *(role_ptr + 1) = 0;
 }
 
-int spn_dcp_pack_options(void* dest)
+int spn_dcp_pack_options(void* dest, const uint16_t* options)
 {
     int len = 0;
     uint16_t* option = (uint16_t*)dest;
-    const uint16_t* r_option = spn_dcp_supported_options;
+    const uint16_t* r_option = options;
 
     while (*r_option) {
         *option++ = lwip_ntohs(*r_option++);
@@ -111,14 +108,14 @@ int spn_dcp_pack_options(void* dest)
     return len;
 }
 
-void spn_dcp_pack_instance(void* dest)
+void spn_dcp_pack_instance(void* dest, uint16_t instance)
 {
-    uint16_t* instance = (uint16_t*)dest;
-    *instance = lwip_ntohs(1); /* TODO: get vars from sm db */
+    uint16_t* p_instance = (uint16_t*)dest;
+    *p_instance = instance;
 }
 
-void spn_dcp_pack_device_initiative(void* dest)
+void spn_dcp_pack_device_initiative(void* dest, uint16_t initiative)
 {
     uint16_t* value = (uint16_t*)dest;
-    *value = lwip_ntohs(SPN_DCP_DEV_INITIATIVE_ENABLE_HELLO); /* TODO: get vars from sm db */
+    *value = initiative;
 }

@@ -201,6 +201,20 @@ struct spn_dcp_ctx {
     struct spn_dcp_dev_session dev_session[8];
 };
 
+enum spn_ip_status {
+    ip_status_none = SPN_DCP_BLOCK_INFO_NO_IP,
+    ip_status_static = SPN_DCP_BLOCK_INFO_STATIC_IP,
+    ip_status_auto = SPN_DCP_BLOCK_INFO_DHCP_IP,
+    ip_status_conflict = SPN_DCP_BLOCK_INFO_IP_CONFLICT
+};
+
+enum spn_role {
+    role_iod = SPN_DCP_ROLE_IOD,
+    role_ioc = SPN_DCP_ROLE_IOC,
+    role_mult_iod = SPN_DCP_ROLE_MULTI_IOD,
+    role_supervisor = SPN_DCP_ROLE_SUPERVISOR
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -280,20 +294,21 @@ bool spn_dcp_filter_device_initiative(uint16_t value);
 
 /**
  * @defgroup dcp_pack DCP pack
+ * @note to be aware, all parameter is in network byte order
  * @{
  */
-void spn_dcp_pack_block(void* dest, uint16_t option_sub_option, uint16_t payload_len, uint16_t block_info);
-void spn_dcp_pack_ip(void* dest, iface_t* iface);
-void spn_dcp_pack_dns(void* dest, iface_t* iface);
-int spn_dcp_pack_station_of_name(void* dest);
-int spn_dcp_pack_alias(void* dest);
-int spn_dcp_pack_vendor_name(void* dest);
-void spn_dcp_pack_device_id(void* dest);
-void spn_dcp_pack_oem_id(void* dest);
-void spn_dcp_pack_role(void* dest);
-int spn_dcp_pack_options(void* dest);
-void spn_dcp_pack_instance(void* dest);
-void spn_dcp_pack_device_initiative(void* dest);
+void spn_dcp_pack_resp_block(void* dest, uint16_t option_sub_option, uint16_t payload_len, uint16_t block_info);
+void spn_dcp_pack_ip(void* dest, uint32_t ip, uint32_t mask, uint32_t gw);
+void spn_dcp_pack_dns(void* dest, uint32_t dns1, uint32_t dns2, uint32_t dns3, uint32_t dns4);
+int spn_dcp_pack_station_of_name(void* dest, const char* name);
+int spn_dcp_pack_alias(void* dest, const char* name);
+int spn_dcp_pack_vendor_name(void* dest, const char* name);
+void spn_dcp_pack_device_id(void* dest, uint16_t vendor_id, uint16_t device_id);
+void spn_dcp_pack_oem_id(void* dest, uint16_t vendor_id, uint16_t device_id);
+void spn_dcp_pack_role(void* dest, enum spn_role role);
+int spn_dcp_pack_options(void* dest, const uint16_t* options);
+void spn_dcp_pack_instance(void* dest, uint16_t instance);
+void spn_dcp_pack_device_initiative(void* dest, uint16_t initiative);
 /**
  * @}
  */
@@ -312,14 +327,14 @@ int spn_dcp_input(void* frame, uint16_t len, uint16_t frame_id, struct eth_hdr* 
 
 /**
  * @brief Initialize DCP context
- * 
+ *
  */
 void spn_dcp_init(void);
 
 /**
  * @brief Get DCP context
- * 
- * @return struct spn_dcp_ctx* 
+ *
+ * @return struct spn_dcp_ctx*
  */
 struct spn_dcp_ctx* spn_dcp_get_ctx(void);
 
