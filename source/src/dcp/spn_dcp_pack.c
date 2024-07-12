@@ -15,6 +15,14 @@ void spn_dcp_pack_resp_block(void* dest, uint16_t option_sub_option, uint16_t pa
     *block_info_ptr = lwip_ntohs(block_info);
 }
 
+void spn_dcp_pack_req_block(void* dest, uint16_t option_sub_option, uint16_t payload_len)
+{
+    struct spn_dcp_general_block* block = (struct spn_dcp_general_block*)dest;
+    block->option = (option_sub_option >> 8);
+    block->sub_option = option_sub_option & 0xFF;
+    block->dcp_block_length = lwip_ntohs(payload_len);
+}
+
 void spn_dcp_pack_ip(void* dest, uint32_t ip, uint32_t mask, uint32_t gw)
 {
     uint32_t* _ip = (uint32_t*)dest;
