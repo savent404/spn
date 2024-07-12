@@ -13,8 +13,8 @@ void spn_dcp_pack_block(void* dest, uint16_t option_sub_option, uint16_t payload
     uint16_t* block_info_ptr = (uint16_t*)((uintptr_t)(block + 1) & ~1);
     block->option = (option_sub_option >> 8);
     block->sub_option = option_sub_option & 0xFF;
-    block->dcp_block_length = lwip_htons(payload_len + 2);
-    *block_info_ptr = lwip_htons(block_info);
+    block->dcp_block_length = lwip_ntohs(payload_len + 2);
+    *block_info_ptr = lwip_ntohs(block_info);
 }
 
 void spn_dcp_pack_ip(void* dest, iface_t* iface)
@@ -105,7 +105,7 @@ int spn_dcp_pack_options(void* dest)
     const uint16_t* r_option = spn_dcp_supported_options;
 
     while (*r_option) {
-        *option++ = lwip_htons(*r_option++);
+        *option++ = lwip_ntohs(*r_option++);
         len++;
     }
     return len;
@@ -114,11 +114,11 @@ int spn_dcp_pack_options(void* dest)
 void spn_dcp_pack_instance(void* dest)
 {
     uint16_t* instance = (uint16_t*)dest;
-    *instance = lwip_htons(1); /* TODO: get vars from sm db */
+    *instance = lwip_ntohs(1); /* TODO: get vars from sm db */
 }
 
 void spn_dcp_pack_device_initiative(void* dest)
 {
     uint16_t* value = (uint16_t*)dest;
-    *value = lwip_htons(SPN_DCP_DEV_INITIATIVE_ENABLE_HELLO); /* TODO: get vars from sm db */
+    *value = lwip_ntohs(SPN_DCP_DEV_INITIATIVE_ENABLE_HELLO); /* TODO: get vars from sm db */
 }
