@@ -72,6 +72,20 @@ struct DcpTest : public SpnInstance {
         future = promise.get_future();
     }
 
+    virtual void SetUp()
+    {
+        SpnInstance::SetUp();
+        auto ctx = spn_dcp_get_ctx();
+        memset(ctx, 0, sizeof(*ctx));
+    }
+
+    virtual void TearDOwn()
+    {
+        SpnInstance::TearDown();
+        auto ctx = spn_dcp_get_ctx();
+        memset(ctx, 0, sizeof(*ctx));
+    }
+
     frame_t get_output()
     {
         future.get();
@@ -90,28 +104,28 @@ struct DcpTest : public SpnInstance {
 
 TEST_F(DcpTest, inputAllSelector)
 {
+    /* Input an ident.req */
     this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpAllSelector) });
     this->step();
 
+    /* There will be a ident.resp from us */
     auto f = this->get_output();
     ASSERT_NE(f, nullptr);
-#if 0
-    // TODO: add assert to check frame valid
-#else
-    // Put resp input stack again to verify the ident.resp parser
+
+    /* Assume we are the one who sending the ident.req, and waiting for response */
     auto ctx = spn_dcp_get_ctx();
     auto dev_session = &ctx->dev_session[0];
     dev_session->resp.xid = 0x01000001;
     dev_session->state = dcp_dev_state_ident;
     this->input_frames.push_back(f);
     this->step();
+
+    /* Check there is no other response and our dcp database that self infomation is registered as a new device */
     std::this_thread::sleep_for(std::chrono::microseconds(100));
     ASSERT_TRUE(this->output_frames.empty());
-
     ASSERT_EQ(dev_session->state, dcp_dev_state_active);
     ASSERT_STREQ(dev_session->resp.station_of_name, spn_sys_get_station_name());
     ASSERT_STREQ(dev_session->resp.vendor_of_name, spn_sys_get_vendor_name());
-#endif
 }
 
 TEST_F(DcpTest, inputIdentResX208)
