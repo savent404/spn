@@ -3,7 +3,14 @@
  * @author savent (savent_gate@outlook.com)
  * @brief
  * @date 2024-07-07
- * @todo mac filter need to be implemented
+ *
+ * @todo filters need to be implemented
+ * @todo timeout mechanism to be implemented
+ * @todo get/set mechanism to be implemented
+ * @todo set user callback to be implemented
+ * @todo factory reset to be implemented
+ * @todo reset to factory to be implemented
+ * @todo hello to be implemented
  *
  * Copyright 2023 savent_gate
  *
@@ -199,6 +206,8 @@ struct spn_dcp_dev_session {
 
 struct spn_dcp_ctx {
     struct spn_dcp_dev_session dev_session[8];
+    uint32_t xid_base; /* used when try to start a conversation */
+    iface_t* interface;
 };
 
 enum spn_ip_status {
@@ -327,10 +336,23 @@ void spn_dcp_pack_device_initiative(void* dest, uint16_t initiative);
 int spn_dcp_input(void* frame, uint16_t len, uint16_t frame_id, struct eth_hdr* hw_hdr, iface_t* iface);
 
 /**
+ * @brief Trigger to search all devices
+ *
+ * @note This function will send a multicast identify request to all devices,
+ *       and must called outsize of TCPIP thread
+ * @todo add timeout mechanism
+ * @return int
+ */
+int spn_dcp_search_all(void);
+int spn_dcp_search_name_of_station(char* name);
+int spn_dcp_search_name_of_vendor(char* name);
+int spn_dcp_search_name_of_alias(char* name);
+
+/**
  * @brief Initialize DCP context
  *
  */
-void spn_dcp_init(void);
+void spn_dcp_init(iface_t* iface);
 
 /**
  * @brief Get DCP context

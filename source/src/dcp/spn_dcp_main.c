@@ -94,9 +94,73 @@ ret:
     return SPN_OK;
 }
 
-void spn_dcp_init(void)
+static int spn_dcp_search_general(const uint16_t* options, struct spn_dcp_ident_resp* resp)
+{
+    unsigned idx;
+    bool found = false;
+    int res;
+    resp->xid = dcp_ctx.xid_base++;
+    for (idx = 0; idx < sizeof(dcp_ctx.dev_session) / sizeof(dcp_ctx.dev_session[0]); idx++) {
+        if (dcp_ctx.dev_session[idx].state == dcp_dev_state_hollow) {
+            dcp_ctx.dev_session[idx].state = dcp_dev_state_ident;
+            dcp_ctx.dev_session[idx].resp.xid = resp->xid;
+            memset(&dcp_ctx.dev_session[idx].resp, 0, sizeof(dcp_ctx.dev_session[idx].resp));
+            found = true;
+        }
+    }
+    if (!found) {
+        return -SPN_ENOMEM;
+    }
+    res = spn_dcp_ident_req_assemble(options, resp, dcp_ctx.interface);
+    return res;
+}
+
+int spn_dcp_search_all(void)
+{
+    const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_ALL_SELECTOR, SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR), 0 };
+    struct spn_dcp_ident_resp resp;
+    return spn_dcp_search_general(options, &resp);
+}
+
+int spn_dcp_search_name_of_station(char* name)
+{
+    const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION), 0 };
+    struct spn_dcp_ident_resp resp;
+    if (!name) {
+        return -SPN_EINVAL;
+    }
+    resp.station_of_name = name;
+    return spn_dcp_search_general(options, &resp);
+}
+
+int spn_dcp_search_name_of_vendor(char* name)
+{
+    const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR), 0 };
+    struct spn_dcp_ident_resp resp;
+
+    if (!name) {
+        return -SPN_EINVAL;
+    }
+    resp.vendor_of_name = name;
+    return spn_dcp_search_general(options, &resp);
+}
+
+int spn_dcp_search_name_of_alias(char* name)
+{
+    const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME), 0 };
+    struct spn_dcp_ident_resp resp;
+
+    if (!name) {
+        return -SPN_EINVAL;
+    }
+    resp.alias_of_name = name;
+    return spn_dcp_search_general(options, &resp);
+}
+
+void spn_dcp_init(iface_t* iface)
 {
     memset(&dcp_ctx, 0, sizeof(dcp_ctx));
+    dcp_ctx.interface = iface;
 }
 
 /**

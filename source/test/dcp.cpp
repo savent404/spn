@@ -121,34 +121,73 @@ TEST_F(DcpTest, inputAllSelector)
     this->step();
 
     /* Check there is no other response and our dcp database that self infomation is registered as a new device */
-    std::this_thread::sleep_for(std::chrono::microseconds(100));
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
     ASSERT_TRUE(this->output_frames.empty());
     ASSERT_EQ(dev_session->state, dcp_dev_state_active);
     ASSERT_STREQ(dev_session->resp.station_of_name, spn_sys_get_station_name());
     ASSERT_STREQ(dev_session->resp.vendor_of_name, spn_sys_get_vendor_name());
 }
 
+TEST_F(DcpTest, outputAllSelector)
+{
+    spn_dcp_init(&this->ifaces[0]);
+
+    auto ctx = spn_dcp_get_ctx();
+    ctx->xid_base = 0x01000001;
+
+    /* Generate allSelector package */
+    spn_dcp_search_all();
+
+    /* Check the output */
+    auto f = this->get_output();
+
+    /* Compare with real one */
+    auto rel = decode_frame(test_data::dcp::kDcpAllSelector);
+
+    ASSERT_EQ(f->size(), rel->size());
+    /* Forget about mac address */
+    for (size_t i = 12; i < f->size(); i++) {
+        ASSERT_EQ(f->at(i), rel->at(i));
+    }
+}
+
 TEST_F(DcpTest, inputIdentResX208)
 {
+    auto ctx = spn_dcp_get_ctx();
+    auto dev_session = &ctx->dev_session[0];
+    dev_session->resp.xid = 0x01000001;
+    dev_session->state = dcp_dev_state_ident;
     this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentRespX208) });
-    // this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentRespEcoPn) });
-    // this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentResp200smt) });
     while (this->step()) { }
-    std::this_thread::sleep_for(std::chrono::microseconds(100));
-    // TODO: check the response
+
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
+    ASSERT_EQ(dev_session->state, dcp_dev_state_active);
+    ASSERT_STREQ(dev_session->resp.station_of_name, "X208-BORD");
 }
 TEST_F(DcpTest, inputIdentResEcoPn)
 {
+    auto ctx = spn_dcp_get_ctx();
+    auto dev_session = &ctx->dev_session[0];
+    dev_session->resp.xid = 0x000194ef;
+    dev_session->state = dcp_dev_state_ident;
     this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentRespEcoPn) });
     while (this->step()) { }
-    std::this_thread::sleep_for(std::chrono::microseconds(100));
+    std::this_thread::sleep_for(std::chrono::microseconds(1000));
+    ASSERT_EQ(dev_session->state, dcp_dev_state_active);
+    ASSERT_STREQ(dev_session->resp.station_of_name, "et200ecopn.dev7");
     // TODO: check the response
 }
 TEST_F(DcpTest, inputIdentRes200smt)
 {
+    auto ctx = spn_dcp_get_ctx();
+    auto dev_session = &ctx->dev_session[0];
+    dev_session->resp.xid = 0x000194ef;
+    dev_session->state = dcp_dev_state_ident;
     this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentResp200smt) });
     while (this->step()) { }
     std::this_thread::sleep_for(std::chrono::microseconds(100));
+    ASSERT_EQ(dev_session->state, dcp_dev_state_active);
+    ASSERT_STREQ(dev_session->resp.station_of_name, "s7-200-smart-002");
     // TODO: check the response
 }
 TEST_F(DcpTest, inputSetReq)

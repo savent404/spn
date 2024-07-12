@@ -1,5 +1,7 @@
 #include "lwip/debug.h"
+#include "spn/pdu.h"
 #include <lwip/opt.h>
+#include <lwip/sys.h>
 #include <netif/ethernet.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
@@ -251,6 +253,7 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
     const int16_t header_size = sizeof(struct spn_dcp_header) + sizeof(struct pn_pdu) + SIZEOF_ETH_HDR;
     const uint16_t hdr_size = sizeof(struct spn_dcp_general_block) + 2;
     uint16_t block_info = (uint16_t)spn_sys_get_ip_status();
+    uint16_t frame_len;
     struct spn_dcp_header* dcp_hdr;
     struct pn_pdu* pn_hdr;
 
@@ -368,12 +371,21 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
     dcp_hdr->service_id = SPN_DCP_SERVICE_ID_IDENTIFY;
     dcp_hdr->service_type = SPN_DCP_SERVICE_TYPE_RESPONSE;
     dcp_hdr->dcp_data_length = lwip_htons(offset);
+    dcp_hdr->response_delay_factor = lwip_htons(1);
     dcp_hdr->xid = lwip_ntohl(reqs->xid);
 
     pbuf_header(p, sizeof(*pn_hdr));
     pn_hdr = (struct pn_pdu*)p->payload;
     pn_hdr->frame_id = PP_HTONS(FRAME_ID_DCP_IDENT_RES);
 
+    /* Adjust output packet size */
+    frame_len = offset + sizeof(*dcp_hdr) + sizeof(*pn_hdr);
+    if (frame_len < SPN_RTC_MINIMAL_FRAME_SIZE) {
+        /* Set padding to zero */
+        memset(r_payload + frame_len, 0, SPN_RTC_MINIMAL_FRAME_SIZE - frame_len);
+        frame_len = SPN_RTC_MINIMAL_FRAME_SIZE;
+    }
+    p->len = p->tot_len = frame_len;
     ethernet_output(iface, p, (const struct eth_addr*)iface->hwaddr, &hw_hdr->src, ETHTYPE_PROFINET);
 free_out:
     pbuf_free(p);

@@ -1,7 +1,9 @@
 #include <lwip/opt.h>
+#include <lwip/sys.h>
 #include <netif/ethernet.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
+#include <string.h>
 
 int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_req* reqs)
 {
@@ -161,12 +163,17 @@ int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_ident_res
     int res = SPN_OK;
     int len;
     uint16_t offset = 0;
+    uint16_t frame_len;
     const int16_t header_size = sizeof(struct spn_dcp_header) + sizeof(struct pn_pdu) + SIZEOF_ETH_HDR;
-    const uint16_t hdr_size = sizeof(struct spn_dcp_general_block) + 2;
+    const uint16_t hdr_size = sizeof(struct spn_dcp_general_block);
     const struct eth_addr broadcast_addr = { { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff } };
     struct spn_dcp_header* dcp_hdr;
     struct pn_pdu* pn_hdr;
     unsigned i, k;
+
+    if (!options || !resp) {
+        return -SPN_EINVAL;
+    }
 
     /* Count options number */
     for (k = 0; options[k] && k < 8; k++) {
@@ -256,6 +263,7 @@ int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_ident_res
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_INITIATIVE, SPN_DCP_SUB_OPT_DEVICE_INITIATIVE_DEVICE_INITIATIVE):
             spn_dcp_pack_req_block(r_payload + offset, block_type, 2);
             spn_dcp_pack_device_initiative(r_payload + offset, lwip_htons(SPN_DCP_DEV_INITIATIVE_ENABLE_HELLO));
+            offset += hdr_size + 2;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_DOMAIN):
         case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_PRIO):
@@ -265,6 +273,8 @@ int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_ident_res
             res = -SPN_ENOSYS;
             goto free_out;
         case BLOCK_TYPE(SPN_DCP_OPTION_ALL_SELECTOR, SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR):
+            spn_dcp_pack_req_block(r_payload + offset, block_type, 0);
+            offset += hdr_size;
             break;
         default:
             res = -SPN_ENOSYS;
@@ -282,15 +292,26 @@ int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_ident_res
     pbuf_header(p, sizeof(*dcp_hdr));
     dcp_hdr = (struct spn_dcp_header*)p->payload;
     dcp_hdr->service_id = SPN_DCP_SERVICE_ID_IDENTIFY;
-    dcp_hdr->service_type = SPN_DCP_SERVICE_TYPE_RESPONSE;
+    dcp_hdr->service_type = SPN_DCP_SERVICE_TYPE_REQUEST;
     dcp_hdr->dcp_data_length = lwip_htons(offset);
-    dcp_hdr->xid = lwip_ntohl(resp->xid);
+    dcp_hdr->response_delay_factor = lwip_htons(1);
+    dcp_hdr->xid = lwip_htonl(resp->xid);
 
     pbuf_header(p, sizeof(*pn_hdr));
     pn_hdr = (struct pn_pdu*)p->payload;
-    pn_hdr->frame_id = PP_HTONS(FRAME_ID_DCP_IDENT_RES);
+    pn_hdr->frame_id = PP_HTONS(FRAME_ID_DCP_IDENT_REQ);
 
+    /* Adjust output packet size */
+    frame_len = offset + sizeof(*dcp_hdr) + sizeof(*pn_hdr);
+    if (frame_len < 42) {
+        /* Set padding to zero */
+        memset(r_payload + offset, 0, 42 - frame_len);
+        frame_len = 42;
+    }
+    p->len = p->tot_len = frame_len;
+    LOCK_TCPIP_CORE();
     ethernet_output(iface, p, (const struct eth_addr*)iface->hwaddr, &broadcast_addr, ETHTYPE_PROFINET);
+    UNLOCK_TCPIP_CORE();
 free_out:
     pbuf_free(p);
 out:
