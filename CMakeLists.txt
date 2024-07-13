@@ -27,7 +27,7 @@ if (ENABLE_EXAMPLES)
     aux_source_directory(source/port/posix PORT_SOURCES)
     add_executable(main ${PORT_SOURCES} ${SOURCES})
     target_include_directories(main PUBLIC source/inc)
-    target_link_libraries(main lwip)
+    target_link_libraries(main lwip pthread)
 endif (ENABLE_EXAMPLES)
 
 # Test part
@@ -35,7 +35,7 @@ if (ENABLE_TESTS)
     aux_source_directory(source/test TEST_SOURCES)
     CPMAddPackage("gh:google/googletest#v1.14.0")
     add_executable(tests ${TEST_SOURCES})
-    target_link_libraries(tests PRIVATE gtest_main SPN)
+    target_link_libraries(tests PRIVATE gtest_main SPN pthread)
     target_include_directories(tests PRIVATE source/port/posix)
 
     if (CMAKE_BUILD_TYPE STREQUAL "Coverage")
