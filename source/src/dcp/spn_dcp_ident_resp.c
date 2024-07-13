@@ -256,6 +256,7 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
     uint16_t frame_len;
     struct spn_dcp_header* dcp_hdr;
     struct pn_pdu* pn_hdr;
+    bool name_of_station_responded = false;
 
     /* merge two list into one in asc order, list EOF check: value==0 */
     uint16_t merged[32];
@@ -301,7 +302,15 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
             spn_dcp_pack_resp_block(r_payload + offset, block_type, len, block_info);
             offset += hdr_size + len;
             break;
+        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME):
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION):
+            /* NOTE: ALIAS_NAME and NAME_OF_STATION are all required to respond nameOfStation,
+             *       and we should make sure only one stationOfName is responded */
+            if (!name_of_station_responded) {
+                name_of_station_responded = true;
+            } else {
+                break;
+            }
             len = spn_dcp_pack_station_of_name(r_payload + offset + hdr_size, spn_sys_get_station_name());
             spn_dcp_pack_resp_block(r_payload + offset, block_type, len, block_info);
             offset += hdr_size + len;
@@ -318,11 +327,6 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_OPTIONS):
             len = spn_dcp_pack_options(r_payload + offset + hdr_size, spn_dcp_supported_options);
-            spn_dcp_pack_resp_block(r_payload + offset, block_type, len, block_info);
-            offset += hdr_size + len;
-            break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME):
-            len = spn_dcp_pack_alias(r_payload + offset + hdr_size, spn_sys_get_alias_name());
             spn_dcp_pack_resp_block(r_payload + offset, block_type, len, block_info);
             offset += hdr_size + len;
             break;

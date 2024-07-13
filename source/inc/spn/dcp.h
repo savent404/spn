@@ -10,7 +10,6 @@
  * @todo factory reset to be implemented
  * @todo reset to factory to be implemented
  * @todo hello to be implemented
- * @todo ident.resp should response nameOfStation when ident.req has nameOfAlias
  *
  * Copyright 2023 savent_gate
  *
