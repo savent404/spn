@@ -54,6 +54,13 @@ void spn_deinit(struct spn_ctx* ctx);
 int spn_input_hook(void* frame, void* iface); 
 #endif
 
+
+/**
+ * @brief Input hook of ethernet frame
+ * @note this is a weak function that only hooked for test purpose
+ */
+void _spn_input_indication(int result);
+
 #ifdef __cplusplus
 }
 #endif

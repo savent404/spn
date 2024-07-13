@@ -11,6 +11,11 @@
 
 #include <lwip/prot/ethernet.h>
 
+__attribute__((weak)) void _spn_input_indication(int result)
+{
+    LWIP_UNUSED_ARG(result);
+}
+
 int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg, iface_t* if1, iface_t* if2)
 {
     if (!ctx || !cfg || !if1) {
@@ -63,5 +68,9 @@ int spn_input_hook(void* frame, void* iface)
     if (res == SPN_OK) {
         pbuf_free(p);
     }
+
+    /* Test purpose hook */
+    _spn_input_indication(res);
+
     return res;
 }

@@ -1,3 +1,4 @@
+#include <atomic>
 #include <chrono>
 #include <cstddef>
 #include <lwip/opt.h>
@@ -11,6 +12,7 @@
 #include <spn/dcp.h>
 #include <thread>
 
+std::atomic<int> g_remain_input_frames = { 0 };
 namespace {
 
 using frame_t = std::shared_ptr<std::vector<uint8_t>>;
@@ -86,6 +88,18 @@ struct DcpTest : public SpnInstance {
         memset(ctx, 0, sizeof(*ctx));
     }
 
+    virtual bool step()
+    {
+        bool res = SpnInstance::step();
+        // increase the remain input frames
+        g_remain_input_frames.fetch_add(1);
+
+        while (g_remain_input_frames > 0) {
+            std::this_thread::sleep_for(std::chrono::microseconds(100));
+        }
+        return res;
+    }
+
     frame_t get_output()
     {
         future.get();
@@ -101,6 +115,11 @@ struct DcpTest : public SpnInstance {
 };
 
 } // namespace
+
+extern "C" void _spn_input_indication(int result)
+{
+    g_remain_input_frames.fetch_sub(1);
+}
 
 TEST_F(DcpTest, inputAllSelector)
 {
@@ -158,7 +177,7 @@ TEST_F(DcpTest, inputIdentResX208)
     dev_session->resp.xid = 0x01000001;
     dev_session->state = dcp_dev_state_ident;
     this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentRespX208) });
-    while (this->step()) { }
+    this->step();
 
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
     ASSERT_EQ(dev_session->state, dcp_dev_state_active);
@@ -171,7 +190,7 @@ TEST_F(DcpTest, inputIdentResEcoPn)
     dev_session->resp.xid = 0x000194ef;
     dev_session->state = dcp_dev_state_ident;
     this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentRespEcoPn) });
-    while (this->step()) { }
+    this->step();
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
     ASSERT_EQ(dev_session->state, dcp_dev_state_active);
     ASSERT_STREQ(dev_session->resp.name_of_station, "et200ecopn.dev7");
@@ -184,7 +203,7 @@ TEST_F(DcpTest, inputIdentRes200smt)
     dev_session->resp.xid = 0x000194ef;
     dev_session->state = dcp_dev_state_ident;
     this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpIdentResp200smt) });
-    while (this->step()) { }
+    this->step();
     std::this_thread::sleep_for(std::chrono::microseconds(100));
     ASSERT_EQ(dev_session->state, dcp_dev_state_active);
     ASSERT_STREQ(dev_session->resp.name_of_station, "s7-200-smart-002");
