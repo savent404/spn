@@ -4,7 +4,6 @@
  * @brief
  * @date 2024-07-07
  *
- * @todo filters need to be implemented
  * @todo timeout mechanism to be implemented
  * @todo get/set mechanism to be implemented
  * @todo set user callback to be implemented

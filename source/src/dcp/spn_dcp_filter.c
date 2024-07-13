@@ -157,13 +157,22 @@ bool spn_dcp_filter_options(const uint16_t* options, uint16_t num)
 
 bool spn_dcp_filter_instance(uint16_t instance)
 {
-    LWIP_UNUSED_ARG(instance);
-    /* TODO: Implement this function */
+    uint16_t t;
+
+    t = lwip_ntohs(spn_sys_get_dev_instance());
+    if (t != instance) {
+        return false;
+    }
     return true;
 }
+
 bool spn_dcp_filter_device_initiative(uint16_t value)
 {
-    LWIP_UNUSED_ARG(value);
-    /* TODO: Implement this function */
+    uint16_t t;
+
+    t = lwip_ntohs(spn_sys_get_dev_initiative());
+    if (t != value) {
+        return false;
+    }
     return true;
 }
