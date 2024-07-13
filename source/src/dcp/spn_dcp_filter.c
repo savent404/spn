@@ -62,6 +62,7 @@ bool spn_dcp_filter_station_of_name(const char* name, uint16_t len)
     }
     return true;
 }
+
 bool spn_dcp_filter_alias(const char* name, uint16_t len)
 {
     /* Code of alias name: NameOfPort.NameOfStation */
@@ -130,13 +131,30 @@ bool spn_dcp_filter_role(uint8_t role)
     return true;
 }
 
+extern const uint16_t* spn_dcp_supported_options;
+static inline bool option_is_supported(uint16_t option)
+{
+    const uint16_t* p = spn_dcp_supported_options;
+    while (*p) {
+        if (*p == option) {
+            return true;
+        }
+        p++;
+    }
+    return false;
+}
+
 bool spn_dcp_filter_options(const uint16_t* options, uint16_t num)
 {
-    LWIP_UNUSED_ARG(options);
-    LWIP_UNUSED_ARG(num);
-    /* TODO: Implement this function */
+    uint16_t i;
+    for (i = 0; i < num; i++) {
+        if (!option_is_supported(options[i])) {
+            return false;
+        }
+    }
     return true;
 }
+
 bool spn_dcp_filter_instance(uint16_t instance)
 {
     LWIP_UNUSED_ARG(instance);
