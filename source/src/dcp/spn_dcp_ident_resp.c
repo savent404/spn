@@ -328,7 +328,7 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_INSTANCE):
             spn_dcp_pack_resp_block(r_payload + offset, block_type, 2, block_info);
-            spn_dcp_pack_instance(r_payload + offset + hdr_size, 0); /* TOD: As default, we only support single instance */
+            spn_dcp_pack_instance(r_payload + offset + hdr_size, spn_sys_get_dev_initiative());
             offset += hdr_size + 2;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_OEM_DEVICE_ID):
@@ -343,7 +343,7 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
             goto free_out;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_INITIATIVE, SPN_DCP_SUB_OPT_DEVICE_INITIATIVE_DEVICE_INITIATIVE):
             spn_dcp_pack_resp_block(r_payload + offset, block_type, 2, block_info);
-            spn_dcp_pack_device_initiative(r_payload + offset, lwip_htons(SPN_DCP_DEV_INITIATIVE_ENABLE_HELLO));
+            spn_dcp_pack_device_initiative(r_payload + offset, spn_sys_get_dev_initiative());
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_DOMAIN):
         case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_PRIO):

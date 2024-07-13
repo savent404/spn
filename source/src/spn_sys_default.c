@@ -61,22 +61,22 @@ SPN_WEAK_FN const char* spn_sys_get_vendor_name(void)
 
 SPN_WEAK_FN uint16_t spn_sys_get_vendor_id(void)
 {
-    return PP_NTOHS(0x1234);
+    return PP_HTONS(0x1234);
 }
 
 SPN_WEAK_FN uint16_t spn_sys_get_device_id(void)
 {
-    return PP_NTOHS(0x5678);
+    return PP_HTONS(0x5678);
 }
 
 SPN_WEAK_FN uint16_t spn_sys_get_oem_vendor_id(void)
 {
-    return PP_NTOHS(0xBEEF);
+    return PP_HTONS(0xBEEF);
 }
 
 SPN_WEAK_FN uint16_t spn_sys_get_oem_device_id(void)
 {
-    return PP_NTOHS(0x1234);
+    return PP_HTONS(0x1234);
 }
 
 SPN_WEAK_FN enum spn_role spn_sys_get_role(void)
@@ -87,4 +87,14 @@ SPN_WEAK_FN enum spn_role spn_sys_get_role(void)
 SPN_WEAK_FN enum spn_ip_status spn_sys_get_ip_status(void)
 {
     return ip_status_static;
+}
+
+uint16_t spn_sys_get_dev_instance(void)
+{
+    return PP_HTONS(0);
+}
+
+uint16_t spn_sys_get_dev_initiative(void)
+{
+    return PP_HTONS(SPN_DCP_DEV_INITIATIVE_ENABLE_HELLO);
 }
