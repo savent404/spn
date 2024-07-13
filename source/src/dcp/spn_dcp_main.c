@@ -45,7 +45,7 @@ int spn_dcp_input(void* frame, uint16_t len, uint16_t frame_id, struct eth_hdr* 
          * @todo need schedule the response by response_delay_factory
          */
         struct spn_dcp_ident_req req = { 0 };
-        res = spn_dcp_ident_req_parse(dcp_blocks, dcp_data_len, &req);
+        res = spn_dcp_ident_req_parse(dcp_blocks, dcp_data_len, &req, iface);
         if (res == SPN_OK) {
             req.xid = dcp_xid;
             res = spn_dcp_ident_resp_assemble(hw_hdr, &req, iface);

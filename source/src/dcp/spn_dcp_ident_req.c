@@ -5,7 +5,7 @@
 #include <spn/errno.h>
 #include <string.h>
 
-int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_req* reqs)
+int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_req* reqs, iface_t* iface)
 {
     const struct spn_dcp_general_block* block_ptr;
     uint16_t offset;
@@ -40,7 +40,7 @@ int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_re
             ip_addr = lwip_htonl(GET_VALUE(r_payload, uint32_t, 0));
             ip_mask = lwip_htonl(GET_VALUE(r_payload, uint32_t, 4));
             ip_gw = lwip_htonl(GET_VALUE(r_payload, uint32_t, 8));
-            if (spn_dcp_filter_ip(ip_addr, ip_mask, ip_gw)) {
+            if (spn_dcp_filter_ip(iface, ip_addr, ip_mask, ip_gw)) {
                 goto filter_miss_match;
             }
             break;
@@ -53,10 +53,10 @@ int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_re
             ip_dns[1] = lwip_htons(GET_VALUE(r_payload, uint32_t, 16));
             ip_dns[2] = lwip_htons(GET_VALUE(r_payload, uint32_t, 20));
             ip_dns[3] = lwip_htons(GET_VALUE(r_payload, uint32_t, 24));
-            if (spn_dcp_filter_ip(ip_addr, ip_mask, ip_gw)) {
+            if (spn_dcp_filter_ip(iface, ip_addr, ip_mask, ip_gw)) {
                 goto filter_miss_match;
             }
-            if (spn_dcp_filter_dns(ip_dns[0], ip_dns[1], ip_dns[2], ip_dns[3])) {
+            if (spn_dcp_filter_dns(iface, ip_dns[0], ip_dns[1], ip_dns[2], ip_dns[3])) {
                 goto filter_miss_match;
             }
             break;

@@ -276,7 +276,7 @@ static inline int spn_dcp_block_walk(void* payload, int offset)
  *         \c SPN_EBADMSG on parsing error
  *         \c SPN_ENOSYS on not supported feature
  */
-int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_req* reqs);
+int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_req* reqs, iface_t* iface);
 int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_ident_resp* resp, iface_t* iface);
 int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_ident_resp* resp);
 int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req* reqs, iface_t* iface);
@@ -287,8 +287,8 @@ int spn_dcp_hello_req_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req*
  * @defgroup dcp_filter DCP filter
  * @{
  */
-bool spn_dcp_filter_ip(uint32_t ip, uint32_t mask, uint32_t gw);
-bool spn_dcp_filter_dns(uint32_t dns1, uint32_t dns2, uint32_t dns3, uint32_t dns4);
+bool spn_dcp_filter_ip(iface_t *iface, uint32_t ip, uint32_t mask, uint32_t gw);
+bool spn_dcp_filter_dns(iface_t *iface, uint32_t dns1, uint32_t dns2, uint32_t dns3, uint32_t dns4);
 bool spn_dcp_filter_station_of_name(const char* name, uint16_t len);
 bool spn_dcp_filter_alias(const char* name, uint16_t len);
 bool spn_dcp_filter_vendor_name(const char* name, uint16_t len);
