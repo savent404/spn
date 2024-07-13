@@ -40,7 +40,7 @@ static inline int spn_dcp_merge_options(uint16_t* dest, const uint16_t* s1, cons
     return idx;
 }
 
-int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_ident_resp* resp)
+int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* resp)
 {
     struct spn_dcp_general_block* block_ptr;
     uint16_t block_len;
@@ -243,7 +243,7 @@ free_out:
     return res;
 }
 
-int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req* reqs, iface_t* iface)
+int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_block_req* reqs, iface_t* iface)
 {
     struct pbuf* p;
     char* r_payload;

@@ -5,7 +5,7 @@
 #include <spn/errno.h>
 #include <string.h>
 
-int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_req* reqs, iface_t* iface)
+int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_block_req* reqs, iface_t* iface)
 {
     const struct spn_dcp_general_block* block_ptr;
     uint16_t offset;
@@ -156,7 +156,7 @@ filter_miss_match:
     return -SPN_ENXIO;
 }
 
-int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_ident_resp* resp, iface_t* iface)
+int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_db* resp, iface_t* iface)
 {
     struct pbuf* p;
     char* r_payload;

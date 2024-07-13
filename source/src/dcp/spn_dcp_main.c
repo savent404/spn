@@ -44,7 +44,7 @@ int spn_dcp_input(void* frame, uint16_t len, uint16_t frame_id, struct eth_hdr* 
          *  2. Assemble the response
          * @todo need schedule the response by response_delay_factory
          */
-        struct spn_dcp_ident_req req = { 0 };
+        struct spn_dcp_block_req req = { 0 };
         res = spn_dcp_ident_req_parse(dcp_blocks, dcp_data_len, &req, iface);
         if (res == SPN_OK) {
             req.xid = dcp_xid;
@@ -94,7 +94,7 @@ ret:
     return SPN_OK;
 }
 
-static int spn_dcp_search_general(const uint16_t* options, struct spn_dcp_ident_resp* resp)
+static int spn_dcp_search_general(const uint16_t* options, struct spn_dcp_db* resp)
 {
     unsigned idx;
     bool found = false;
@@ -118,14 +118,14 @@ static int spn_dcp_search_general(const uint16_t* options, struct spn_dcp_ident_
 int spn_dcp_search_all(void)
 {
     const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_ALL_SELECTOR, SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR), 0 };
-    struct spn_dcp_ident_resp resp;
+    struct spn_dcp_db resp;
     return spn_dcp_search_general(options, &resp);
 }
 
 int spn_dcp_search_name_of_station(char* name)
 {
     const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION), 0 };
-    struct spn_dcp_ident_resp resp;
+    struct spn_dcp_db resp;
     if (!name) {
         return -SPN_EINVAL;
     }
@@ -136,7 +136,7 @@ int spn_dcp_search_name_of_station(char* name)
 int spn_dcp_search_name_of_vendor(char* name)
 {
     const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR), 0 };
-    struct spn_dcp_ident_resp resp;
+    struct spn_dcp_db resp;
 
     if (!name) {
         return -SPN_EINVAL;
@@ -148,7 +148,7 @@ int spn_dcp_search_name_of_vendor(char* name)
 int spn_dcp_search_name_of_alias(char* name)
 {
     const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME), 0 };
-    struct spn_dcp_ident_resp resp;
+    struct spn_dcp_db resp;
 
     if (!name) {
         return -SPN_EINVAL;

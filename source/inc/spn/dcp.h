@@ -154,12 +154,12 @@ struct spn_dcp_all_selector_block {
 };
 #pragma pack(pop)
 
-struct spn_dcp_ident_req {
+struct spn_dcp_block_req {
     uint32_t xid; /* Session id */
     uint16_t option_sub_option[6]; /* MSB: | option(8) | suboption(8) */
 };
 
-struct spn_dcp_ident_resp {
+struct spn_dcp_db {
     uint32_t xid; /* Session id */
 
     uint16_t block_info;
@@ -201,7 +201,7 @@ enum spn_dcp_dev_state {
 
 struct spn_dcp_dev_session {
     enum spn_dcp_dev_state state;
-    struct spn_dcp_ident_resp resp;
+    struct spn_dcp_db resp;
 };
 
 struct spn_dcp_ctx {
@@ -275,12 +275,13 @@ static inline int spn_dcp_block_walk(void* payload, int offset)
  *         \c SPN_EBADMSG on parsing error
  *         \c SPN_ENOSYS on not supported feature
  */
-int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_req* reqs, iface_t* iface);
-int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_ident_resp* resp, iface_t* iface);
-int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_ident_resp* resp);
-int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req* reqs, iface_t* iface);
-int spn_dcp_hello_req_parse(void* payload, uint16_t len, struct spn_dcp_ident_req* reqs);
-int spn_dcp_hello_req_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req* reqs);
+int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_block_req* reqs, iface_t* iface);
+int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_db* resp, iface_t* iface);
+int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* resp);
+int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_block_req* reqs, iface_t* iface);
+int spn_dcp_set_req_parse(void* payload, uint16_t len, iface_t* iface);
+int spn_dcp_hello_req_parse(void* payload, uint16_t len, struct spn_dcp_block_req* reqs);
+int spn_dcp_hello_req_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_block_req* reqs);
 
 /**
  * @defgroup dcp_filter DCP filter
