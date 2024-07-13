@@ -11,6 +11,7 @@
  * @todo factory reset to be implemented
  * @todo reset to factory to be implemented
  * @todo hello to be implemented
+ * @todo ident.resp should response nameOfStation when ident.req has nameOfAlias
  *
  * Copyright 2023 savent_gate
  *
@@ -287,8 +288,8 @@ int spn_dcp_hello_req_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req*
  * @defgroup dcp_filter DCP filter
  * @{
  */
-bool spn_dcp_filter_ip(iface_t *iface, uint32_t ip, uint32_t mask, uint32_t gw);
-bool spn_dcp_filter_dns(iface_t *iface, uint32_t dns1, uint32_t dns2, uint32_t dns3, uint32_t dns4);
+bool spn_dcp_filter_ip(iface_t* iface, uint32_t ip, uint32_t mask, uint32_t gw);
+bool spn_dcp_filter_dns(iface_t* iface, uint32_t dns1, uint32_t dns2, uint32_t dns3, uint32_t dns4);
 bool spn_dcp_filter_station_of_name(const char* name, uint16_t len);
 bool spn_dcp_filter_alias(const char* name, uint16_t len);
 bool spn_dcp_filter_vendor_name(const char* name, uint16_t len);
