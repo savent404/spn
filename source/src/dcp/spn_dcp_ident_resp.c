@@ -96,25 +96,25 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_ident_r
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.Vendor\n"));
-            resp->vendor_of_name = (char*)malloc(block_len - 1);
-            if (!resp->vendor_of_name) {
+            resp->name_of_vendor = (char*)malloc(block_len - 1);
+            if (!resp->name_of_vendor) {
                 res = -SPN_ENOMEM;
                 goto free_out;
             }
-            strncpy(resp->vendor_of_name, r_payload + 2, block_len - 2);
-            resp->vendor_of_name[block_len - 2] = '\0';
-            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Vendor=%s\n", resp->vendor_of_name));
+            strncpy(resp->name_of_vendor, r_payload + 2, block_len - 2);
+            resp->name_of_vendor[block_len - 2] = '\0';
+            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Vendor=%s\n", resp->name_of_vendor));
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.NameOfStation\n"));
-            resp->station_of_name = (char*)malloc(block_len - 1);
-            if (!resp->station_of_name) {
+            resp->name_of_station = (char*)malloc(block_len - 1);
+            if (!resp->name_of_station) {
                 res = -SPN_ENOMEM;
                 goto free_out;
             }
-            strncpy(resp->station_of_name, r_payload + 2, block_len - 2);
-            resp->station_of_name[block_len - 2] = '\0';
-            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: NameOfStation=%s\n", resp->station_of_name));
+            strncpy(resp->name_of_station, r_payload + 2, block_len - 2);
+            resp->name_of_station[block_len - 2] = '\0';
+            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: NameOfStation=%s\n", resp->name_of_station));
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ID):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.DeviceID\n"));
@@ -146,14 +146,14 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_ident_r
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.AliasName\n"));
-            resp->alias_of_name = (char*)malloc(block_len - 1);
-            if (!resp->alias_of_name) {
+            resp->name_of_alias = (char*)malloc(block_len - 1);
+            if (!resp->name_of_alias) {
                 res = -SPN_ENOMEM;
                 goto free_out;
             }
-            strncpy(resp->alias_of_name, r_payload + 2, block_len - 2);
-            resp->alias_of_name[block_len - 2] = '\0';
-            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: AliasName=%s\n", resp->alias_of_name));
+            strncpy(resp->name_of_alias, r_payload + 2, block_len - 2);
+            resp->name_of_alias[block_len - 2] = '\0';
+            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: AliasName=%s\n", resp->name_of_alias));
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_INSTANCE):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.DeviceInstance\n"));
@@ -225,17 +225,17 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_ident_r
 
     return res;
 free_out:
-    if (resp->vendor_of_name) {
-        free(resp->vendor_of_name);
+    if (resp->name_of_vendor) {
+        free(resp->name_of_vendor);
     }
-    if (resp->station_of_name) {
-        free(resp->station_of_name);
+    if (resp->name_of_station) {
+        free(resp->name_of_station);
     }
     if (resp->options) {
         free(resp->options);
     }
-    if (resp->alias_of_name) {
-        free(resp->alias_of_name);
+    if (resp->name_of_alias) {
+        free(resp->name_of_alias);
     }
     if (resp->dhcp_param) {
         free(resp->dhcp_param);

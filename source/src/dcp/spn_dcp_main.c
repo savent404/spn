@@ -129,7 +129,7 @@ int spn_dcp_search_name_of_station(char* name)
     if (!name) {
         return -SPN_EINVAL;
     }
-    resp.station_of_name = name;
+    resp.name_of_station = name;
     return spn_dcp_search_general(options, &resp);
 }
 
@@ -141,7 +141,7 @@ int spn_dcp_search_name_of_vendor(char* name)
     if (!name) {
         return -SPN_EINVAL;
     }
-    resp.vendor_of_name = name;
+    resp.name_of_vendor = name;
     return spn_dcp_search_general(options, &resp);
 }
 
@@ -153,7 +153,7 @@ int spn_dcp_search_name_of_alias(char* name)
     if (!name) {
         return -SPN_EINVAL;
     }
-    resp.alias_of_name = name;
+    resp.name_of_alias = name;
     return spn_dcp_search_general(options, &resp);
 }
 

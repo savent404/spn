@@ -58,7 +58,7 @@ uint32_t spn_sys_get_ip_gw(iface_t* iface);
 uint32_t spn_sys_get_dns(iface_t* iface, int idx);
 
 /**
- * @brief Get station_of_name
+ * @brief Get name_of_station
  *
  * @return const char* station name, NULL if failed
  */

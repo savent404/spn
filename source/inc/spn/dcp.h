@@ -171,9 +171,9 @@ struct spn_dcp_ident_resp {
     uint32_t ip_mask;
     uint32_t ip_gw;
     uint32_t ip_dns[4];
-    char* station_of_name;
-    char* vendor_of_name;
-    char* alias_of_name;
+    char* name_of_station;
+    char* name_of_vendor;
+    char* name_of_alias;
 
     uint16_t vendor_id;
     uint16_t device_id;

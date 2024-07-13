@@ -124,8 +124,8 @@ TEST_F(DcpTest, inputAllSelector)
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
     ASSERT_TRUE(this->output_frames.empty());
     ASSERT_EQ(dev_session->state, dcp_dev_state_active);
-    ASSERT_STREQ(dev_session->resp.station_of_name, spn_sys_get_station_name());
-    ASSERT_STREQ(dev_session->resp.vendor_of_name, spn_sys_get_vendor_name());
+    ASSERT_STREQ(dev_session->resp.name_of_station, spn_sys_get_station_name());
+    ASSERT_STREQ(dev_session->resp.name_of_vendor, spn_sys_get_vendor_name());
 }
 
 TEST_F(DcpTest, outputAllSelector)
@@ -162,7 +162,7 @@ TEST_F(DcpTest, inputIdentResX208)
 
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
     ASSERT_EQ(dev_session->state, dcp_dev_state_active);
-    ASSERT_STREQ(dev_session->resp.station_of_name, "X208-BORD");
+    ASSERT_STREQ(dev_session->resp.name_of_station, "X208-BORD");
 }
 TEST_F(DcpTest, inputIdentResEcoPn)
 {
@@ -174,7 +174,7 @@ TEST_F(DcpTest, inputIdentResEcoPn)
     while (this->step()) { }
     std::this_thread::sleep_for(std::chrono::microseconds(1000));
     ASSERT_EQ(dev_session->state, dcp_dev_state_active);
-    ASSERT_STREQ(dev_session->resp.station_of_name, "et200ecopn.dev7");
+    ASSERT_STREQ(dev_session->resp.name_of_station, "et200ecopn.dev7");
     // TODO: check the response
 }
 TEST_F(DcpTest, inputIdentRes200smt)
@@ -187,7 +187,7 @@ TEST_F(DcpTest, inputIdentRes200smt)
     while (this->step()) { }
     std::this_thread::sleep_for(std::chrono::microseconds(100));
     ASSERT_EQ(dev_session->state, dcp_dev_state_active);
-    ASSERT_STREQ(dev_session->resp.station_of_name, "s7-200-smart-002");
+    ASSERT_STREQ(dev_session->resp.name_of_station, "s7-200-smart-002");
     // TODO: check the response
 }
 TEST_F(DcpTest, inputSetReq)

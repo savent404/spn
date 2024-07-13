@@ -218,14 +218,14 @@ int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_ident_res
             offset += hdr_size + 12;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR):
-            LWIP_ASSERT("name is NULL", resp->vendor_of_name != NULL);
-            len = spn_dcp_pack_vendor_name(r_payload + offset + hdr_size, resp->vendor_of_name);
+            LWIP_ASSERT("name is NULL", resp->name_of_vendor != NULL);
+            len = spn_dcp_pack_vendor_name(r_payload + offset + hdr_size, resp->name_of_vendor);
             spn_dcp_pack_req_block(r_payload + offset, block_type, len);
             offset += hdr_size + len;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION):
-            LWIP_ASSERT("name is NULL", resp->station_of_name != NULL);
-            len = spn_dcp_pack_station_of_name(r_payload + offset + hdr_size, resp->station_of_name);
+            LWIP_ASSERT("name is NULL", resp->name_of_station != NULL);
+            len = spn_dcp_pack_station_of_name(r_payload + offset + hdr_size, resp->name_of_station);
             spn_dcp_pack_req_block(r_payload + offset, block_type, len);
             offset += hdr_size + len;
             break;
@@ -240,8 +240,8 @@ int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_ident_res
             offset += hdr_size + 2;
             break;
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME):
-            LWIP_ASSERT("name is NULL", resp->alias_of_name != NULL);
-            len = spn_dcp_pack_alias(r_payload + offset + hdr_size, resp->alias_of_name);
+            LWIP_ASSERT("name is NULL", resp->name_of_alias != NULL);
+            len = spn_dcp_pack_alias(r_payload + offset + hdr_size, resp->name_of_alias);
             spn_dcp_pack_req_block(r_payload + offset, block_type, len);
             offset += hdr_size + len;
             break;
