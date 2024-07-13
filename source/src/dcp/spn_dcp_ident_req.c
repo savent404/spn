@@ -303,10 +303,10 @@ int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_ident_res
 
     /* Adjust output packet size */
     frame_len = offset + sizeof(*dcp_hdr) + sizeof(*pn_hdr);
-    if (frame_len < SPN_RTC_MINIMAL_FRAME_SIZE) {
+    if (frame_len < SPN_DCP_DATA_MIN_LENGTH) {
         /* Set padding to zero */
-        memset(r_payload + offset, 0, SPN_RTC_MINIMAL_FRAME_SIZE - frame_len);
-        frame_len = SPN_RTC_MINIMAL_FRAME_SIZE;
+        memset(r_payload + offset, 0, SPN_DCP_DATA_MIN_LENGTH - frame_len);
+        frame_len = SPN_DCP_DATA_MIN_LENGTH;
     }
     p->len = p->tot_len = frame_len;
     LOCK_TCPIP_CORE();

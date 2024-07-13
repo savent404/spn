@@ -380,10 +380,10 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_ident_req
 
     /* Adjust output packet size */
     frame_len = offset + sizeof(*dcp_hdr) + sizeof(*pn_hdr);
-    if (frame_len < SPN_RTC_MINIMAL_FRAME_SIZE) {
+    if (frame_len < SPN_DCP_DATA_MIN_LENGTH) {
         /* Set padding to zero */
-        memset(r_payload + frame_len, 0, SPN_RTC_MINIMAL_FRAME_SIZE - frame_len);
-        frame_len = SPN_RTC_MINIMAL_FRAME_SIZE;
+        memset(r_payload + frame_len, 0, SPN_DCP_DATA_MIN_LENGTH - frame_len);
+        frame_len = SPN_DCP_DATA_MIN_LENGTH;
     }
     p->len = p->tot_len = frame_len;
     ethernet_output(iface, p, (const struct eth_addr*)iface->hwaddr, &hw_hdr->src, ETHTYPE_PROFINET);
