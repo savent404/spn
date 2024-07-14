@@ -279,7 +279,10 @@ int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_block_re
 int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_db* resp, iface_t* iface);
 int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* resp);
 int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_block_req* reqs, iface_t* iface);
-int spn_dcp_set_req_parse(void* payload, uint16_t len, iface_t* iface);
+int spn_dcp_set_req_parse(void* payload, uint16_t len, struct spn_dcp_block_req* reqs, iface_t* iface);
+int spn_dcp_set_req_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_block_req* reqs, iface_t* iface);
+int spn_dcp_set_resp_parse(void* payload, uint16_t len, struct spn_dcp_block_req* reqs);
+int spn_dcp_set_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_block_req* reqs, iface_t* iface);
 int spn_dcp_hello_req_parse(void* payload, uint16_t len, struct spn_dcp_block_req* reqs);
 int spn_dcp_hello_req_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_block_req* reqs);
 

@@ -32,11 +32,21 @@ int spn_dcp_input(void* frame, uint16_t len, uint16_t frame_id, struct eth_hdr* 
         /* TODO: Use spn_dcp_hello_req_parse */
         /* spn_dcp_block_parse(dcp_blocks, dcp_data_len, 0, 0, &blocks); */
         break;
-    case FRAME_ID_DCP_GET_SET << 8 | SPN_DCP_SERVICE_ID_GET:
-    case FRAME_ID_DCP_GET_SET << 8 | SPN_DCP_SERVICE_ID_SET:
-        /* TODO: Use spn_dcp_get_set_parse */
+    case FRAME_ID_DCP_GET_SET << 8 | SPN_DCP_SERVICE_ID_GET: {
+        break;
+    }
+    case FRAME_ID_DCP_GET_SET << 8 | SPN_DCP_SERVICE_ID_SET: {
+        struct spn_dcp_block_req req = { 0 };
+        res = spn_dcp_set_req_parse(dcp_blocks, dcp_data_len, &req, iface);
+        if (res != SPN_OK) {
+            break;
+        }
+        req.xid = dcp_xid;
+        /* TODO: handle requirements ... */
+        res = spn_dcp_set_resp_assemble(hw_hdr, &req, iface);
         /* spn_dcp_block_parse(dcp_blocks, dcp_data_len, 0, 0, &blocks); */
         break;
+    }
     case FRAME_ID_DCP_IDENT_REQ << 8 | SPN_DCP_SERVICE_ID_IDENTIFY: {
         /**
          * Steps:

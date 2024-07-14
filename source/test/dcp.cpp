@@ -114,6 +114,12 @@ struct DcpTest : public SpnInstance {
     std::deque<frame_t> output_frames;
 };
 
+static inline int get_payload_len(const frame_t& f)
+{
+    uint16_t *ptr = (uint16_t*)(f->data() + 16 + 8);
+    return lwip_ntohs(*ptr) + 16 + 10;
+}
+
 } // namespace
 
 extern "C" void _spn_input_indication(int result)
@@ -166,6 +172,19 @@ TEST_F(DcpTest, outputAllSelector)
     ASSERT_EQ(f->size(), rel->size());
     /* Forget about mac address */
     for (size_t i = 12; i < f->size(); i++) {
+        ASSERT_EQ(f->at(i), rel->at(i));
+    }
+}
+
+TEST_F(DcpTest, inputSignalSetReq)
+{
+    this->input_frames.push_back({ decode_frame(test_data::dcp::kDcpSignalSetReq) });
+    this->step();
+    auto f = this->get_output();
+    auto rel = decode_frame(test_data::dcp::KDcpSignalSetResp);
+
+    // ASSERT_EQ(f->size(), rel->size());
+    for (size_t i = 12; i < get_payload_len(rel); i++) {
         ASSERT_EQ(f->at(i), rel->at(i));
     }
 }
