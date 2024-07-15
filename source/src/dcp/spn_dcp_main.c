@@ -127,14 +127,14 @@ static int spn_dcp_search_general(const uint16_t* options, struct spn_dcp_db* re
 
 int spn_dcp_search_all(void)
 {
-    const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_ALL_SELECTOR, SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR), 0 };
+    const uint16_t options[] = { DCP_BLOCK_TYPE(SPN_DCP_OPTION_ALL_SELECTOR, SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR), 0 };
     struct spn_dcp_db resp;
     return spn_dcp_search_general(options, &resp);
 }
 
 int spn_dcp_search_name_of_station(char* name)
 {
-    const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION), 0 };
+    const uint16_t options[] = { DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION), 0 };
     struct spn_dcp_db resp;
     if (!name) {
         return -SPN_EINVAL;
@@ -145,7 +145,7 @@ int spn_dcp_search_name_of_station(char* name)
 
 int spn_dcp_search_name_of_vendor(char* name)
 {
-    const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_VENDOR), 0 };
+    const uint16_t options[] = { DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_VENDOR), 0 };
     struct spn_dcp_db resp;
 
     if (!name) {
@@ -157,7 +157,7 @@ int spn_dcp_search_name_of_vendor(char* name)
 
 int spn_dcp_search_name_of_alias(char* name)
 {
-    const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_ALIAS), 0 };
+    const uint16_t options[] = { DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_ALIAS), 0 };
     struct spn_dcp_db resp;
 
     if (!name) {

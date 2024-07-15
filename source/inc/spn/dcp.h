@@ -121,11 +121,8 @@
 
 #define SPN_DCP_DEV_SIGNAL_FLASH_ONCE 0x0100 /* Flash an LED (for example the Ethernet Link LED) or an alternative signaling with duration of 3s with a frequency of, for example, 1Hz */
 
-#define SPN_DCP_BLOCK_TOUCH(block) ((block)->touched |= SPN_DCP_BLOCK_TOUCHED)
-#define SPN_DCP_IS_BLOCK_TOUCHED(block) ((block)->touched & SPN_DCP_BLOCK_TOUCHED)
-#define SPN_DCP_IS_BLOCK_EMPTY(block) ((block)->touched == SPN_DCP_BLOCK_EMPTY)
-#define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
-#define GET_VALUE(ptr, type, offset) (*(type*)((uintptr_t)ptr + offset))
+#define DCP_BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
+#define DCP_GET_VALUE(ptr, type, offset) (*(type*)((uintptr_t)ptr + offset))
 
 #pragma pack(push, 1)
 struct spn_dcp_header {

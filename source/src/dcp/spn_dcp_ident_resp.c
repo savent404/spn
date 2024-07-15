@@ -44,7 +44,7 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* res
 {
     struct spn_dcp_general_block* block_ptr;
     uint16_t block_len;
-    uint16_t block_type;
+    uint16_t DCP_BLOCK_TYPE;
     char* r_payload;
     unsigned int idx;
     uint16_t offset;
@@ -57,7 +57,7 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* res
 
         block_ptr = (struct spn_dcp_general_block*)((char*)payload + offset);
         block_len = lwip_htons(block_ptr->dcp_block_length);
-        block_type = BLOCK_TYPE(block_ptr->option, block_ptr->sub_option);
+        DCP_BLOCK_TYPE = DCP_BLOCK_TYPE(block_ptr->option, block_ptr->sub_option);
         r_payload = (char*)(block_ptr + 1);
 
         if (block_len + sizeof(*block_ptr) + offset > len) {
@@ -65,36 +65,36 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* res
             return -SPN_EBADMSG;
         }
 
-        switch (block_type) {
-        case BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_MAC_ADDRESS):
+        switch (DCP_BLOCK_TYPE) {
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_MAC_ADDRESS):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing IP.MAC.Address\n"));
-            resp->block_info = lwip_htons(GET_VALUE(r_payload, uint16_t, 0));
+            resp->block_info = lwip_htons(DCP_GET_VALUE(r_payload, uint16_t, 0));
             memcpy(resp->mac_addr, r_payload + 2, 6);
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: IP.Mac=%02x:%02x:%02x:%02x:%02x:%02x", resp->mac_addr[0], resp->mac_addr[1], resp->mac_addr[2], resp->mac_addr[3], resp->mac_addr[4], resp->mac_addr[5]));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_PARAMETER):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_PARAMETER):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing IP.Parameter\n"));
             LWIP_ASSERT("Invalid block length", block_len == 14);
-            resp->block_info = lwip_htons(GET_VALUE(r_payload, uint16_t, 0));
-            resp->ip_addr = lwip_ntohl(GET_VALUE(r_payload, uint32_t, 2));
-            resp->ip_mask = lwip_ntohl(GET_VALUE(r_payload, uint32_t, 6));
-            resp->ip_gw = lwip_ntohl(GET_VALUE(r_payload, uint32_t, 10));
+            resp->block_info = lwip_htons(DCP_GET_VALUE(r_payload, uint16_t, 0));
+            resp->ip_addr = lwip_ntohl(DCP_GET_VALUE(r_payload, uint32_t, 2));
+            resp->ip_mask = lwip_ntohl(DCP_GET_VALUE(r_payload, uint32_t, 6));
+            resp->ip_gw = lwip_ntohl(DCP_GET_VALUE(r_payload, uint32_t, 10));
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: IP.Parameter=0x%04x, ip=0x%08x, mask=0x%08x, gw=0x%08x\n", resp->block_info, resp->ip_addr, resp->ip_mask, resp->ip_gw));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_FULL_IP_SUITE):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_FULL_IP_SUITE):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing IP.Full.IPSuite\n"));
             LWIP_ASSERT("invalid block length", block_len == 30);
-            resp->block_info = lwip_htons(GET_VALUE(r_payload, uint16_t, 0));
-            resp->ip_addr = lwip_ntohl(GET_VALUE(r_payload, uint32_t, 2));
-            resp->ip_mask = lwip_ntohl(GET_VALUE(r_payload, uint32_t, 6));
-            resp->ip_gw = lwip_ntohl(GET_VALUE(r_payload, uint32_t, 10));
-            resp->ip_dns[0] = lwip_htons(GET_VALUE(r_payload, uint32_t, 14));
-            resp->ip_dns[1] = lwip_htons(GET_VALUE(r_payload, uint32_t, 18));
-            resp->ip_dns[2] = lwip_htons(GET_VALUE(r_payload, uint32_t, 22));
-            resp->ip_dns[3] = lwip_htons(GET_VALUE(r_payload, uint32_t, 26));
+            resp->block_info = lwip_htons(DCP_GET_VALUE(r_payload, uint16_t, 0));
+            resp->ip_addr = lwip_ntohl(DCP_GET_VALUE(r_payload, uint32_t, 2));
+            resp->ip_mask = lwip_ntohl(DCP_GET_VALUE(r_payload, uint32_t, 6));
+            resp->ip_gw = lwip_ntohl(DCP_GET_VALUE(r_payload, uint32_t, 10));
+            resp->ip_dns[0] = lwip_htons(DCP_GET_VALUE(r_payload, uint32_t, 14));
+            resp->ip_dns[1] = lwip_htons(DCP_GET_VALUE(r_payload, uint32_t, 18));
+            resp->ip_dns[2] = lwip_htons(DCP_GET_VALUE(r_payload, uint32_t, 22));
+            resp->ip_dns[3] = lwip_htons(DCP_GET_VALUE(r_payload, uint32_t, 26));
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: IP.Full.IPSuite=0x%04x, ip=0x%08x, mask=0x%08x, gw=0x%08x, dns=%d.%d.%d.%d\n", resp->block_info, resp->ip_addr, resp->ip_mask, resp->ip_gw, resp->ip_dns[0], resp->ip_dns[1], resp->ip_dns[2], resp->ip_dns[3]));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_VENDOR):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_VENDOR):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.Vendor\n"));
             resp->name_of_vendor = (char*)malloc(block_len - 1);
             if (!resp->name_of_vendor) {
@@ -105,7 +105,7 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* res
             resp->name_of_vendor[block_len - 2] = '\0';
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Vendor=%s\n", resp->name_of_vendor));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.NameOfStation\n"));
             resp->name_of_station = (char*)malloc(block_len - 1);
             if (!resp->name_of_station) {
@@ -116,20 +116,20 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* res
             resp->name_of_station[block_len - 2] = '\0';
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: NameOfStation=%s\n", resp->name_of_station));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ID):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ID):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.DeviceID\n"));
             LWIP_ASSERT("Invalid block length", block_len == 6);
-            resp->vendor_id = lwip_htons(GET_VALUE(r_payload, uint16_t, 2));
-            resp->device_id = lwip_htons(GET_VALUE(r_payload, uint16_t, 4));
+            resp->vendor_id = lwip_htons(DCP_GET_VALUE(r_payload, uint16_t, 2));
+            resp->device_id = lwip_htons(DCP_GET_VALUE(r_payload, uint16_t, 4));
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DeviceID=0x%04x:0x%04x\n", resp->vendor_id, resp->device_id));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ROLE):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ROLE):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.DeviceRole\n"));
             LWIP_ASSERT("Invalid block length", block_len == 4); /* RoleBLock has 1 byte padding */
-            resp->device_role = GET_VALUE(r_payload, uint8_t, 2);
+            resp->device_role = DCP_GET_VALUE(r_payload, uint8_t, 2);
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DeviceRole=%d\n", resp->device_role));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_OPTIONS):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_OPTIONS):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.DeviceOptions\n"));
             LWIP_ASSERT("Invalid block length", block_len >= 2);
             resp->options = (uint16_t*)malloc(block_len);
@@ -138,13 +138,13 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* res
                 goto free_out;
             }
             for (idx = 0; idx < (unsigned)(block_len / 2 - 1); idx++) {
-                resp->options[idx] = lwip_htons(GET_VALUE(r_payload, uint16_t, 2 + idx * 2));
+                resp->options[idx] = lwip_htons(DCP_GET_VALUE(r_payload, uint16_t, 2 + idx * 2));
                 LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_FRESH, ("DCP: DeviceOptions[%d]=0x%04x\n", idx, resp->options[idx]));
             }
             resp->options[idx] = 0; /* EOF is matter */
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DeviceOptions num=%d\n", idx));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_ALIAS):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_ALIAS):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.AliasName\n"));
             resp->name_of_alias = (char*)malloc(block_len - 1);
             if (!resp->name_of_alias) {
@@ -155,36 +155,36 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* res
             resp->name_of_alias[block_len - 2] = '\0';
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: AliasName=%s\n", resp->name_of_alias));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_INSTANCE):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_INSTANCE):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.DeviceInstance\n"));
             LWIP_ASSERT("Invalid block length", block_len == 4);
-            resp->dev_instance = lwip_htons(GET_VALUE(r_payload, uint16_t, 2));
+            resp->dev_instance = lwip_htons(DCP_GET_VALUE(r_payload, uint16_t, 2));
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DeviceInstance=0x%04x\n", resp->dev_instance));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_OEM_DEVICE_ID):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_OEM_DEVICE_ID):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.OEMDeviceID\n"));
             LWIP_ASSERT("Invalid block length", block_len == 6);
-            resp->oem_vendor_id = lwip_htons(GET_VALUE(r_payload, uint16_t, 2));
-            resp->oem_device_id = lwip_htons(GET_VALUE(r_payload, uint16_t, 4));
+            resp->oem_vendor_id = lwip_htons(DCP_GET_VALUE(r_payload, uint16_t, 2));
+            resp->oem_device_id = lwip_htons(DCP_GET_VALUE(r_payload, uint16_t, 4));
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: OEMDeviceID=0x%04x:0x%04x\n", resp->oem_vendor_id, resp->oem_device_id));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_STANDARD_GATEWAY):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_STANDARD_GATEWAY):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.StandardGateway\n"));
             LWIP_ASSERT("Invalid block length", block_len == 4);
-            resp->std_gw_flag = lwip_htons(GET_VALUE(r_payload, uint16_t, 0));
+            resp->std_gw_flag = lwip_htons(DCP_GET_VALUE(r_payload, uint16_t, 0));
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: StandardGateway=0x%02x\n", resp->std_gw_flag));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_RSI_PROPERTIES):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_RSI_PROPERTIES):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.RSIProperties\n"));
             LWIP_ASSERT("Invalid block length", block_len == 4);
-            resp->rsi_prop_value = lwip_htons(GET_VALUE(r_payload, uint16_t, 2));
+            resp->rsi_prop_value = lwip_htons(DCP_GET_VALUE(r_payload, uint16_t, 2));
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: RSIProperties=0x%02x\n", resp->rsi_prop_value));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DHCP, SPN_DCP_SUB_OPT_DHCP_DHCP):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DHCP, SPN_DCP_SUB_OPT_DHCP_DHCP):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing DHCP.DHCP\n"));
             LWIP_ASSERT("Invalid block length", block_len > 4);
-            resp->dhcp_option = GET_VALUE(r_payload, uint8_t, 2);
-            resp->dhcp_param_len = GET_VALUE(r_payload, uint8_t, 3);
+            resp->dhcp_option = DCP_GET_VALUE(r_payload, uint8_t, 2);
+            resp->dhcp_param_len = DCP_GET_VALUE(r_payload, uint8_t, 3);
             resp->dhcp_param = (uint8_t*)malloc(resp->dhcp_param_len);
             if (!resp->dhcp_param) {
                 res = -SPN_ENOMEM;
@@ -193,31 +193,31 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* res
             memcpy(resp->dhcp_param, r_payload + 4, resp->dhcp_param_len);
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DHCP=%d, len=%d\n", resp->dhcp_option, resp->dhcp_param_len));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_INITIATIVE, SPN_DCP_SUB_OPT_DEVICE_INITIATIVE_DEVICE_INITIATIVE):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_INITIATIVE, SPN_DCP_SUB_OPT_DEVICE_INITIATIVE_DEVICE_INITIATIVE):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing DeviceInitiative.DeviceInitiative\n"));
             LWIP_ASSERT("Invalid block length", block_len == 4);
-            resp->dev_initiative_flag = lwip_htons(GET_VALUE(r_payload, uint16_t, 2));
+            resp->dev_initiative_flag = lwip_htons(DCP_GET_VALUE(r_payload, uint16_t, 2));
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DeviceInitiative=0x%02x\n", resp->dev_initiative_flag));
             break;
 
         /* TODO: For TSN feature, not supported */
-        case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_DOMAIN):
-        case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_PRIO):
-        case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_PARAMETER_UUID):
-        case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_NAME):
-        case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_CIM_INTERFACE):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_DOMAIN):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_PRIO):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_PARAMETER_UUID):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_NAME):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_CIM_INTERFACE):
         /* NOTE: Invalid block in ident.req */
-        case BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_START):
-        case BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_STOP):
-        case BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_SIGNAL):
-        case BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_RESPONSE):
-        case BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_FACTORY_RESET):
-        case BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_RESET_TO_FACTORY):
-        case BLOCK_TYPE(SPN_DCP_OPTION_ALL_SELECTOR, SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR):
-            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Reserved block_type=0x%04x\n", block_type));
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_START):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_STOP):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_SIGNAL):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_RESPONSE):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_FACTORY_RESET):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_RESET_TO_FACTORY):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_ALL_SELECTOR, SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR):
+            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Reserved DCP_BLOCK_TYPE=0x%04x\n", DCP_BLOCK_TYPE));
             break;
         default:
-            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: unknown block_type=0x%04x\n", block_type));
+            LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: unknown DCP_BLOCK_TYPE=0x%04x\n", DCP_BLOCK_TYPE));
         }
 
         offset = spn_dcp_block_walk(payload, offset);
@@ -273,19 +273,19 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_block_req
 
     /* Fill blocks */
     for (i = 0; i < k; i++) {
-        uint16_t block_type = merged[i];
+        uint16_t DCP_BLOCK_TYPE = merged[i];
 
-        switch (block_type) {
-        case BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_PARAMETER):
-            spn_dcp_pack_resp_block(r_payload + offset, block_type, 12, block_info);
+        switch (DCP_BLOCK_TYPE) {
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_PARAMETER):
+            spn_dcp_pack_resp_block(r_payload + offset, DCP_BLOCK_TYPE, 12, block_info);
             spn_dcp_pack_ip(r_payload + offset + hdr_size,
                 spn_sys_get_ip_addr(iface),
                 spn_sys_get_ip_mask(iface),
                 spn_sys_get_ip_gw(iface));
             offset += hdr_size + 12;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_FULL_IP_SUITE):
-            spn_dcp_pack_resp_block(r_payload + offset, block_type, 28, block_info);
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_IP, SPN_DCP_SUB_OPT_IP_FULL_IP_SUITE):
+            spn_dcp_pack_resp_block(r_payload + offset, DCP_BLOCK_TYPE, 28, block_info);
             spn_dcp_pack_ip(r_payload + offset + hdr_size,
                 spn_sys_get_ip_addr(iface),
                 spn_sys_get_ip_mask(iface),
@@ -297,13 +297,13 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_block_req
                 spn_sys_get_dns(iface, 3));
             offset += hdr_size + 12;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_VENDOR):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_VENDOR):
             len = spn_dcp_pack_vendor_name(r_payload + offset + hdr_size, spn_sys_get_vendor_name());
-            spn_dcp_pack_resp_block(r_payload + offset, block_type, len, block_info);
+            spn_dcp_pack_resp_block(r_payload + offset, DCP_BLOCK_TYPE, len, block_info);
             offset += hdr_size + len;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_ALIAS):
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_ALIAS):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION):
             /* NOTE: ALIAS_NAME and NAME_OF_STATION are all required to respond nameOfStation,
              *       and we should make sure only one stationOfName is responded */
             if (!name_of_station_responded) {
@@ -312,50 +312,50 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_block_req
                 break;
             }
             len = spn_dcp_pack_station_of_name(r_payload + offset + hdr_size, spn_sys_get_station_name());
-            spn_dcp_pack_resp_block(r_payload + offset, block_type, len, block_info);
+            spn_dcp_pack_resp_block(r_payload + offset, DCP_BLOCK_TYPE, len, block_info);
             offset += hdr_size + len;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ID):
-            spn_dcp_pack_resp_block(r_payload + offset, block_type, 4, block_info);
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ID):
+            spn_dcp_pack_resp_block(r_payload + offset, DCP_BLOCK_TYPE, 4, block_info);
             spn_dcp_pack_device_id(r_payload + offset + hdr_size, spn_sys_get_vendor_id(), spn_sys_get_device_id());
             offset += hdr_size + 4;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ROLE):
-            spn_dcp_pack_resp_block(r_payload + offset, block_type, 2, block_info);
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_ROLE):
+            spn_dcp_pack_resp_block(r_payload + offset, DCP_BLOCK_TYPE, 2, block_info);
             spn_dcp_pack_role(r_payload + offset + hdr_size, spn_sys_get_role());
             offset += hdr_size + 2;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_OPTIONS):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_OPTIONS):
             len = spn_dcp_pack_options(r_payload + offset + hdr_size, spn_dcp_supported_options);
-            spn_dcp_pack_resp_block(r_payload + offset, block_type, len, block_info);
+            spn_dcp_pack_resp_block(r_payload + offset, DCP_BLOCK_TYPE, len, block_info);
             offset += hdr_size + len;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_INSTANCE):
-            spn_dcp_pack_resp_block(r_payload + offset, block_type, 2, block_info);
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_DEVICE_INSTANCE):
+            spn_dcp_pack_resp_block(r_payload + offset, DCP_BLOCK_TYPE, 2, block_info);
             spn_dcp_pack_instance(r_payload + offset + hdr_size, spn_sys_get_dev_initiative());
             offset += hdr_size + 2;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_OEM_DEVICE_ID):
-            spn_dcp_pack_resp_block(r_payload + offset, block_type, 4, block_info);
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_OEM_DEVICE_ID):
+            spn_dcp_pack_resp_block(r_payload + offset, DCP_BLOCK_TYPE, 4, block_info);
             spn_dcp_pack_oem_id(r_payload + offset + hdr_size, spn_sys_get_oem_vendor_id(), spn_sys_get_oem_device_id());
             offset += hdr_size + 4;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_STANDARD_GATEWAY):
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_RSI_PROPERTIES):
-        case BLOCK_TYPE(SPN_DCP_OPTION_DHCP, SPN_DCP_SUB_OPT_DHCP_DHCP):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_STANDARD_GATEWAY):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_RSI_PROPERTIES):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DHCP, SPN_DCP_SUB_OPT_DHCP_DHCP):
             res = -SPN_ENOSYS;
             goto free_out;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_INITIATIVE, SPN_DCP_SUB_OPT_DEVICE_INITIATIVE_DEVICE_INITIATIVE):
-            spn_dcp_pack_resp_block(r_payload + offset, block_type, 2, block_info);
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_INITIATIVE, SPN_DCP_SUB_OPT_DEVICE_INITIATIVE_DEVICE_INITIATIVE):
+            spn_dcp_pack_resp_block(r_payload + offset, DCP_BLOCK_TYPE, 2, block_info);
             spn_dcp_pack_device_initiative(r_payload + offset, spn_sys_get_dev_initiative());
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_DOMAIN):
-        case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_PRIO):
-        case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_NAME):
-        case BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_CIM_INTERFACE):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_DOMAIN):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_PRIO):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_NME_NAME):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_NME_DOMAIN, SPN_DCP_SUB_OPT_NME_DOMAIN_CIM_INTERFACE):
             res = -SPN_ENOSYS;
             goto free_out;
-        case BLOCK_TYPE(SPN_DCP_OPTION_ALL_SELECTOR, SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR):
+        case DCP_BLOCK_TYPE(SPN_DCP_OPTION_ALL_SELECTOR, SPN_DCP_SUB_OPT_ALL_SELECTOR_ALL_SELECTOR):
             break;
         default:
             res = -SPN_ENOSYS;
