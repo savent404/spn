@@ -29,7 +29,7 @@ int spn_dcp_set_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_block_req* 
     /* Reserve response option hdr */
     spn_dcp_pack_req_block(r_payload, DCP_BLOCK_TYPE(SPN_DCP_OPTION_CONTROL, SPN_DCP_SUB_OPT_CONTROL_RESPONSE), 3);
     offset += hdr_size;
-    *(uint16_t*)(r_payload + offset) = lwip_htons(reqs->option_sub_option[0]);
+    *(uint16_t*)(((uintptr_t)r_payload + offset + 1) & ~1) = lwip_htons(reqs->option_sub_option[0]);
     *(uint8_t*)(r_payload + offset + 2) = 0;
     offset += 3;
     offset = (offset + 1) & ~1;
