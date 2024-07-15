@@ -1,6 +1,9 @@
 #pragma once
 
+#include <memory>
 #include <string>
+#include <vector>
+#include <cstring>
 
 namespace test_data {
 namespace dcp {
@@ -21,5 +24,19 @@ namespace dcp {
     const char kDcpIpParamSetResp[] = "e073e7a77f770404040404048892fefd040100004e170000000805040003010200000000000000000000000000000000000000000000000000000000";
     const char kDcpResetFactorySetReq[] = "040404040404e073e7a77f778892fefd040000007c03000000060505000200000000000000000000000000000000000000000000000000000000000000000000";
     const char kDcpResetFactorySetResp[] = "040404040404e073e7a77f778892fefd040000007c03000000060505000200000000000000000000000000000000000000000000000000000000000000000000";
+
+    struct DataParser {
+        using value_type = std::vector<uint8_t>;
+        using value_ptr = std::shared_ptr<value_type>;
+
+        value_ptr operator()(const char* data)
+        {
+            value_ptr value = std::make_shared<value_type>();
+            for (size_t i = 0; i < strlen(data); i += 2) {
+                value->push_back(std::stoi(std::string(data + i, 2), nullptr, 16));
+            }
+            return value;
+        }
+    };
 }
 }

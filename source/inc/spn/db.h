@@ -6,6 +6,10 @@
 
 #include <spn/db_ids.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef DB_MAX_INTERFACE
 #define DB_MAX_INTERFACE 1
 #endif
@@ -62,10 +66,6 @@ struct db_ctx {
     struct db_interface interfaces[DB_MAX_INTERFACE];
     struct db_object_arr objects;
 };
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 static inline int db_is_static_object(struct db_object* object)
 {
