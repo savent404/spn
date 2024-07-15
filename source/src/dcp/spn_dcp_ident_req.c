@@ -60,7 +60,7 @@ int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_block_re
                 goto filter_miss_match;
             }
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR):
+        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_VENDOR):
             LWIP_ASSERT("Invalid block length", block_len >= 1);
             name = r_payload;
             name_len = block_len;
@@ -96,7 +96,7 @@ int spn_dcp_ident_req_parse(void* payload, uint16_t len, struct spn_dcp_block_re
                 goto filter_miss_match;
             }
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME):
+        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_ALIAS):
             LWIP_ASSERT("Invalid block length", block_len >= 1);
             if (spn_dcp_filter_alias(r_payload, block_len)) {
                 goto filter_miss_match;
@@ -224,7 +224,7 @@ int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_db* resp,
                 lwip_htons(resp->ip_dns[3]));
             offset += hdr_size + 12;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR):
+        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_VENDOR):
             LWIP_ASSERT("name is NULL", resp->name_of_vendor != NULL);
             len = spn_dcp_pack_vendor_name(r_payload + offset + hdr_size, resp->name_of_vendor);
             spn_dcp_pack_req_block(r_payload + offset, block_type, len);
@@ -246,7 +246,7 @@ int spn_dcp_ident_req_assemble(const uint16_t* options, struct spn_dcp_db* resp,
             spn_dcp_pack_role(r_payload + offset + hdr_size, (enum spn_role)resp->device_role);
             offset += hdr_size + 2;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME):
+        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_ALIAS):
             LWIP_ASSERT("name is NULL", resp->name_of_alias != NULL);
             len = spn_dcp_pack_alias(r_payload + offset + hdr_size, resp->name_of_alias);
             spn_dcp_pack_req_block(r_payload + offset, block_type, len);

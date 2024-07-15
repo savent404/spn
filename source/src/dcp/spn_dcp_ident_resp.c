@@ -94,7 +94,7 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* res
             resp->ip_dns[3] = lwip_htons(GET_VALUE(r_payload, uint32_t, 26));
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: IP.Full.IPSuite=0x%04x, ip=0x%08x, mask=0x%08x, gw=0x%08x, dns=%d.%d.%d.%d\n", resp->block_info, resp->ip_addr, resp->ip_mask, resp->ip_gw, resp->ip_dns[0], resp->ip_dns[1], resp->ip_dns[2], resp->ip_dns[3]));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR):
+        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_VENDOR):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.Vendor\n"));
             resp->name_of_vendor = (char*)malloc(block_len - 1);
             if (!resp->name_of_vendor) {
@@ -144,7 +144,7 @@ int spn_dcp_ident_resp_parse(void* payload, uint16_t len, struct spn_dcp_db* res
             resp->options[idx] = 0; /* EOF is matter */
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: DeviceOptions num=%d\n", idx));
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME):
+        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_ALIAS):
             LWIP_DEBUGF(SPN_DCP_DEBUG | LWIP_DBG_TRACE, ("DCP: Parsing Device.Properties.AliasName\n"));
             resp->name_of_alias = (char*)malloc(block_len - 1);
             if (!resp->name_of_alias) {
@@ -297,12 +297,12 @@ int spn_dcp_ident_resp_assemble(struct eth_hdr* hw_hdr, struct spn_dcp_block_req
                 spn_sys_get_dns(iface, 3));
             offset += hdr_size + 12;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR):
+        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_VENDOR):
             len = spn_dcp_pack_vendor_name(r_payload + offset + hdr_size, spn_sys_get_vendor_name());
             spn_dcp_pack_resp_block(r_payload + offset, block_type, len, block_info);
             offset += hdr_size + len;
             break;
-        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME):
+        case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_ALIAS):
         case BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_STATION):
             /* NOTE: ALIAS_NAME and NAME_OF_STATION are all required to respond nameOfStation,
              *       and we should make sure only one stationOfName is responded */

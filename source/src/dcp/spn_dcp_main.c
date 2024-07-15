@@ -145,7 +145,7 @@ int spn_dcp_search_name_of_station(char* name)
 
 int spn_dcp_search_name_of_vendor(char* name)
 {
-    const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_VENDOR), 0 };
+    const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_VENDOR), 0 };
     struct spn_dcp_db resp;
 
     if (!name) {
@@ -157,7 +157,7 @@ int spn_dcp_search_name_of_vendor(char* name)
 
 int spn_dcp_search_name_of_alias(char* name)
 {
-    const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_ALIAS_NAME), 0 };
+    const uint16_t options[] = { BLOCK_TYPE(SPN_DCP_OPTION_DEVICE_PROPERTIES, SPN_DCP_SUB_OPT_DEVICE_PROPERTIES_NAME_OF_ALIAS), 0 };
     struct spn_dcp_db resp;
 
     if (!name) {
