@@ -225,6 +225,22 @@ int dcp_block_next(struct dcp_block_gen* block);
 
 /*********************************************
  * DCP Service
+ * 
+ * 
+ * | service name | IOD | IOC |
+ * | ------------ | --- | --- |
+ * | ident.req    |     |  X  |
+ * | ident.ins    |  X  |  X  |
+ * | ident.res    |  X  |  X  |
+ * | ident.cnf    |     |  X  |
+ * | set/get.req  |     |  X  |
+ * | set/get.ind  |  X  |     |
+ * | set/get.res  |  X  |     |
+ * | set/get.cnf  |     |  X  |
+ * | hello.req    |  X  |     |
+ * | hello.ind    |     |  X  |
+ * +--------------------------+
+ * 
  * @defgroup dcp_service DCP Service
  * @{
  */
