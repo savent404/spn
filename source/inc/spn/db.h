@@ -38,10 +38,10 @@ typedef union db_value {
 
 struct db_object {
     struct {
-        db_id_t id : 8;
+        db_id_t id : 6;
         unsigned is_dynamic : 1;
         unsigned is_array : 1;
-        unsigned len : 6; /* only for array */
+        unsigned len : 8; /* only for array */
     } header;
     db_value_t data;
 };
