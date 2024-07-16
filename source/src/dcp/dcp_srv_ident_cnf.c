@@ -28,7 +28,7 @@ static inline int obj_strdup(db_value_t* value, const char* str, size_t len)
         memcpy(value->str, str, len);
         value->str[len] = '\0';
     }
-    return len;
+    return len + 1;
 }
 
 static inline int is_static_str(int length)
@@ -114,7 +114,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length)
                     break;
                 }
             }
-            res = db_add_object(&interface.objects, ids[i], is_static_str(res) ? 0 : 1, 1, block_length, &data);
+            res = db_add_object(&interface.objects, ids[i], is_static_str(res) ? 0 : 1, 1, res, &data);
             if (res != SPN_OK) {
                 goto invalid_ret;
             }
