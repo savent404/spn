@@ -42,7 +42,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length)
     struct db_object* obj;
     uint16_t block_length;
     uint16_t qualifier;
-    int res;
+    int res = SPN_OK;
 
     SPN_UNUSED_ARG(length);
 
