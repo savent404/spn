@@ -1,5 +1,6 @@
 #include <lwip/api.h>
 #include <spn/db.h>
+#include <spn/sys.h>
 #include <stdlib.h>
 
 #include <string.h>
@@ -64,6 +65,25 @@ int db_get_interface(struct db_ctx* ctx, int interface_id, struct db_interface**
     return -SPN_ENOENT;
 }
 
+int db_dup_interface(struct db_interface* dst, struct db_interface* src)
+{
+    int res;
+    unsigned i;
+    if (!dst || !src || src->id == -1) {
+        return -SPN_EINVAL;
+    }
+
+    for (i = 0; i < ARRAY_SIZE(dst->ports); i++) {
+        res = db_dup_port(&dst->ports[i], &src->ports[i]);
+        if (res != SPN_OK) {
+            return res;
+        }
+    }
+    db_clear_objects(&dst->objects);
+    db_dup_objects(&dst->objects, &src->objects);
+    return SPN_OK;
+}
+
 int db_add_port(struct db_interface* interface, int port_id)
 {
     unsigned i;
@@ -96,6 +116,51 @@ int db_get_port(struct db_interface* interface, int port_id, struct db_port** po
     return -SPN_ENOENT;
 }
 
+int db_dup_port(struct db_port* dst, struct db_port* src)
+{
+    int res;
+    if (!dst || !src || src->id == -1) {
+        return -SPN_EINVAL;
+    }
+    res = db_del_port(dst);
+    if (res < 0) {
+        return res;
+    }
+    res = db_dup_objects(&dst->objects, &src->objects);
+    return SPN_OK;
+}
+
+int db_dup_objects(struct db_object_arr* dst, struct db_object_arr* src)
+{
+    unsigned i;
+    for (i = 0; i < ARRAY_SIZE(dst->objects); i++) {
+        if (src->objects[i].header.id != DB_ID_INVALID) {
+            struct db_object* src_obj = &src->objects[i];
+            int res;
+            if (src_obj->header.is_dynamic) {
+                db_value_t v;
+
+                v.ptr = malloc(src_obj->header.len);
+                if (!v.ptr) {
+                    goto err_ret;
+                }
+                memcpy(v.ptr, src_obj->data.ptr, src_obj->header.len);
+                res = db_add_object(dst, src_obj->header.id, src_obj->header.is_dynamic, src_obj->header.is_array, src_obj->header.len, &v);
+            } else {
+                res = db_add_object(dst, src_obj->header.id, src_obj->header.is_dynamic, src_obj->header.is_array, src_obj->header.len, &src_obj->data);
+            }
+
+            if (res < 0) {
+                return res;
+            }
+        }
+    }
+    return SPN_OK;
+err_ret:
+    db_clear_objects(dst);
+    return -SPN_ENOMEM;
+}
+
 void db_clear_objects(struct db_object_arr* objects)
 {
     struct db_object* object;
@@ -114,6 +179,7 @@ int db_add_object(struct db_object_arr* objects, db_id_t id, unsigned is_dynamic
 {
     struct db_object* object;
     unsigned i;
+    SPN_ASSERT("invalid object size", len <= 255);
     for (i = 0; i < ARRAY_SIZE(objects->objects); i++) {
         object = &objects->objects[i];
         if (object->header.id == DB_ID_INVALID) {

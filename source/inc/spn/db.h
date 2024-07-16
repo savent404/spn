@@ -90,15 +90,18 @@ void db_deinit(struct db_ctx* ctx);
 
 int db_add_interface(struct db_ctx* ctx, int interface_id);
 int db_del_interface(struct db_interface* interface);
+int db_dup_interface(struct db_interface* dst, struct db_interface* src);
 int db_get_interface(struct db_ctx* ctx, int interface_id, struct db_interface** interface);
 
 int db_add_port(struct db_interface* interface, int port_id);
 int db_del_port(struct db_port* port);
+int db_dup_port(struct db_port* dst, struct db_port* src);
 int db_get_port(struct db_interface* interface, int port_id, struct db_port** port);
 
 int db_add_object(struct db_object_arr* objects, db_id_t id, unsigned is_dynamic, unsigned is_array, size_t len, db_value_t* data);
 int db_del_object(struct db_object_arr* objects, db_id_t id);
 int db_get_object(struct db_object_arr* objects, db_id_t id, struct db_object** object);
+int db_dup_objects(struct db_object_arr* dst, struct db_object_arr* src);
 void db_clear_objects(struct db_object_arr* objects);
 
 /* Wrapper functions */

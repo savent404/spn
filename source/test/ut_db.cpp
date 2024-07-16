@@ -93,9 +93,9 @@ TEST(db, mem_leak_1)
 
     /* Loop many times to check memory leak */
     for (int i = 0; i < 1e6; i++) {
-        data.ptr = malloc(1024);
+        data.ptr = malloc(255);
         ASSERT_NE(data.ptr, nullptr);
-        db_add_object(&ctx.objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 1024, &data);
+        db_add_object(&ctx.objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 255, &data);
         db_del_object(&ctx.objects, (db_id_t)(DB_ID_INVALID + 1));
     }
 }
@@ -107,10 +107,10 @@ TEST(db, mem_leak_2)
 
     /* Loop many times to check memory leak */
     for (int i = 0; i < 1e6; i++) {
-        data.ptr = malloc(1024);
+        data.ptr = malloc(255);
         ASSERT_NE(data.ptr, nullptr);
         db_init(&ctx);
-        db_add_object(&ctx.objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 1024, &data);
+        db_add_object(&ctx.objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 255, &data);
         db_deinit(&ctx);
     }
 }
@@ -131,13 +131,13 @@ TEST(db, mem_leak_interface)
         ASSERT_EQ(db_get_interface(&ctx, 0, &if1), SPN_OK);
         ASSERT_EQ(db_get_interface(&ctx, 1, &if2), SPN_OK);
 
-        data.ptr = malloc(1024);
+        data.ptr = malloc(255);
         ASSERT_NE(data.ptr, nullptr);
-        db_add_object(&if1->objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 1024, &data);
+        db_add_object(&if1->objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 255, &data);
 
-        data.ptr = malloc(1024);
+        data.ptr = malloc(255);
         ASSERT_NE(data.ptr, nullptr);
-        db_add_object(&if2->objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 1024, &data);
+        db_add_object(&if2->objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 255, &data);
 
         db_del_interface(if1);
         db_del_interface(if2);
@@ -162,13 +162,13 @@ TEST(db, mem_leak_port)
         ASSERT_EQ(db_get_port(&ctx.interfaces[0], 0, &port1), SPN_OK);
         ASSERT_EQ(db_get_port(&ctx.interfaces[0], 1, &port2), SPN_OK);
 
-        data.ptr = malloc(1024);
+        data.ptr = malloc(255);
         ASSERT_NE(data.ptr, nullptr);
-        db_add_object(&port1->objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 1024, &data);
+        db_add_object(&port1->objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 255, &data);
 
-        data.ptr = malloc(1024);
+        data.ptr = malloc(255);
         ASSERT_NE(data.ptr, nullptr);
-        db_add_object(&port2->objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 1024, &data);
+        db_add_object(&port2->objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 255, &data);
 
         db_del_port(port1);
         db_del_port(port2);
@@ -201,6 +201,38 @@ TEST(db, get_interface_object)
 
     /* Clean up */
     db_deinit(&ctx);
+}
+
+TEST(db, dup_interface)
+{
+    struct db_interface if1 = {}, if2 = {};
+    struct db_object* obj;
+    db_value_t data;
+
+    /* Add object to the interface */
+    data.u32 = 0x12345678;
+    ASSERT_EQ(db_add_object(&if1.objects, (db_id_t)(DB_ID_INVALID + 1), 0, 0, 4, &data), SPN_OK);
+    data.ptr = malloc(255);
+    strcpy((char*)data.ptr, "1234567890abcdef");
+    ASSERT_EQ(db_add_object(&if1.objects, (db_id_t)(DB_ID_INVALID + 2), 1, 1, 255, &data), SPN_OK);
+
+    /* Duplicate the interface */
+    ASSERT_EQ(db_dup_interface(&if2, &if1), SPN_OK);
+    ASSERT_EQ(if2.id, if1.id);
+
+    /* Make sure that the duplicated interface is deep copied. If we change the object in the original interface, the duplicated interface should not be affected */
+    ASSERT_EQ(db_get_object(&if1.objects, (db_id_t)(DB_ID_INVALID + 1), &obj), SPN_OK);
+    obj->data.u32 = 0x87654321;
+    ASSERT_EQ(db_get_object(&if2.objects, (db_id_t)(DB_ID_INVALID + 1), &obj), SPN_OK);
+    ASSERT_EQ(obj->data.u32, 0x12345678);
+
+    ASSERT_EQ(db_get_object(&if1.objects, (db_id_t)(DB_ID_INVALID + 2), &obj), SPN_OK);
+    strcpy((char*)obj->data.ptr, "abcdef1234567890");
+    ASSERT_EQ(db_get_object(&if2.objects, (db_id_t)(DB_ID_INVALID + 2), &obj), SPN_OK);
+    ASSERT_STREQ((char*)obj->data.ptr, "1234567890abcdef");
+
+    db_del_interface(&if1);
+    db_del_interface(&if2);
 }
 
 TEST(db, get_port_object)
