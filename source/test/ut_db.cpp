@@ -114,6 +114,68 @@ TEST(db, mem_leak_2)
         db_deinit(&ctx);
     }
 }
+
+TEST(db, mem_leak_interface)
+{
+    struct db_ctx ctx;
+    db_value_t data;
+
+    db_init(&ctx);
+
+    /* Loop many times to check memory leak */
+    for (int i = 0; i < 1e6; i++) {
+        ASSERT_EQ(db_add_interface(&ctx, 0), SPN_OK);
+        ASSERT_EQ(db_add_interface(&ctx, 1), SPN_OK);
+
+        struct db_interface *if1, *if2;
+        ASSERT_EQ(db_get_interface(&ctx, 0, &if1), SPN_OK);
+        ASSERT_EQ(db_get_interface(&ctx, 1, &if2), SPN_OK);
+
+        data.ptr = malloc(1024);
+        ASSERT_NE(data.ptr, nullptr);
+        db_add_object(&if1->objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 1024, &data);
+
+        data.ptr = malloc(1024);
+        ASSERT_NE(data.ptr, nullptr);
+        db_add_object(&if2->objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 1024, &data);
+
+        db_del_interface(if1);
+        db_del_interface(if2);
+    }
+    db_deinit(&ctx);
+}
+
+TEST(db, mem_leak_port)
+{
+    struct db_ctx ctx;
+    db_value_t data;
+
+    db_init(&ctx);
+
+    ASSERT_EQ(db_add_interface(&ctx, 0), SPN_OK);
+    /* Loop many times to check memory leak */
+    for (int i = 0; i < 1e6; i++) {
+        ASSERT_EQ(db_add_port(&ctx.interfaces[0], 0), SPN_OK);
+        ASSERT_EQ(db_add_port(&ctx.interfaces[0], 1), SPN_OK);
+
+        struct db_port *port1, *port2;
+        ASSERT_EQ(db_get_port(&ctx.interfaces[0], 0, &port1), SPN_OK);
+        ASSERT_EQ(db_get_port(&ctx.interfaces[0], 1, &port2), SPN_OK);
+
+        data.ptr = malloc(1024);
+        ASSERT_NE(data.ptr, nullptr);
+        db_add_object(&port1->objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 1024, &data);
+
+        data.ptr = malloc(1024);
+        ASSERT_NE(data.ptr, nullptr);
+        db_add_object(&port2->objects, (db_id_t)(DB_ID_INVALID + 1), 1, 1, 1024, &data);
+
+        db_del_port(port1);
+        db_del_port(port2);
+    }
+    db_deinit(&ctx);
+}
+
 TEST(db, get_interface_object)
 {
     struct db_ctx ctx;

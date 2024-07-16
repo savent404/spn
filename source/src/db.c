@@ -8,24 +8,21 @@ void db_init(struct db_ctx* ctx)
 {
     unsigned i, j;
     memset(ctx, 0, sizeof(*ctx));
-
     for (i = 0; i < ARRAY_SIZE(ctx->interfaces); i++) {
-        ctx->interfaces[i].id = -1;
-        for (j = 0; j < ARRAY_SIZE(ctx->interfaces[i].ports); j++) {
-            ctx->interfaces[i].ports[j].id = -1;
+        struct db_interface* interface = &ctx->interfaces[i];
+        interface->id = -1;
+        for (j = 0; j < ARRAY_SIZE(interface->ports); j++) {
+            interface->ports[j].id = -1;
         }
     }
 }
 
 void db_deinit(struct db_ctx* ctx)
 {
-    unsigned i, j;
+    unsigned i;
     db_clear_objects(&ctx->objects);
     for (i = 0; i < ARRAY_SIZE(ctx->interfaces); i++) {
-        db_clear_objects(&ctx->interfaces[i].objects);
-        for (j = 0; j < ARRAY_SIZE(ctx->interfaces[i].ports); j++) {
-            db_clear_objects(&ctx->interfaces[i].ports[j].objects);
-        }
+        db_del_interface(&ctx->interfaces[i]);
     }
 }
 
@@ -39,6 +36,20 @@ int db_add_interface(struct db_ctx* ctx, int interface_id)
         }
     }
     return -SPN_ENOMEM;
+}
+
+int db_del_interface(struct db_interface* interface)
+{
+    unsigned i;
+    for (i = 0; i < ARRAY_SIZE(interface->ports); i++) {
+        if (interface->ports[i].id != -1) {
+            db_del_port(&interface->ports[i]);
+        }
+    }
+    db_clear_objects(&interface->objects);
+    memset(interface, 0, sizeof(*interface));
+    interface->id = -1;
+    return SPN_OK;
 }
 
 int db_get_interface(struct db_ctx* ctx, int interface_id, struct db_interface** interface)
@@ -63,6 +74,14 @@ int db_add_port(struct db_interface* interface, int port_id)
         }
     }
     return -SPN_ENOMEM;
+}
+
+int db_del_port(struct db_port* port)
+{
+    db_clear_objects(&port->objects);
+    memset(port, 0, sizeof(*port));
+    port->id = -1;
+    return SPN_OK;
 }
 
 int db_get_port(struct db_interface* interface, int port_id, struct db_port** port)

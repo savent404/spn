@@ -11,11 +11,11 @@ extern "C" {
 #endif
 
 #ifndef DB_MAX_INTERFACE
-#define DB_MAX_INTERFACE 1
+#define DB_MAX_INTERFACE 2
 #endif
 
 #ifndef DB_MAX_PORT
-#define DB_MAX_PORT 1
+#define DB_MAX_PORT 3
 #endif
 
 #ifndef DB_MAX_OBJECT
@@ -58,6 +58,9 @@ struct db_port {
 
 struct db_interface {
     int id;
+    struct {
+        unsigned is_outside : 1; /* Indicated that interface is outside of the device */
+    } flags;
     struct db_port ports[DB_MAX_PORT];
     struct db_object_arr objects;
 };
@@ -86,9 +89,11 @@ void db_init(struct db_ctx* ctx);
 void db_deinit(struct db_ctx* ctx);
 
 int db_add_interface(struct db_ctx* ctx, int interface_id);
+int db_del_interface(struct db_interface* interface);
 int db_get_interface(struct db_ctx* ctx, int interface_id, struct db_interface** interface);
 
 int db_add_port(struct db_interface* interface, int port_id);
+int db_del_port(struct db_port* port);
 int db_get_port(struct db_interface* interface, int port_id, struct db_port** port);
 
 int db_add_object(struct db_object_arr* objects, db_id_t id, unsigned is_dynamic, unsigned is_array, size_t len, db_value_t* data);
