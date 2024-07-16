@@ -196,15 +196,19 @@ enum dcp_state {
     DCP_STATE_HELLO_IND,
 };
 struct dcp_ctx {
+    /* Internal variables used when acting controller or devices */
     int interface_id;
     enum dcp_state state;
-
     struct db_ctx* db;
-
     uint32_t ind_xid; /* recorded requester's xid, used for response */
     uint16_t ind_delay_factory; /* recorded requester's response delay, used for response */
 
-    uint8_t packet_buf[SPN_DCP_MAX_SIZE];
+    /** Internal variables used when acting controller */
+    uint32_t cnf_xid; /* used to filter response that is not belong to this request */
+    uint32_t cnf_interface_id; /* auto assigned interface id */
+    uint16_t cnf_delay_factory;
+
+    /** Internal variables used when acting device */
 };
 /**
  * @} end of dcp_internal
@@ -219,6 +223,7 @@ extern "C" {
  * @defgroup dcp_internal DCP Internal
  */
 int dcp_block_next(struct dcp_block_gen* block);
+const char *dcp_option_name(uint8_t option, uint8_t sub_option);
 /**
  * @}
  */
@@ -248,7 +253,7 @@ int dcp_block_next(struct dcp_block_gen* block);
 int dcp_srv_ident_req();
 int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length);
 int dcp_srv_ident_res(struct dcp_ctx* ctx, void* payload, uint16_t length);
-int dcp_srv_ident_cnf();
+int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length);
 
 int dcp_srv_get_req();
 int dcp_srv_get_ind();
@@ -280,6 +285,7 @@ int dcp_output(struct dcp_ctx* ctx, void* payload, uint16_t length, uint16_t fra
 /**
  * @} end of dcp_api
  */
+
 #ifdef __cplusplus
 }
 #endif

@@ -112,3 +112,50 @@ TEST_F(Ddcp, ident_ind_all_selector)
 
     /* Compare with int.resp */
 }
+
+TEST_F(Ddcp, ident_cnf_invalid)
+{
+    DataParser parser;
+    auto frame = parser(test_data::dcp::kDcpIdentRespX208);
+
+    /** assume that new interface is registered in 0x1000 */
+    dcp.cnf_interface_id = 0x1000;
+    dcp.cnf_xid = 0xBEEF;
+
+    /* drop first 16 bytes */
+    frame->erase(frame->begin(), frame->begin() + 16);
+    ASSERT_EQ(dcp_srv_ident_cnf(&dcp, frame->data(), frame->size()), -SPN_ENXIO);
+}
+
+TEST_F(Ddcp, ident_cnf_ecopn)
+{
+    DataParser parser;
+    auto frame = parser(test_data::dcp::kDcpIdentRespEcoPn);
+
+    /** assume that new interface is registered in 0x1000 */
+    dcp.cnf_interface_id = 0x1000;
+    dcp.cnf_xid = 0x0001'94EF;
+
+    /* drop first 16 bytes */
+    frame->erase(frame->begin(), frame->begin() + 16);
+    ASSERT_EQ(dcp_srv_ident_cnf(&dcp, frame->data(), frame->size()), SPN_OK);
+
+    struct db_interface* intf;
+    struct db_object* obj;
+    ASSERT_EQ(db_get_interface(&db, 0x1000, &intf), SPN_OK);
+
+    ASSERT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_NAME_OF_STATION, &obj), SPN_OK);
+    ASSERT_STREQ((char*)obj->data.ptr, "et200ecopn.dev7");
+    ASSERT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_NAME_OF_VENDOR, &obj), SPN_OK);
+    ASSERT_STREQ((char*)obj->data.ptr, "ET200ecoPN");
+    ASSERT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_DEVICE_ROLE, &obj), SPN_OK);
+    ASSERT_EQ(obj->data.u8, 0x01);
+    ASSERT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_VENDOR_ID, &obj), SPN_OK);
+    ASSERT_EQ(obj->data.u16, 0x002a);
+    ASSERT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_DEVICE_ID, &obj), SPN_OK);
+    ASSERT_EQ(obj->data.u16, 0x0306);
+    ASSERT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_DEVICE_INSTANCE, &obj), SPN_OK);
+    ASSERT_EQ(obj->data.u16, 0x0001);
+    ASSERT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_DEVICE_OPTIONS, &obj), SPN_OK);
+    ASSERT_EQ(obj->header.len, 8 * 2);
+}
