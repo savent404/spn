@@ -59,10 +59,10 @@ enum dcp_sub_option_dhcp {
 };
 
 enum dcp_sub_option_ctr {
-    DCP_SUB_OPT_CTR_START = 0x01,
-    DCP_SUB_OPT_CTR_STOP = 0x02,
-    DCP_SUB_OPT_CTR_SIGNAL = 0x03,
-    DCP_SUB_OPT_CTR_RESPONSE = 0x04,
+    DCP_SUB_OPT_CTRL_START = 0x01,
+    DCP_SUB_OPT_CTRL_STOP = 0x02,
+    DCP_SUB_OPT_CTRL_SIGNAL = 0x03,
+    DCP_SUB_OPT_CTRL_RESPONSE = 0x04,
     DCP_SUB_OPT_CTRL_FACTORY_RESET = 0x05,
     DCP_SUB_OPT_CTRL_RESET_TO_FACTORY = 0x06
 };
@@ -239,8 +239,8 @@ const char *dcp_option_name(uint8_t option, uint8_t sub_option);
  * | ident.res    |  X  |  X  |
  * | ident.cnf    |     |  X  |
  * | set/get.req  |     |  X  |
- * | set/get.ind  |  X  |     |
- * | set/get.res  |  X  |     |
+ * | set/get.ind  |  X  |  X  |
+ * | set/get.res  |  X  |  X  |
  * | set/get.cnf  |     |  X  |
  * | hello.req    |  X  |     |
  * | hello.ind    |     |  X  |
@@ -261,7 +261,7 @@ int dcp_srv_get_res();
 int dcp_srv_get_cnf();
 
 int dcp_srv_set_req();
-int dcp_srv_set_ind();
+int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length);
 int dcp_srv_set_res();
 int dcp_srv_set_cnf();
 

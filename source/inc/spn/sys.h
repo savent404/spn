@@ -14,3 +14,4 @@
 
 #define SPN_ASSERT(msg, cond) LWIP_ASSERT(msg, cond)
 #define SPN_DEBUG_MSG(enable, fmt, ...) LWIP_DEBUGF(enable, (fmt, ##__VA_ARGS__))
+#define SPN_UNUSED_ARG(x) LWIP_UNUSED_ARG(x)
