@@ -54,31 +54,40 @@ struct Ddcp : public ::testing::Test {
     void declare_name_of_station(const std::string name)
     {
         db_value_t value;
+        struct db_interface* iface;
         value.ptr = strdup(name.c_str());
-        db_add_object(&db.objects, db_id_t::DB_ID_NAME_OF_STATION, 1, 1, strlen((char*)value.ptr), &value);
+        db_get_interface(&db, 0, &iface);
+        db_add_object(&iface->objects, db_id_t::DB_ID_NAME_OF_STATION, 1, 1, strlen((char*)value.ptr), &value);
     }
 
     void declare_name_of_vendor(const std::string name)
     {
         db_value_t value;
+        struct db_interface* iface;
         value.ptr = strdup(name.c_str());
-        db_add_object(&db.objects, db_id_t::DB_ID_NAME_OF_VENDOR, 1, 1, strlen((char*)value.ptr), &value);
+        db_get_interface(&db, 0, &iface);
+        db_add_object(&iface->objects, db_id_t::DB_ID_NAME_OF_VENDOR, 1, 1, strlen((char*)value.ptr), &value);
     }
 
     void declare_device_id(uint16_t vendor_id, uint16_t device_id)
     {
         db_value_t value;
+        struct db_interface* iface;
+
+        db_get_interface(&db, 0, &iface);
         value.u16 = vendor_id;
-        db_add_object(&db.objects, db_id_t::DB_ID_VENDOR_ID, 0, 0, 0, &value);
+        db_add_object(&iface->objects, db_id_t::DB_ID_VENDOR_ID, 0, 0, 0, &value);
         value.u16 = device_id;
-        db_add_object(&db.objects, db_id_t::DB_ID_DEVICE_ID, 0, 0, 0, &value);
+        db_add_object(&iface->objects, db_id_t::DB_ID_DEVICE_ID, 0, 0, 0, &value);
     }
 
     void declare_device_role(uint16_t role)
     {
         db_value_t value;
+        struct db_interface* iface;
+        db_get_interface(&db, 0, &iface);
         value.u16 = role;
-        db_add_object(&db.objects, db_id_t::DB_ID_DEVICE_ROLE, 0, 0, 0, &value);
+        db_add_object(&iface->objects, db_id_t::DB_ID_DEVICE_ROLE, 0, 0, 0, &value);
     }
 
     void TearDown() override

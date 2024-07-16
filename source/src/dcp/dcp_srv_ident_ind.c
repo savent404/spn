@@ -30,7 +30,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length)
     case DCP_OPTION_ALL_SELECTOR << 8 | DCP_SUB_OPT_ALL_SELECTOR:
         break;
     case DCP_OPTION_DEV_PROP << 8 | DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION:
-        if (db_get_global_object(ctx->db, DB_ID_NAME_OF_STATION, &obj) != SPN_OK) {
+        if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_STATION, &obj) != SPN_OK) {
             SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: get name of station failed\n");
             goto invalid_req;
         }
@@ -40,7 +40,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length)
         }
         break;
     case DCP_OPTION_DEV_PROP << 8 | DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR:
-        if (db_get_global_object(ctx->db, DB_ID_NAME_OF_VENDOR, &obj) != SPN_OK) {
+        if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_VENDOR, &obj) != SPN_OK) {
             SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: get name of vendor failed\n");
             goto invalid_req;
         }

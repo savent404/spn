@@ -113,7 +113,7 @@ int dcp_srv_ident_res(struct dcp_ctx* ctx, void* payload, uint16_t length)
             break;
         }
         case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR): {
-            if (db_get_global_object(ctx->db, DB_ID_NAME_OF_VENDOR, &obj) < 0) {
+            if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_VENDOR, &obj) < 0) {
                 goto invalid_option;
             }
             *PTR_OFFSET(block->data, 0, uint16_t) = 0;
@@ -122,7 +122,7 @@ int dcp_srv_ident_res(struct dcp_ctx* ctx, void* payload, uint16_t length)
             break;
         }
         case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION): {
-            if (db_get_global_object(ctx->db, DB_ID_NAME_OF_STATION, &obj) < 0) {
+            if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_STATION, &obj) < 0) {
                 goto invalid_option;
             }
             *PTR_OFFSET(block, 0, uint16_t) = 0;
@@ -132,11 +132,11 @@ int dcp_srv_ident_res(struct dcp_ctx* ctx, void* payload, uint16_t length)
         }
         case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID): {
             uint16_t device_id, vendor_id;
-            if (db_get_global_object(ctx->db, DB_ID_DEVICE_ID, &obj) < 0) {
+            if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_DEVICE_ID, &obj) < 0) {
                 goto invalid_option;
             }
             device_id = obj->data.u16;
-            if (db_get_global_object(ctx->db, DB_ID_VENDOR_ID, &obj) < 0) {
+            if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_VENDOR_ID, &obj) < 0) {
                 goto invalid_option;
             }
             vendor_id = obj->data.u16;
@@ -148,7 +148,7 @@ int dcp_srv_ident_res(struct dcp_ctx* ctx, void* payload, uint16_t length)
             break;
         }
         case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ROLE): {
-            if (db_get_global_object(ctx->db, DB_ID_DEVICE_ROLE, &obj) < 0) {
+            if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_DEVICE_ROLE, &obj) < 0) {
                 goto invalid_option;
             }
 
