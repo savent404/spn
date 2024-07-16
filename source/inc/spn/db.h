@@ -85,6 +85,14 @@ static inline int db_is_static_string_object(struct db_object* object)
     return db_is_static_object(object) && db_is_array_object(object) && object->header.len < 8;
 }
 
+/* TODO: Need implement this function to notify listener that object has been changed */
+static inline void db_object_updated_ind(struct db_ctx* ctx, struct db_object* object, int flag)
+{
+    ctx = ctx;
+    object = object;
+    flag = flag;
+}
+
 void db_init(struct db_ctx* ctx);
 void db_deinit(struct db_ctx* ctx);
 
