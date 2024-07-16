@@ -17,7 +17,7 @@
  */
 static inline int obj_strdup(db_value_t* value, const char* str, size_t len)
 {
-    if (len >= sizeof(value->str) - 1) {
+    if (len > sizeof(value->str) - 1) {
         value->ptr = malloc(len + 1);
         if (!value->ptr) {
             return -SPN_ENOMEM;
@@ -114,7 +114,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length)
                     break;
                 }
             }
-            res = db_add_object(&interface.objects, ids[i], is_static_str(res), 1, block_length, &data);
+            res = db_add_object(&interface.objects, ids[i], is_static_str(res) ? 0 : 1, 1, block_length, &data);
             if (res != SPN_OK) {
                 goto invalid_ret;
             }

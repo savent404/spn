@@ -29,6 +29,12 @@ struct Ddcp : public ::testing::Test {
         db_add_port(iface, 0);
     }
 
+    void TearDown() override
+    {
+        dcp_deinit(&dcp);
+        db_deinit(&db);
+    }
+
     void declare_block_info(enum ip_block_info info)
     {
         db_value_t value;
@@ -88,12 +94,6 @@ struct Ddcp : public ::testing::Test {
         db_get_interface(&db, 0, &iface);
         value.u16 = role;
         db_add_object(&iface->objects, db_id_t::DB_ID_DEVICE_ROLE, 0, 0, 0, &value);
-    }
-
-    void TearDown() override
-    {
-        dcp_deinit(&dcp);
-        db_deinit(&db);
     }
 };
 
