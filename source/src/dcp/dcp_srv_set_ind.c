@@ -86,6 +86,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length)
                 SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Failed to get station name object\n");
                 goto invalid_ret;
             }
+            /* TODO: Check name is lowercase, hard coded way */
             obj_str_free(obj);
             res = obj_str_dup(obj, PTR_OFFSET(block->data, 2, char), block_length);
             db_object_updated_ind(ctx->db, obj, qualifier);
