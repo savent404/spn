@@ -1,7 +1,10 @@
 #include <spn/dcp.h>
+#include <spn/config.h>
+#include <spn/sys.h>
 
 #define BLOCK_TYPE(opt, sub_opt) ((opt) << 8 | (sub_opt))
 
+#if SPN_DEBUG
 const char* dcp_option_name(uint8_t option, uint8_t sub_option)
 {
     switch (BLOCK_TYPE(option, sub_option)) {
@@ -64,3 +67,11 @@ const char* dcp_option_name(uint8_t option, uint8_t sub_option)
         return "UNKNOWN";
     }
 }
+#else
+const char* dcp_option_name(uint8_t option, uint8_t sub_option)
+{
+    SPN_UNUSED_ARG(option);
+    SPN_UNUSED_ARG(sub_option);
+    return "unknown(should enable SPN_DEBUG)";
+}
+#endif
