@@ -1,25 +1,26 @@
 #include <gtest/gtest.h>
 #include <spn/db.h>
+#include <spn/errno.h>
 
 TEST(db, add)
 {
     struct db_ctx ctx;
 
     db_init(&ctx);
-    for (int i = 0; i < DB_MAX_INTERFACE; i++) {
+    for (int i = 0; i < SPN_DB_MAX_INTERFACE; i++) {
         struct db_interface* interface;
         ASSERT_EQ(db_add_interface(&ctx, i), SPN_OK);
         ASSERT_EQ(db_get_interface(&ctx, i, &interface), SPN_OK);
         ASSERT_NE(db_get_interface(&ctx, i + 1, &interface), SPN_OK);
 
-        for (int j = 0; j < DB_MAX_PORT; j++) {
+        for (int j = 0; j < SPN_DB_MAX_PORT; j++) {
             struct db_port* port;
             ASSERT_EQ(db_add_port(interface, j), SPN_OK);
             ASSERT_EQ(db_get_port(interface, j, &port), SPN_OK);
             ASSERT_NE(db_get_port(interface, j + 1, &port), SPN_OK);
         }
     }
-    ASSERT_EQ(db_add_interface(&ctx, DB_MAX_INTERFACE), -SPN_ENOMEM);
+    ASSERT_EQ(db_add_interface(&ctx, SPN_DB_MAX_INTERFACE), -SPN_ENOMEM);
 }
 
 TEST(db, object)

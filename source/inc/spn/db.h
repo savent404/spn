@@ -1,31 +1,13 @@
 #pragma once
 
-#include <spn/errno.h>
+#include <spn/config.h>
+#include <spn/db_ids.h>
 #include <stddef.h>
 #include <stdint.h>
-
-#include <spn/db_ids.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#ifndef DB_MAX_INTERFACE
-#define DB_MAX_INTERFACE 2
-#endif
-
-#ifndef DB_MAX_PORT
-#define DB_MAX_PORT 3
-#endif
-
-#ifndef DB_MAX_OBJECT
-#define DB_MAX_OBJECT 16
-#endif
-
-#ifndef ARRAY_SIZE
-#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-#endif
-
 #pragma pack(push, 2)
 typedef union db_value {
     void* ptr;
@@ -48,7 +30,7 @@ struct db_object {
 #pragma pack(pop)
 
 struct db_object_arr {
-    struct db_object objects[DB_MAX_OBJECT];
+    struct db_object objects[SPN_DB_MAX_OBJECT];
 };
 
 struct db_port {
@@ -61,12 +43,12 @@ struct db_interface {
     struct {
         unsigned is_outside : 1; /* Indicated that interface is outside of the device */
     } flags;
-    struct db_port ports[DB_MAX_PORT];
+    struct db_port ports[SPN_DB_MAX_PORT];
     struct db_object_arr objects;
 };
 
 struct db_ctx {
-    struct db_interface interfaces[DB_MAX_INTERFACE];
+    struct db_interface interfaces[SPN_DB_MAX_INTERFACE];
     struct db_object_arr objects;
 };
 

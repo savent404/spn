@@ -29,6 +29,36 @@
 #endif
 
 /**
+ * @brief Maximum number of interfaces that supported
+ * 
+ */
+#ifndef SPN_DB_MAX_INTERFACE
+#define SPN_DB_MAX_INTERFACE 2
+#endif
+
+/**
+ * @brief Maximum number of ports that supported
+ * 
+ * @note Per interface has SPN_DB_MAX_PORT ports
+ */
+#ifndef SPN_DB_MAX_PORT
+#define SPN_DB_MAX_PORT 3
+#endif
+
+/**
+ * @brief Maximum number of objects that supported
+ * 
+ * @note Per port&interface have SPN_DB_MAX_OBJECT objects
+ */
+#ifndef SPN_DB_MAX_OBJECT
+#define SPN_DB_MAX_OBJECT 16
+#endif
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#endif
+
+/**
  * @brief Response DCP device options that are supported by the device.
  *
  */

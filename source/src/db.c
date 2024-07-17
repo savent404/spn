@@ -1,5 +1,6 @@
 #include <lwip/api.h>
 #include <spn/db.h>
+#include <spn/errno.h>
 #include <spn/sys.h>
 #include <stdlib.h>
 

@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <spn/db.h>
 #include <spn/dcp.h>
+#include <spn/errno.h>
 
 namespace {
 
