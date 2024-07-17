@@ -8,7 +8,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#pragma pack(push, 2)
 typedef union db_value {
     void* ptr;
     uint8_t u8;
@@ -19,15 +18,14 @@ typedef union db_value {
 } db_value_t;
 
 struct db_object {
+    db_value_t data;
     struct {
         db_id_t id : 6;
         unsigned is_dynamic : 1;
         unsigned is_array : 1;
         unsigned len : 8; /* only for array */
     } header;
-    db_value_t data;
 };
-#pragma pack(pop)
 
 struct db_object_arr {
     struct db_object objects[SPN_DB_MAX_OBJECT];
