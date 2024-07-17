@@ -61,7 +61,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length)
     /* Reset temp interface */
     memset(&interface, 0, sizeof(interface));
 
-    for (offset = sizeof(*hdr); offset < dcp_length; offset += dcp_block_next(block)) {
+    for (offset = sizeof(*hdr); offset < sizeof(*hdr) + dcp_length; offset += dcp_block_next(block)) {
         block = PTR_OFFSET(payload, offset, struct dcp_block_gen);
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: handling block %s(%02x:%02x)\n",
             dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
