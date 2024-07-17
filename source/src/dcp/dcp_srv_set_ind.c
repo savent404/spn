@@ -46,7 +46,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length)
 
     SPN_UNUSED_ARG(length);
 
-    for (offset = sizeof(*hdr); offset < dcp_length; offset += dcp_block_next(block)) {
+    for (offset = sizeof(*hdr); offset < sizeof(*hdr) + dcp_length; offset += dcp_block_next(block)) {
         block = PTR_OFFSET(hdr, offset, struct dcp_block_gen);
         qualifier = SPN_NTOHS(*PTR_OFFSET(block->data, 0, uint16_t));
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Handling block %s(%02x:%02x)\n",
