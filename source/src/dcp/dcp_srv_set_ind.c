@@ -33,7 +33,7 @@ static inline int obj_str_dup(struct db_object* obj, const char* str, unsigned l
   return SPN_OK;
 }
 
-int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
+int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
   struct db_object* obj;
   struct dcp_block_gen* block;
@@ -117,13 +117,13 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
 
   ctx->ind_xid = SPN_NTOHL(hdr->xid);
   ctx->ind_delay_factory = SPN_NTOHS(hdr->response_delay);
-  ctx->ind_set_req_option = req_option;
-  ctx->ind_set_req_res = 0;
-  ctx->ind_set_req_ctrl_start = has_ctrl_start;
-  ctx->ind_set_req_ctrl_stop = has_ctrl_stop;
-  ctx->ind_set_req_qualifier = qualifier;
+  ucr_ctx->req_option = req_option;
+  ucr_ctx->response = 0;
+  ucr_ctx->req_ctrl_start = has_ctrl_start;
+  ucr_ctx->req_ctrl_stop = has_ctrl_stop;
+  ucr_ctx->req_qualifier = qualifier;
   return SPN_OK;
 invalid_ret:
-  ctx->ind_set_req_res = 1;
+  ucr_ctx->response = 1;
   return res;
 }

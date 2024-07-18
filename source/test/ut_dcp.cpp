@@ -164,13 +164,14 @@ TEST_F(Ddcp, ident_cnf_ecopn) {
 TEST_F(Ddcp, set_ind_name_of_station) {
   DataParser parser;
   struct db_object* obj;
+  struct dcp_ucr_ctx ucr;
   auto frame = parser(test_data::dcp::kDcpNameOfStationSetReq);
 
   declare_name_of_station("station");
 
   frame->erase(frame->begin(), frame->begin() + 16);
-  ASSERT_EQ(dcp_srv_set_ind(&dcp, frame->data(), frame->size()), SPN_OK);
-  ASSERT_EQ(dcp.ind_set_req_option, DCP_OPTION_DEV_PROP << 8 | DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION);
+  ASSERT_EQ(dcp_srv_set_ind(&dcp, &ucr, frame->data(), frame->size()), SPN_OK);
+  ASSERT_EQ(ucr.req_option, DCP_OPTION_DEV_PROP << 8 | DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION);
   ASSERT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_STATION, &obj), SPN_OK);
   ASSERT_STRNE((char*)obj->data.ptr, "station");
 }
@@ -178,12 +179,13 @@ TEST_F(Ddcp, set_ind_name_of_station) {
 TEST_F(Ddcp, set_ind_ip_param) {
   DataParser parser;
   struct db_object* obj;
+  struct dcp_ucr_ctx ucr;
   auto frame = parser(test_data::dcp::kDcpIpParamSetReq);
 
   declare_ip_param(0, 0, 0);
 
   frame->erase(frame->begin(), frame->begin() + 16);
-  ASSERT_EQ(dcp_srv_set_ind(&dcp, frame->data(), frame->size()), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_ind(&dcp, &ucr, frame->data(), frame->size()), SPN_OK);
 
   ASSERT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_IP_ADDR, &obj), SPN_OK);
   ASSERT_NE(obj->data.u32, 0);
@@ -198,12 +200,13 @@ TEST_F(Ddcp, set_ind_ip_param) {
 TEST_F(Ddcp, set_ind_station_of_name) {
   DataParser parser;
   struct db_object* obj;
+  struct dcp_ucr_ctx ucr;
   auto frame = parser(test_data::dcp::kDcpNameOfStationSetReq);
 
   declare_name_of_station("station");
 
   frame->erase(frame->begin(), frame->begin() + 16);
-  ASSERT_EQ(dcp_srv_set_ind(&dcp, frame->data(), frame->size()), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_ind(&dcp, &ucr, frame->data(), frame->size()), SPN_OK);
 
   ASSERT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_STATION, &obj), SPN_OK);
   ASSERT_STRNE((char*)obj->data.ptr, "station");
@@ -212,6 +215,7 @@ TEST_F(Ddcp, set_ind_station_of_name) {
 TEST_F(Ddcp, set_rsp_ip_param) {
   DataParser parser;
   struct db_object* obj;
+  struct dcp_ucr_ctx ucr;
   uint8_t out[1500];
   auto frame = parser(test_data::dcp::kDcpIpParamSetReq);
 
@@ -220,7 +224,7 @@ TEST_F(Ddcp, set_rsp_ip_param) {
   declare_ip_param(0, 0, 0);
 
   frame->erase(frame->begin(), frame->begin() + 16);
-  ASSERT_EQ(dcp_srv_set_ind(&dcp, frame->data(), frame->size()), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_ind(&dcp, &ucr, frame->data(), frame->size()), SPN_OK);
 
   ASSERT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_IP_ADDR, &obj), SPN_OK);
   ASSERT_NE(obj->data.u32, 0);
@@ -233,7 +237,7 @@ TEST_F(Ddcp, set_rsp_ip_param) {
 
   frame = parser(test_data::dcp::kDcpIpParamSetResp);
   frame->erase(frame->begin(), frame->begin() + 16);
-  ASSERT_GE(dcp_srv_set_rsp(&dcp, out, sizeof(out)), frame->size());
+  ASSERT_GE(dcp_srv_set_rsp(&dcp, &ucr, out, sizeof(out)), frame->size());
 
   for (int i = 0; i < frame->size(); i++) {
     EXPECT_EQ(out[i], frame->at(i));
@@ -246,6 +250,7 @@ TEST_F(Ddcp, set_rsp_ip_param) {
 TEST_F(Ddcp, set_rsp_name_of_station) {
   DataParser parser;
   struct db_object* obj;
+  struct dcp_ucr_ctx ucr;
   uint8_t out[1500];
   auto frame = parser(test_data::dcp::kDcpNameOfStationSetReq);
 
@@ -254,14 +259,14 @@ TEST_F(Ddcp, set_rsp_name_of_station) {
   declare_name_of_station("station");
 
   frame->erase(frame->begin(), frame->begin() + 16);
-  ASSERT_EQ(dcp_srv_set_ind(&dcp, frame->data(), frame->size()), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_ind(&dcp, &ucr, frame->data(), frame->size()), SPN_OK);
 
   ASSERT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_STATION, &obj), SPN_OK);
   ASSERT_STRNE((char*)obj->data.ptr, "station");
 
   frame = parser(test_data::dcp::kDcpNameOfStationSetResp);
   frame->erase(frame->begin(), frame->begin() + 16);
-  ASSERT_GE(dcp_srv_set_rsp(&dcp, out, sizeof(out)), frame->size());
+  ASSERT_GE(dcp_srv_set_rsp(&dcp, &ucr, out, sizeof(out)), frame->size());
 
   for (int i = 0; i < frame->size(); i++) {
     EXPECT_EQ(out[i], frame->at(i));

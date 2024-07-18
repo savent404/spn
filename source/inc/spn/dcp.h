@@ -206,18 +206,36 @@ enum dcp_state {
   DCP_STATE_HELLO_REQ,
   DCP_STATE_HELLO_IND,
 };
+
+/**
+ * Unicast receiver context
+ *
+ * @note UCR is a none-stateful context, it is used to store some temporary variables
+ */
+struct dcp_ucr_ctx {
+  uint32_t xid;
+  uint32_t req_option;
+  uint8_t req_ctrl_start;
+  uint8_t req_ctrl_stop;
+  uint16_t req_qualifier;
+  uint8_t response;
+};
+
 struct dcp_ctx {
   /* Internal variables used when acting controller or devices */
   int interface_id;
   enum dcp_state state;
   struct db_ctx* db;
-  uint32_t ind_xid;               /* recorded requester's xid, used for response */
-  uint16_t ind_delay_factory;     /* recorded requester's response delay, used for response */
+  uint32_t ind_xid;           /* recorded requester's xid, used for response */
+  uint16_t ind_delay_factory; /* recorded requester's response delay, used for response */
+
+#if 0
   uint16_t ind_set_req_option;    /* Resent set.req's option */
   uint8_t ind_set_req_ctrl_start; /* Reset set.req's has ctrl:start */
   uint8_t ind_set_req_ctrl_stop;  /* Reset set.req's has ctrl:stop */
   uint16_t ind_set_req_qualifier; /* Resent set.req's qualifier */
   uint8_t ind_set_req_res;        /* Resent set.req's response */
+#endif
 
   /** Internal variables used when acting controller */
   uint32_t cnf_xid;          /* used to filter response that is not belong to this request */
@@ -279,8 +297,8 @@ int dcp_srv_get_rsp();
 int dcp_srv_get_cnf();
 
 int dcp_srv_set_req();
-int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length);
-int dcp_srv_set_rsp(struct dcp_ctx* ctx, void* payload, uint16_t length);
+int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
+int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
 int dcp_srv_set_cnf();
 
 int dcp_srv_hello_req();
