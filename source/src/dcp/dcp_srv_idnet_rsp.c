@@ -184,7 +184,7 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, void* payload, uint16_t length)
     hdr->service_id = DCP_SRV_TYPE_RES;
     hdr->xid = SPN_HTONL(ctx->ind_xid);
     hdr->response_delay = SPN_HTONS(ctx->ind_delay_factory);
-    hdr->data_length = SPN_HTONS(offset - sizeof(*hdr));
+    hdr->data_length = SPN_HTONS((offset - sizeof(*hdr) + 1) & ~1);
     return offset;
 invalid_option:
     return -SPN_EBADMSG;
