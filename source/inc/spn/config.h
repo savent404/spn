@@ -34,7 +34,7 @@
 
 /**
  * @brief Maximum number of interfaces that supported
- * 
+ *
  */
 #ifndef SPN_DB_MAX_INTERFACE
 #define SPN_DB_MAX_INTERFACE 2
@@ -42,7 +42,7 @@
 
 /**
  * @brief Maximum number of ports that supported
- * 
+ *
  * @note Per interface has SPN_DB_MAX_PORT ports
  */
 #ifndef SPN_DB_MAX_PORT
@@ -51,7 +51,7 @@
 
 /**
  * @brief Maximum number of objects that supported
- * 
+ *
  * @note Per port&interface have SPN_DB_MAX_OBJECT objects
  */
 #ifndef SPN_DB_MAX_OBJECT

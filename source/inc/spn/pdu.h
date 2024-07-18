@@ -40,7 +40,7 @@
 
 #pragma pack(push, 1)
 struct pn_pdu {
-    uint16_t frame_id;
+  uint16_t frame_id;
 };
 #pragma pack(pop)
 

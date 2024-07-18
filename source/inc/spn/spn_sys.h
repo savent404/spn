@@ -122,15 +122,14 @@ enum spn_ip_status spn_sys_get_ip_status(void);
 
 /**
  * @brief get device's instance
- * 
+ *
  * @return uint16_t big-endian instance
  */
 uint16_t spn_sys_get_dev_instance(void);
 
-
 /**
  * @brief dev initiative
- * 
+ *
  * @return uint16_t big-endian initiative
  */
 uint16_t spn_sys_get_dev_initiative(void);

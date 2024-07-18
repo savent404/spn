@@ -1,26 +1,25 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
 
 #include <lwip/opt.h>
 
-#include <spn/iface.h>
 #include <spn/errno.h>
+#include <spn/iface.h>
 
 struct spn_cfg {
-    bool dual_port; /* true: using two port and internal switch,
-                       false: using single port and no switch */
+  bool dual_port; /* true: using two port and internal switch,
+                     false: using single port and no switch */
 };
 
 struct spn_ctx {
-    struct netif *iface_port1;
-    struct netif *iface_port2;
+  struct netif* iface_port1;
+  struct netif* iface_port2;
 
-    const struct spn_cfg *cfg;
+  const struct spn_cfg* cfg;
 };
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,9 +50,8 @@ void spn_deinit(struct spn_ctx* ctx);
  * @return \c  0 if frame is accepted
  *         \c -1 if frame is reject
  */
-int spn_input_hook(void* frame, void* iface); 
+int spn_input_hook(void* frame, void* iface);
 #endif
-
 
 /**
  * @brief Input hook of ethernet frame
