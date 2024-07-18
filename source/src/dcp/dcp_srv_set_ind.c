@@ -47,7 +47,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
   struct dcp_header* hdr = (struct dcp_header*)payload;
   struct db_object* obj;
   struct dcp_block_gen* block;
-  uint16_t block_length, qualifier, dcp_length = SPN_NTOHS(hdr->data_length);
+  uint16_t block_length, qualifier = 0, dcp_length = SPN_NTOHS(hdr->data_length);
   uint16_t req_options = 0;
   unsigned offset;
   int res = SPN_OK;
