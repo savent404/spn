@@ -281,17 +281,17 @@ uint32_t dcp_option_bitmap(uint8_t option, uint8_t sub_option);
 
 int dcp_srv_ident_req();
 int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length);
-int dcp_srv_ident_res(struct dcp_ctx* ctx, void* payload, uint16_t length);
+int dcp_srv_ident_rsp(struct dcp_ctx* ctx, void* payload, uint16_t length);
 int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length);
 
 int dcp_srv_get_req();
 int dcp_srv_get_ind();
-int dcp_srv_get_res();
+int dcp_srv_get_rsp();
 int dcp_srv_get_cnf();
 
 int dcp_srv_set_req();
 int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length);
-int dcp_srv_set_res();
+int dcp_srv_set_rsp();
 int dcp_srv_set_cnf();
 
 int dcp_srv_hello_req();

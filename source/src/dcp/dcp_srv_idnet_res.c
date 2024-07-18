@@ -69,7 +69,7 @@ static inline int obj_strcpy(void* dst, struct db_object* obj)
     return obj->header.len;
 }
 
-int dcp_srv_ident_res(struct dcp_ctx* ctx, void* payload, uint16_t length)
+int dcp_srv_ident_rsp(struct dcp_ctx* ctx, void* payload, uint16_t length)
 {
     struct dcp_header* hdr = (struct dcp_header*)payload;
     struct db_object* obj;

@@ -32,7 +32,7 @@ void db_view_destroy(db_view_t view);
 int db_view_req(db_view_t view, struct db_object* object, int flag);
 int db_view_cnf(db_view_t view, struct db_object* object, int* res);
 int db_view_ind(db_view_t view, struct db_object* object);
-int db_view_res(db_view_t view, struct db_object* object, int ret);
+int db_view_rsp(db_view_t view, struct db_object* object, int ret);
 
 #ifdef __cplusplus
 }

@@ -117,7 +117,7 @@ TEST_F(Ddcp, ident_ind_all_selector)
     ASSERT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), SPN_OK);
     ASSERT_EQ(dcp.ind_xid, 0x1000001);
 
-    int len = dcp_srv_ident_res(&dcp, out, sizeof(out));
+    int len = dcp_srv_ident_rsp(&dcp, out, sizeof(out));
     ASSERT_GT(len, 0);
 
     /* Compare with int.resp */

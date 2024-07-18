@@ -9,7 +9,7 @@ static view_cb_t cb_instance = nullptr;
 static void cb_wrapper(db_view_t view, struct db_object* object, int flag)
 {
     int res = cb_instance(view, object, flag);
-    db_view_res(view, object, res);
+    db_view_rsp(view, object, res);
 }
 
 TEST(db_view, init)

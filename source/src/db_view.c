@@ -97,7 +97,7 @@ int db_view_ind(db_view_t view, struct db_object* object)
     return SPN_OK;
 }
 
-int db_view_res(db_view_t view, struct db_object* object, int ret)
+int db_view_rsp(db_view_t view, struct db_object* object, int ret)
 {
     struct db_view* v = (struct db_view*)view;
     int idx;
