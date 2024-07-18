@@ -235,6 +235,7 @@ struct dcp_ctx {
     uint32_t cnf_xid; /* used to filter response that is not belong to this request */
     uint32_t cnf_interface_id; /* auto assigned interface id */
     uint16_t cnf_delay_factory;
+    uint32_t cnf_option_bitmap; /* used to filter response that is not belong to this request */
 
     /** Internal variables used when acting device */
 };
@@ -253,6 +254,7 @@ extern "C" {
 int dcp_block_next(struct dcp_block_gen* block);
 const char* dcp_option_name(uint8_t option, uint8_t sub_option);
 uint32_t dcp_option_bitmap(uint8_t option, uint8_t sub_option);
+uint16_t dcp_option_bit_offset(uint32_t offset);
 /**
  * @}
  */
