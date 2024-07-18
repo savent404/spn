@@ -15,6 +15,16 @@ static inline void obj_str_free(struct db_object* obj) {
   obj->header.len = 0;
 }
 
+static inline int has_upper_case(const char* str, int len) {
+  int i;
+  for (i = 0; i < len; i++) {
+    if (str[i] >= 'A' && str[i] <= 'Z') {
+      return 1;
+    }
+  }
+  return 0;
+}
+
 static inline int obj_str_dup(struct db_object* obj, const char* str, unsigned len) {
   if (len < sizeof(obj->data.str)) {
     memcpy(obj->data.str, str, len);
@@ -78,12 +88,14 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
         break;
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
         block_length = SPN_NTOHS(block->length);
+        if (has_upper_case(PTR_OFFSET(block->data, 2, char), block_length - 2)) {
+          goto invalid_ret;
+        }
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_STATION, &obj);
         if (res < 0) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Failed to get station name object\n");
           goto invalid_ret;
         }
-        /* TODO: Check name is lowercase, hard coded way */
         obj_str_free(obj);
         res = obj_str_dup(obj, PTR_OFFSET(block->data, 2, char), block_length);
         db_object_updated_ind(ctx->db, obj, qualifier);
