@@ -35,7 +35,8 @@
 #define FRAME_ID_PTCP_DELAY_RES_2 0xFF42 /* with follow up */
 #define FRAME_ID_PTCP_DELAY_RES_3 0xFF43 /* without follow up */
 
-#define SPN_RTC_MINIMAL_FRAME_SIZE 42 /* 64 = 42 + 14(eth_hdr) */
+#define SPN_RTC_MINIMAL_FRAME_SIZE 56 /* 60 = 56 + 14(eth_hdr) */
+#define SPN_RTC_MAXIMAL_FRAME_SIZE 1440
 
 #pragma pack(push, 1)
 struct pn_pdu {

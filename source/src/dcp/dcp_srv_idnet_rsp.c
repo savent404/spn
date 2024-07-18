@@ -1,6 +1,7 @@
 #include <spn/db.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
+#include <spn/pdu.h>
 #include <spn/sys.h>
 #include <string.h>
 
@@ -179,7 +180,7 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, void* payload, uint16_t length)
             return -SPN_EMSGSIZE;
         }
     }
-
+    SPN_ASSERT("So tiny!", offset <= SPN_RTC_MAXIMAL_FRAME_SIZE);
     hdr->service_id = DCP_SRV_ID_IDENT;
     hdr->service_id = DCP_SRV_TYPE_RES;
     hdr->xid = SPN_HTONL(ctx->ind_xid);

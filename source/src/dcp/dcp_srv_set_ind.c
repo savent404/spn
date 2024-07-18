@@ -116,7 +116,9 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length)
     ctx->ind_xid = SPN_NTOHL(hdr->xid);
     ctx->ind_delay_factory = SPN_NTOHS(hdr->response_delay);
     ctx->ind_set_req_option = req_option;
+    ctx->ind_set_req_res = 0;
     return SPN_OK;
 invalid_ret:
+    ctx->ind_set_req_res = 1;
     return res;
 }

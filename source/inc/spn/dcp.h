@@ -231,6 +231,7 @@ struct dcp_ctx {
     uint32_t ind_xid; /* recorded requester's xid, used for response */
     uint16_t ind_delay_factory; /* recorded requester's response delay, used for response */
     uint16_t ind_set_req_option; /* Resent set.req's option */
+    uint8_t ind_set_req_res; /* Resent set.req's response */
 
     /** Internal variables used when acting controller */
     uint32_t cnf_xid; /* used to filter response that is not belong to this request */
@@ -293,7 +294,7 @@ int dcp_srv_get_cnf();
 
 int dcp_srv_set_req();
 int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length);
-int dcp_srv_set_rsp();
+int dcp_srv_set_rsp(struct dcp_ctx* ctx, void* payload, uint16_t length);
 int dcp_srv_set_cnf();
 
 int dcp_srv_hello_req();
