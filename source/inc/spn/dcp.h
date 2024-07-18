@@ -83,6 +83,34 @@ enum dcp_sub_option_all_selector {
     DCP_SUB_OPT_ALL_SELECTOR = 0xFF
 };
 
+#define DCP_BITMAP_IP_MAC_ADDRESS (0)
+#define DCP_BITMAP_IP_PARAMETER (1)
+#define DCP_BITMAP_IP_FULL_IP_SUITE (2)
+#define DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_VENDOR (3)
+#define DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION (4)
+#define DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_ID (5)
+#define DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_ROLE (6)
+#define DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_OPTIONS (7)
+#define DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_ALIAS (8)
+#define DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_INSTANCE (9)
+#define DCP_BITMAP_DEVICE_PROPERTIES_OEM_DEVICE_ID (10)
+#define DCP_BITMAP_DEVICE_PROPERTIES_STANDARD_GATEWAY (11)
+#define DCP_BITMAP_DEVICE_PROPERTIES_RSI_PROPERTIES (12)
+#define DCP_BITMAP_DHCP_DHCP (13)
+#define DCP_BITMAP_CONTROL_START (14)
+#define DCP_BITMAP_CONTROL_STOP (15)
+#define DCP_BITMAP_CONTROL_SIGNAL (16)
+#define DCP_BITMAP_CONTROL_RESPONSE (17)
+#define DCP_BITMAP_CONTROL_FACTORY_RESET (18)
+#define DCP_BITMAP_CONTROL_RESET_TO_FACTORY (19)
+#define DCP_BITMAP_DEVICE_INITIATIVE_DEVICE_INITIATIVE (20)
+#define DCP_BITMAP_NME_DOMAIN_NME_DOMAIN (21)
+#define DCP_BITMAP_NME_DOMAIN_NME_PRIO (22)
+#define DCP_BITMAP_NME_DOMAIN_NME_PARAMETER_UUID (23)
+#define DCP_BITMAP_NME_DOMAIN_NME_NAME (24)
+#define DCP_BITMAP_NME_DOMAIN_CIM_INTERFACE (25)
+#define DCP_BITMAP_ALL_SELECTOR (26)
+
 /**
  * Attributes of option/sub option
  * 
@@ -223,7 +251,8 @@ extern "C" {
  * @defgroup dcp_internal DCP Internal
  */
 int dcp_block_next(struct dcp_block_gen* block);
-const char *dcp_option_name(uint8_t option, uint8_t sub_option);
+const char* dcp_option_name(uint8_t option, uint8_t sub_option);
+uint32_t dcp_option_bitmap(uint8_t option, uint8_t sub_option);
 /**
  * @}
  */

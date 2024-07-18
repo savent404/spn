@@ -152,18 +152,13 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length)
             break;
         case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_OPTIONS):
             block_length = SPN_NTOHS(block->length);
-            SPN_ASSERT("Invalid block length", block_length > 10);
-            /* option number is more than 4 (10bytes), so we need dynamic method to add object */
-            data.ptr = malloc(block_length - 2);
-            if (!data.ptr) {
-                res = -SPN_ENOMEM;
-                goto invalid_ret;
-            }
+            data.u32 = 0;
             for (i = 2; i < block_length; i += 2) {
-                *PTR_OFFSET(data.ptr, i - 2, uint16_t) = SPN_NTOHS(*(PTR_OFFSET(block->data, i, uint16_t)));
+                uint8_t opt = *(PTR_OFFSET(block->data, i, uint8_t));
+                uint8_t sub_opt = *(PTR_OFFSET(block->data, i + 1, uint8_t));
+                data.u32 |= 1 << dcp_option_bitmap(opt, sub_opt);
             }
-
-            res = db_add_object(&interface.objects, DB_ID_DEVICE_OPTIONS, 1, 1, block_length - 2, &data);
+            res = db_add_object(&interface.objects, DB_ID_DEVICE_OPTIONS, 0, 0, 4, &data);
             if (res != SPN_OK) {
                 free(data.ptr);
                 goto invalid_ret;
