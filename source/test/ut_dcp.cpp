@@ -181,7 +181,7 @@ TEST_F(Ddcp, set_ind_name_of_station)
 
     frame->erase(frame->begin(), frame->begin() + 16);
     ASSERT_EQ(dcp_srv_set_ind(&dcp, frame->data(), frame->size()), SPN_OK);
-
+    ASSERT_EQ(dcp.ind_set_req_option, DCP_OPTION_DEV_PROP << 8 | DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION);
     ASSERT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_STATION, &obj), SPN_OK);
     ASSERT_STRNE((char*)obj->data.ptr, "station");
 }

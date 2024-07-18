@@ -41,6 +41,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length)
     struct db_object* obj;
     struct dcp_block_gen* block;
     uint16_t block_length, qualifier, dcp_length = SPN_NTOHS(hdr->data_length);
+    uint16_t option, req_option;
     unsigned offset;
     int res = SPN_OK;
 
@@ -52,7 +53,8 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length)
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Handling block %s(%02x:%02x)\n",
             dcp_option_name(block->option, block->sub_option),
             block->option, block->sub_option);
-        switch (BLOCK_TYPE(block->option, block->sub_option)) {
+        option = BLOCK_TYPE(block->option, block->sub_option);
+        switch (option) {
         case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_PARAM):
             SPN_ASSERT("invalid length", SPN_NTOHS(block->length) == 14);
             res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj);
@@ -94,7 +96,8 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length)
         case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_START):
         case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_STOP):
             /* TODO: indicate start/stop */
-            break;
+            /* NOTE: skip following code block, avoid override req_option */
+            continue;
         case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_SIGNAL):
         case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_FACTORY_RESET):
         case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_RESET_TO_FACTORY):
@@ -107,10 +110,12 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length)
                 block->option, block->sub_option);
             goto invalid_ret;
         }
+        req_option = option;
     }
 
     ctx->ind_xid = SPN_NTOHL(hdr->xid);
     ctx->ind_delay_factory = SPN_NTOHS(hdr->response_delay);
+    ctx->ind_set_req_option = req_option;
     return SPN_OK;
 invalid_ret:
     return res;

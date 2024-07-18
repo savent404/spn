@@ -230,12 +230,12 @@ struct dcp_ctx {
     struct db_ctx* db;
     uint32_t ind_xid; /* recorded requester's xid, used for response */
     uint16_t ind_delay_factory; /* recorded requester's response delay, used for response */
+    uint16_t ind_set_req_option; /* Resent set.req's option */
 
     /** Internal variables used when acting controller */
     uint32_t cnf_xid; /* used to filter response that is not belong to this request */
     uint32_t cnf_interface_id; /* auto assigned interface id */
     uint16_t cnf_delay_factory;
-    uint32_t cnf_option_bitmap; /* used to filter response that is not belong to this request */
 
     /** Internal variables used when acting device */
 };
