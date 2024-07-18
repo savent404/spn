@@ -39,6 +39,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
   struct dcp_block_gen* block;
   uint16_t block_length, qualifier, dcp_length = SPN_NTOHS(hdr->data_length);
   uint16_t option, req_option;
+  uint8_t has_ctrl_start = 0, has_ctrl_stop = 0;
   unsigned offset;
   int res = SPN_OK;
 
@@ -90,9 +91,15 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
         db_object_updated_ind(ctx->db, obj, qualifier);
         break;
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_START):
+        /* TODO: indicate start/stop */
+        /* NOTE: skip following code block, avoid override req_option */
+        has_ctrl_start = 1;
+        continue;
+
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_STOP):
         /* TODO: indicate start/stop */
         /* NOTE: skip following code block, avoid override req_option */
+        has_ctrl_stop = 1;
         continue;
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_SIGNAL):
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_FACTORY_RESET):
@@ -112,6 +119,9 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
   ctx->ind_delay_factory = SPN_NTOHS(hdr->response_delay);
   ctx->ind_set_req_option = req_option;
   ctx->ind_set_req_res = 0;
+  ctx->ind_set_req_ctrl_start = has_ctrl_start;
+  ctx->ind_set_req_ctrl_stop = has_ctrl_stop;
+  ctx->ind_set_req_qualifier = qualifier;
   return SPN_OK;
 invalid_ret:
   ctx->ind_set_req_res = 1;

@@ -193,6 +193,20 @@ TEST_F(Ddcp, set_ind_ip_param) {
   ASSERT_EQ(obj->data.u32, 0);
 }
 
+TEST_F(Ddcp, set_ind_station_of_name) {
+  DataParser parser;
+  struct db_object* obj;
+  auto frame = parser(test_data::dcp::kDcpNameOfStationSetReq);
+
+  declare_name_of_station("station");
+
+  frame->erase(frame->begin(), frame->begin() + 16);
+  ASSERT_EQ(dcp_srv_set_ind(&dcp, frame->data(), frame->size()), SPN_OK);
+
+  ASSERT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_STATION, &obj), SPN_OK);
+  ASSERT_STRNE((char*)obj->data.ptr, "station");
+}
+
 TEST_F(Ddcp, set_rsp_ip_param) {
   DataParser parser;
   struct db_object* obj;
@@ -213,10 +227,36 @@ TEST_F(Ddcp, set_rsp_ip_param) {
   ASSERT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_IP_GATEWAY, &obj), SPN_OK);
   ASSERT_EQ(obj->data.u32, 0);
 
-  ASSERT_GE(dcp_srv_set_rsp(&dcp, out, sizeof(out)), 10);
-
   frame = parser(test_data::dcp::kDcpIpParamSetResp);
   frame->erase(frame->begin(), frame->begin() + 16);
+  ASSERT_GE(dcp_srv_set_rsp(&dcp, out, sizeof(out)), frame->size());
+
+  for (int i = 0; i < frame->size(); i++) {
+    EXPECT_EQ(out[i], frame->at(i));
+    if (out[i] != frame->at(i)) {
+      printf("mismatch at %d\n", i);
+    }
+  }
+}
+
+TEST_F(Ddcp, set_rsp_name_of_station) {
+  DataParser parser;
+  struct db_object* obj;
+  uint8_t out[1500];
+  auto frame = parser(test_data::dcp::kDcpNameOfStationSetReq);
+
+  declare_name_of_station("station");
+
+  frame->erase(frame->begin(), frame->begin() + 16);
+  ASSERT_EQ(dcp_srv_set_ind(&dcp, frame->data(), frame->size()), SPN_OK);
+
+  ASSERT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_STATION, &obj), SPN_OK);
+  ASSERT_STRNE((char*)obj->data.ptr, "station");
+
+  frame = parser(test_data::dcp::kDcpNameOfStationSetResp);
+  frame->erase(frame->begin(), frame->begin() + 16);
+  ASSERT_GE(dcp_srv_set_rsp(&dcp, out, sizeof(out)), frame->size());
+
   for (int i = 0; i < frame->size(); i++) {
     EXPECT_EQ(out[i], frame->at(i));
     if (out[i] != frame->at(i)) {
