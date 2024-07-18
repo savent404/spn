@@ -10,6 +10,10 @@
 #define SPN_CONF_ROLE_CONTROL 1
 #endif
 
+#ifndef SPN_CONF_ASYNC
+#define SPN_CONF_ASYNC 0
+#endif
+
 /**
  * @brief SPN_CONFIG_MAX_DEVICE maximum number of devices that supported
  *

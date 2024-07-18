@@ -8,6 +8,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef void* db_view_t;
+
 typedef union db_value {
     void* ptr;
     uint8_t u8;
@@ -32,22 +35,25 @@ struct db_object_arr {
 };
 
 struct db_port {
-    int id;
     struct db_object_arr objects;
+    int id;
+    db_view_t view;
 };
 
 struct db_interface {
+    struct db_object_arr objects;
     int id;
     struct {
         unsigned is_outside : 1; /* Indicated that interface is outside of the device */
     } flags;
     struct db_port ports[SPN_DB_MAX_PORT];
-    struct db_object_arr objects;
+    db_view_t view;
 };
 
 struct db_ctx {
-    struct db_interface interfaces[SPN_DB_MAX_INTERFACE];
     struct db_object_arr objects;
+    struct db_interface interfaces[SPN_DB_MAX_INTERFACE];
+    db_view_t view;
 };
 
 static inline int db_is_static_object(struct db_object* object)
