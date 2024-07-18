@@ -38,8 +38,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
   struct db_object* obj;
   struct dcp_block_gen* block;
   uint16_t block_length, qualifier, dcp_length = SPN_NTOHS(hdr->data_length);
-  uint16_t option, req_option;
-  uint8_t has_ctrl_start = 0, has_ctrl_stop = 0;
+  uint16_t req_options = 0;
   unsigned offset;
   int res = SPN_OK;
 
@@ -50,8 +49,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
     qualifier = SPN_NTOHS(*PTR_OFFSET(block->data, 0, uint16_t));
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Handling block %s(%02x:%02x)\n",
                   dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
-    option = BLOCK_TYPE(block->option, block->sub_option);
-    switch (option) {
+    switch (BLOCK_TYPE(block->option, block->sub_option)) {
       case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_PARAM):
         SPN_ASSERT("invalid length", SPN_NTOHS(block->length) == 14);
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj);
@@ -91,16 +89,9 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
         db_object_updated_ind(ctx->db, obj, qualifier);
         break;
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_START):
-        /* TODO: indicate start/stop */
-        /* NOTE: skip following code block, avoid override req_option */
-        has_ctrl_start = 1;
-        continue;
-
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_STOP):
         /* TODO: indicate start/stop */
-        /* NOTE: skip following code block, avoid override req_option */
-        has_ctrl_stop = 1;
-        continue;
+        break;
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_SIGNAL):
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_FACTORY_RESET):
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_RESET_TO_FACTORY):
@@ -112,15 +103,13 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
                       dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
         goto invalid_ret;
     }
-    req_option = option;
+    req_options |= 1 << dcp_option_bitmap(block->option, block->sub_option);
   }
 
   ctx->ind_xid = SPN_NTOHL(hdr->xid);
   ctx->ind_delay_factory = SPN_NTOHS(hdr->response_delay);
-  ucr_ctx->req_option = req_option;
+  ucr_ctx->req_options_bitmap = req_options;
   ucr_ctx->response = 0;
-  ucr_ctx->req_ctrl_start = has_ctrl_start;
-  ucr_ctx->req_ctrl_stop = has_ctrl_stop;
   ucr_ctx->req_qualifier = qualifier;
   return SPN_OK;
 invalid_ret:
