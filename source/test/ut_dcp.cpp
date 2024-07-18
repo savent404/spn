@@ -96,6 +96,8 @@ TEST_F(Ddcp, ident_ind_all_selector) {
   DataParser parser;
   auto frame = parser(test_data::dcp::kDcpAllSelector);
 
+  memset(out, 0xFF, sizeof(out));
+
   declare_block_info(ip_block_info::IP_BLOCK_INFO_STATIC);
   declare_ip_param(0x0a0a0a0a, 0xffffff00, 0x0a0a0a01);
   declare_name_of_station("station");
@@ -213,6 +215,8 @@ TEST_F(Ddcp, set_rsp_ip_param) {
   uint8_t out[1500];
   auto frame = parser(test_data::dcp::kDcpIpParamSetReq);
 
+  memset(out, 0xFF, sizeof(out));
+
   declare_ip_param(0, 0, 0);
 
   frame->erase(frame->begin(), frame->begin() + 16);
@@ -244,6 +248,8 @@ TEST_F(Ddcp, set_rsp_name_of_station) {
   struct db_object* obj;
   uint8_t out[1500];
   auto frame = parser(test_data::dcp::kDcpNameOfStationSetReq);
+
+  memset(out, 0xFF, sizeof(out));
 
   declare_name_of_station("station");
 
