@@ -16,11 +16,13 @@ target_compile_options(SPN PRIVATE ${LWIP_COMPILER_FLAGS} -Wno-c90-c99-compat -W
 target_include_directories(SPN PUBLIC source/inc)
 target_link_libraries(SPN PUBLIC lwip)
 
+if (CMAKE_SIZE_TOOL)
 add_custom_target(size ALL
     COMMAND ${CMAKE_SIZE_TOOL} $<TARGET_FILE:SPN> -t
     DEPENDS SPN
     COMMENT "Print size of SPN"
 )
+endif ()
 
 # EXAMPLE MAIN
 if (ENABLE_EXAMPLES)

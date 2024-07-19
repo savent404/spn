@@ -2,85 +2,57 @@
     "version": 3,
     "configurePresets": [
         {
-            "name": "gcc-x64-Debug",
+            "name": "Test",
+            "binaryDir": "${sourceDir}/build/tests",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "ENABLE_EXAMPLES": "OFF",
+                "ENABLE_TESTS": "ON"
+            }
+        },
+        {
+            "name": "DevMs",
+            "binaryDir": "${sourceDir}/build/dev-ms",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "ENABLE_EXAMPLES": "ON",
+                "ENABLE_TESTS": "ON"
+            }
+        },
+        {
+            "name": "DevGcc",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/gcc-x64-Debug",
+            "binaryDir": "${sourceDir}/build/dev-gcc",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_C_COMPILER": "gcc",
                 "CMAKE_CXX_COMPILER": "g++",
-                "CMAKE_C_FLAGS": "-march=x86-64",
-                "CMAKE_CXX_FLAGS": "-march=x86-64",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "ENABLE_EXAMPLES": "ON",
                 "ENABLE_TESTS": "ON",
-                "CMAKE_SIZE_TOOL": "size",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+                "CMAKE_SIZE_TOOL": "size"
             }
         },
         {
-            "name": "gcc-x64-Release",
+            "name": "DevClang",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/gcc-x64-Release",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_C_COMPILER": "gcc",
-                "CMAKE_CXX_COMPILER": "g++",
-                "CMAKE_C_FLAGS": "-march=x86-64",
-                "CMAKE_CXX_FLAGS": "-march=x86-64",
-                "CMAKE_SIZE_TOOL": "size",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            }
-        },
-        {
-            "name": "gcc-x64-Cov",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/gcc-x64-Cov",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Coverage",
-                "CMAKE_C_COMPILER": "gcc",
-                "CMAKE_CXX_COMPILER": "g++",
-                "CMAKE_C_FLAGS": "-march=x86-64",
-                "CMAKE_CXX_FLAGS": "-march=x86-64",
-                "ENABLE_EXAMPLES": "ON",
-                "ENABLE_TESTS": "ON",
-                "CMAKE_SIZE_TOOL": "size",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            }
-        },
-        {
-            "name": "clang-x64-Debug",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/clang-x64-Debug",
+            "binaryDir": "${sourceDir}/build/dev-clang",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_C_COMPILER": "clang",
                 "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_C_FLAGS": "-march=x86-64",
-                "CMAKE_CXX_FLAGS": "-march=x86-64",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "ENABLE_EXAMPLES": "ON",
                 "ENABLE_TESTS": "ON",
-                "CMAKE_SIZE_TOOL": "size",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+                "CMAKE_SIZE_TOOL": "size"
             }
         },
         {
-            "name": "clang-x64-Release",
+            "name": "SizeArm",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/clang-x64-Release",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_C_FLAGS": "-march=x86-64",
-                "CMAKE_CXX_FLAGS": "-march=x86-64",
-                "CMAKE_SIZE_TOOL": "size",
-                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            }
-        },
-        {
-            "name": "gcc-arm-size",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/gcc-arm-size",
+            "binaryDir": "${sourceDir}/build/size-arm",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
                 "CMAKE_C_COMPILER": "arm-linux-gnueabi-gcc",
@@ -90,22 +62,6 @@
                 "CMAKE_SIZE_TOOL": "arm-linux-gnueabi-size",
                 "CMAKE_SYSTEM_NAME": "baremetal",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-            }
-        },
-        {
-            "name": "gcc-arm64-size",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/gcc-arm64-size",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
-                "CMAKE_C_COMPILER": "aarch64-linux-gnu-gcc",
-                "CMAKE_CXX_COMPILER": "aarch64-linux-gnu-g++",
-                "CMAKE_C_FLAGS": "-march=armv8-a",
-                "CMAKE_CXX_FLAGS": "-march=armv8-a",
-                "CMAKE_SIZE_TOOL": "aarch64-linux-gnu-size",
-                "CMAKE_SYSTEM_NAME": "baremetal",
-                "ENABLE_EXAMPLES": "OFF",
-                "ENABLE_TESTS": "OFF"
             }
         }
     ]
