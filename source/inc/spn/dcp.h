@@ -66,6 +66,19 @@ enum dcp_sub_option_nme {
 
 enum dcp_sub_option_all_selector { DCP_SUB_OPT_ALL_SELECTOR = 0xFF };
 
+enum dcp_block_error {
+  DCP_BLOCK_ERR_OK = 0,
+  DCP_BLOCK_ERR_OPTION_NOT_SUPPORTED = 1,
+  DCP_BLOCK_ERR_SUB_OPTION_NOT_SUPPORTED = 2, /* suboption, dataset or qualifier not supported */
+  DCP_BLOCK_ERR_SUB_OPTION_NOT_SET = 3,       /* if suboption could not be set
+                                               * for local reasons / wrong semantics / write access not defined */
+  DCP_BLOCK_ERR_RESOURCE_ERR = 4,             /* if there is a temporary resource rror whithin the server */
+  DCP_BLOCK_ERR_LOCAL_ERR = 5,                /* if set service is not possible for local rason like: ProtectionOn=true,
+                                               * RejectDcpSetRequests activated by an established AR*/
+  DCP_BLOCK_ERR_OPERATION_ERR = 6,            /* If set service is not possible because of application operation, like
+                                               * AR established, local rules disallow reset */
+};
+
 #define DCP_BITMAP_IP_MAC_ADDRESS (0)
 #define DCP_BITMAP_IP_PARAMETER (1)
 #define DCP_BITMAP_IP_FULL_IP_SUITE (2)

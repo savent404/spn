@@ -287,3 +287,43 @@ TEST_F(Ddcp, get_ind_simple) {
   ASSERT_EQ(dcp_srv_get_ind(&dcp, &ucr, frame->data(), frame->size()), SPN_OK);
   ASSERT_EQ(ucr.req_options_bitmap, 1 << DCP_BITMAP_IP_PARAMETER | 1 << DCP_BITMAP_DHCP_CLIENT_IDENT);
 }
+
+TEST_F(Ddcp, get_rsp_simple) {
+  DataParser parser;
+  db_value_t val;
+  struct dcp_ucr_ctx ucr;
+  char out[1500];
+
+  memset(out, 0x5A, sizeof(out));
+
+  auto f_req = parser(test_data::dcp::kDcpGetReqSample1);
+  auto f_rsp = parser(test_data::dcp::kDcpGetRspSample1);
+
+  f_req->erase(f_req->begin(), f_req->begin() + 16);
+  f_rsp->erase(f_rsp->begin(), f_rsp->begin() + 16);
+
+  ASSERT_EQ(dcp_srv_get_ind(&dcp, &ucr, f_req->data(), f_req->size()), SPN_OK);
+  ASSERT_EQ(ucr.req_options_bitmap, 1 << DCP_BITMAP_IP_PARAMETER | 1 << DCP_BITMAP_DHCP_CLIENT_IDENT);
+  ASSERT_EQ(ucr.xid, 0x0f020013);
+
+  /* prepare db */
+  db_add_interface(&db, 0);
+
+  val.u16 = 1; /* static ip */
+  db_add_object(&db.interfaces[0].objects, db_id_t::DB_ID_IP_BLOCK_INFO, 0, 0, 0, &val);
+
+  val.u32 = 0xc0a802bc; /* 192.168.2.188 */
+  db_add_object(&db.interfaces[0].objects, db_id_t::DB_ID_IP_ADDR, 0, 0, 0, &val);
+
+  val.u32 = 0xffffff00; /* 255.255.255.0 */
+  db_add_object(&db.interfaces[0].objects, db_id_t::DB_ID_IP_MASK, 0, 0, 0, &val);
+
+  val.u32 = 0xc0a802bc; /* 192.168.2.188 */
+  db_add_object(&db.interfaces[0].objects, db_id_t::DB_ID_IP_GATEWAY, 0, 0, 0, &val);
+
+  ASSERT_GE(dcp_srv_get_rsp(&dcp, &ucr, (uint8_t*)out, sizeof(out)), f_rsp->size());
+  for (int i = 0; i < f_rsp->size(); i++) {
+    uint8_t a = out[i], b = f_rsp->at(i);
+    ASSERT_EQ(a, b) << "mismatch at " << i;
+  }
+}

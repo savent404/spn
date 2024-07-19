@@ -23,10 +23,8 @@ int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
   ucr->req_options_bitmap = 0;
   for (idx = 0; idx < num_option; idx++) {
     offset = sizeof(*hdr) + idx * 2;
-
     option = *PTR_OFFSET(payload, offset, uint8_t);
     sub_option = *PTR_OFFSET(payload, offset + 1, uint8_t);
-
     ucr->req_options_bitmap |= 1 << dcp_option_bitmap(option, sub_option);
   }
 
