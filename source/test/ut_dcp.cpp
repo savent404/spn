@@ -107,10 +107,12 @@ TEST_F(Ddcp, ident_ind_all_selector) {
   /* drop first 16 bytes */
   frame->erase(frame->begin(), frame->begin() + 16);
   ASSERT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), SPN_OK);
-  ASSERT_EQ(dcp.ind_xid, 0x1000001);
+  ASSERT_EQ(dcp.mcr_ctx[0].xid, 0x1000001);
+  ASSERT_EQ(dcp.mcr_ctx[0].state, DCP_STATE_IDENT_RES);
 
-  int len = dcp_srv_ident_rsp(&dcp, out, sizeof(out));
+  int len = dcp_srv_ident_rsp(&dcp, &dcp.mcr_ctx[0], out, sizeof(out));
   ASSERT_GT(len, 0);
+  ASSERT_EQ(dcp.mcr_ctx[0].state, DCP_STATE_IDLE);
 
   /* Compare with int.resp */
 }

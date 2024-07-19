@@ -118,8 +118,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
     req_options |= 1 << dcp_option_bitmap(block->option, block->sub_option);
   }
 
-  ctx->ind_xid = SPN_NTOHL(hdr->xid);
-  ctx->ind_delay_factory = SPN_NTOHS(hdr->response_delay);
+  ucr_ctx->xid = SPN_NTOHL(hdr->xid);
   ucr_ctx->req_options_bitmap = req_options;
   ucr_ctx->response = 0;
   ucr_ctx->req_qualifier = qualifier;

@@ -13,6 +13,7 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
   int has_ctrl_start = 0;
   int has_ctrl_stop = 0;
 
+  SPN_UNUSED_ARG(ctx);
   SPN_UNUSED_ARG(length);
 
   /* pick start/stop firstly */
@@ -68,7 +69,7 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
 
   hdr->service_id = DCP_SRV_ID_SET;
   hdr->service_type = ucr_ctx->response ? DCP_SRV_TYPE_ERR : DCP_SRV_TYPE_RES;
-  hdr->xid = SPN_HTONL(ctx->ind_xid);
+  hdr->xid = SPN_HTONL(ucr_ctx->xid);
   hdr->response_delay = SPN_HTONS(0);
   hdr->data_length = SPN_HTONS(offset - sizeof(*hdr));
 

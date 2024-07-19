@@ -69,16 +69,15 @@ static inline int obj_strcpy(void* dst, struct db_object* obj) {
   return obj->header.len;
 }
 
-int dcp_srv_ident_rsp(struct dcp_ctx* ctx, void* payload, uint16_t length) {
+int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payload, uint16_t length) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
   struct db_object* obj;
   uint16_t block_info, idx;
   int res, offset = sizeof(*hdr);
-
   /* get ip block info */
   res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_BLOCK_INFO, &obj);
   if (res < 0) {
-    return res;
+    goto invalid_option;
   }
   block_info = obj->data.u16;
 
@@ -92,15 +91,15 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, void* payload, uint16_t length) {
     switch (option) {
       case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_PARAM): {
         uint32_t ip, mask, gw;
-        if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj) < 0) {
+        if ((res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj)) < 0) {
           goto invalid_option;
         }
         ip = obj->data.u32;
-        if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &obj) < 0) {
+        if ((res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &obj)) < 0) {
           goto invalid_option;
         }
         mask = obj->data.u32;
-        if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &obj) < 0) {
+        if ((res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &obj)) < 0) {
           goto invalid_option;
         }
         gw = obj->data.u32;
@@ -181,10 +180,14 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, void* payload, uint16_t length) {
   SPN_ASSERT("So tiny!", offset <= SPN_RTC_MAXIMAL_FRAME_SIZE);
   hdr->service_id = DCP_SRV_ID_IDENT;
   hdr->service_id = DCP_SRV_TYPE_RES;
-  hdr->xid = SPN_HTONL(ctx->ind_xid);
-  hdr->response_delay = SPN_HTONS(ctx->ind_delay_factory);
+  hdr->xid = SPN_HTONL(mcr->xid);
+  hdr->response_delay = SPN_HTONS(mcr->response_delay_factory);
   hdr->data_length = SPN_HTONS((offset - sizeof(*hdr) + 1) & ~1);
+
+  mcr->state = DCP_STATE_IDLE;
   return offset;
 invalid_option:
+
+  mcr->state = DCP_STATE_IDLE;
   return -SPN_EBADMSG;
 }

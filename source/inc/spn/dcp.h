@@ -211,6 +211,7 @@ enum dcp_state {
  * Unicast receiver context
  *
  * @note UCR is a none-stateful context, it is used to store some temporary variables
+ * @note this context is used for handle set/get.ind & set/get.rsp
  */
 struct dcp_ucr_ctx {
   uint32_t xid;
@@ -219,13 +220,33 @@ struct dcp_ucr_ctx {
   uint8_t response;
 };
 
+/**
+ * Multicast receiver context
+ *
+ * @note MCR is a stateful context, it is used to track the state of multicast receiver
+ * @note this context is used for handle ident.ind & ident.rsp
+ *
+ * IDLE -> IDENT_IND: receive ident.req and found empty slot
+ * IDLE -> IDLE: receive ident.req and found no empty slot
+ * IDENT_IND -> IDENT_RSP: time for response, trigger by timer or ident.req(no response delay)
+ * IDENT_RSP -> IDLE: response sent
+ * IDENT_IND -> IDLE: filter in ident.req not match or invalid ident.req
+ *
+ */
+struct dcp_mcr_ctx {
+  uint32_t xid;
+  uint32_t req_options_bitmap;
+  uint16_t response_delay_factory;
+  uint16_t response_delay;
+  enum dcp_state state;
+};
+
 struct dcp_ctx {
   /* Internal variables used when acting controller or devices */
   int interface_id;
-  enum dcp_state state;
   struct db_ctx* db;
-  uint32_t ind_xid;           /* recorded requester's xid, used for response */
-  uint16_t ind_delay_factory; /* recorded requester's response delay, used for response */
+
+  struct dcp_mcr_ctx mcr_ctx[SPN_CONF_DCP_MAX_IDENT_RSP_INST];
 
   /** Internal variables used when acting controller */
   uint32_t cnf_xid;          /* used to filter response that is not belong to this request */
@@ -278,7 +299,7 @@ uint16_t dcp_option_bit_offset(uint32_t offset);
 
 int dcp_srv_ident_req();
 int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length);
-int dcp_srv_ident_rsp(struct dcp_ctx* ctx, void* payload, uint16_t length);
+int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t length);
 int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length);
 
 int dcp_srv_get_req();
