@@ -277,3 +277,13 @@ TEST_F(Ddcp, set_rsp_name_of_station) {
     }
   }
 }
+
+TEST_F(Ddcp, get_ind_simple) {
+  DataParser parser;
+  struct dcp_ucr_ctx ucr;
+  auto frame = parser(test_data::dcp::kDcpGetReqSample1);
+
+  frame->erase(frame->begin(), frame->begin() + 16);
+  ASSERT_EQ(dcp_srv_get_ind(&dcp, &ucr, frame->data(), frame->size()), SPN_OK);
+  ASSERT_EQ(ucr.req_options_bitmap, 1 << DCP_BITMAP_IP_PARAMETER | 1 << DCP_BITMAP_DHCP_CLIENT_IDENT);
+}

@@ -57,6 +57,9 @@ const char kDcpResetFactorySetReq[] =
 const char kDcpResetFactorySetResp[] =
     "040404040404e073e7a77f778892fefd040000007c030000000605050002000000000000000000000000000000000000000000000000000000"
     "00000000000000";
+const char kDcpGetReqSample1[] =
+    "ec1c5dc1db1fe073e7a77f788892fefd03000f020013000000040102033d000000000000000000000000000000000000000000000000000000"
+    "000000";
 struct DataParser {
   using value_type = std::vector<uint8_t>;
   using value_ptr = std::shared_ptr<value_type>;

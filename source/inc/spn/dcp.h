@@ -42,7 +42,7 @@ enum dcp_sub_option_dev_prop {
 
 /* TODO: TBD */
 enum dcp_sub_option_dhcp {
-  DCP_SUB_OPT_DHCP_UNKNOW = 0xFF,
+  DCP_SUB_OPT_DHCP_CLIENT_IDENT = 0x3d,
 };
 
 enum dcp_sub_option_ctr {
@@ -79,7 +79,7 @@ enum dcp_sub_option_all_selector { DCP_SUB_OPT_ALL_SELECTOR = 0xFF };
 #define DCP_BITMAP_DEVICE_PROPERTIES_OEM_DEVICE_ID (10)
 #define DCP_BITMAP_DEVICE_PROPERTIES_STANDARD_GATEWAY (11)
 #define DCP_BITMAP_DEVICE_PROPERTIES_RSI_PROPERTIES (12)
-#define DCP_BITMAP_DHCP_DHCP (13)
+#define DCP_BITMAP_DHCP_CLIENT_IDENT (13)
 #define DCP_BITMAP_CONTROL_START (14)
 #define DCP_BITMAP_CONTROL_STOP (15)
 #define DCP_BITMAP_CONTROL_SIGNAL (16)
@@ -303,8 +303,8 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* pa
 int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length);
 
 int dcp_srv_get_req();
-int dcp_srv_get_ind();
-int dcp_srv_get_rsp();
+int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
+int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
 int dcp_srv_get_cnf();
 
 int dcp_srv_set_req();

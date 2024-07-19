@@ -108,7 +108,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_FACTORY_RESET):
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_RESET_TO_FACTORY):
       case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_FULL_SUITE):
-      case BLOCK_TYPE(DCP_OPTION_DHCP, DCP_SUB_OPT_DHCP_UNKNOW):
+      case BLOCK_TYPE(DCP_OPTION_DHCP, DCP_SUB_OPT_DHCP_CLIENT_IDENT):
       case BLOCK_TYPE(DCP_OPTION_NME_DOMAIN, DCP_SUB_OPT_NME_DOMAIN):
       default:
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Unsupported block %s(%02x:%02x)\n",

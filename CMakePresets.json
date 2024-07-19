@@ -5,7 +5,7 @@
             "name": "Test",
             "binaryDir": "${sourceDir}/build/tests",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_BUILD_TYPE": "Coverage",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "ENABLE_EXAMPLES": "OFF",
                 "ENABLE_TESTS": "ON"
