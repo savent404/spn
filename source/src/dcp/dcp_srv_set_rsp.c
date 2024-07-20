@@ -38,7 +38,7 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
     offset += 8;
   }
 
-  for (idx = 0; idx < 32 && ucr_ctx->req_options_bitmap; idx++) {
+  for (idx = 0; idx < DCP_BITMAP_NUM && ucr_ctx->req_options_bitmap; idx++) {
     if (ucr_ctx->req_options_bitmap & (1 << idx)) {
       uint16_t opt = dcp_option_bit_offset(idx);
       ucr_ctx->req_options_bitmap &= ~(1 << idx);

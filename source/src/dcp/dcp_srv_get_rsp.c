@@ -29,7 +29,7 @@ int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
 
   SPN_UNUSED_ARG(length);
 
-  for (idx = 0; idx < 32; idx++) {
+  for (idx = 0; idx < DCP_BITMAP_NUM; idx++) {
     uint16_t opt;
     unsigned offset_prev = offset;
     struct dcp_block_gen* block_hdr;

@@ -16,7 +16,7 @@ int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
   SPN_UNUSED_ARG(length);
 
   num_option = SPN_NTOHS(hdr->data_length) / 2;
-  if (num_option > 32) {
+  if (num_option > DCP_BITMAP_NUM) {
     return -SPN_EINVAL;
   }
 
