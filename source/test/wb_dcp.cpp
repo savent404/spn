@@ -3,6 +3,11 @@
 
 #define BLOCK_TYPE(option, sub_option) ((option) << 8 | (sub_option))
 
+TEST(dcp_option_bitmap, maxmium_bit_num)
+{
+  ASSERT_LT(DCP_BITMAP_NUM, 32);
+}
+
 /**
  * This is all about coverage testing, so we don't need to test the actual functionality of these functions.
  */
