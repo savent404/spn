@@ -62,6 +62,13 @@
 #define SPN_DB_MAX_OBJECT 16
 #endif
 
+/**
+ * @brief Maximum objects that can be managed by a view
+ */
+#ifndef SPN_VIEW_MAX_OBJECT
+#define SPN_VIEW_MAX_OBJECT 8
+#endif
+
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #endif
