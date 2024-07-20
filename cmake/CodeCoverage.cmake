@@ -144,6 +144,13 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname)
 		# Run tests
 		COMMAND ${test_command} ${ARGV3}
 
+		# remove test files from coverage
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR} -name "ut_*.gcda" | xargs rm -f
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR} -name "wb_*.gcda" | xargs rm -f
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR} -name "bb_*.gcda" | xargs rm -f
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR} -name "*.cpp.gcda" | xargs rm -f
+		COMMAND find ${CMAKE_CURRENT_BINARY_DIR} -name "gtest*.gcda" | xargs rm -f
+
 		# Capturing lcov counters and generating report
 		COMMAND ${LCOV_PATH} --directory . --capture --output-file ${coverage_info}
 		COMMAND ${LCOV_PATH} --remove ${coverage_info} 'tests/*' '/usr/*' --output-file ${coverage_cleaned}
