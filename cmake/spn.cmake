@@ -1,5 +1,8 @@
 if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Linux")
-    set(SPN_C_FLAGS ${LWIP_COMPILER_FLAGS}  -Wno-c90-c99-compat -Wno-pedantic)
+    set(SPN_C_FLAGS ${LWIP_COMPILER_FLAGS} 
+        -Wno-c90-c99-compat
+        -Wno-pedantic
+        -Wno-redundant-decls)
 else ()
     set(SPN_C_FLAGS ${CMAKE_C_FLAGS})
 endif()

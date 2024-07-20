@@ -4,8 +4,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <lwip/opt.h>
-
 #include <spn/errno.h>
 #include <spn/iface.h>
 
@@ -40,18 +38,15 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg, iface_t* iface1, if
 
 void spn_deinit(struct spn_ctx* ctx);
 
-#if 0
 /**
  * @brief input hook of ethernet frame
  *
  * @param frame
  * @param iface
- * @note in portiing context, lwip treats Werror=redundant-decls as error
  * @return \c  0 if frame is accepted
  *         \c -1 if frame is reject
  */
 int spn_input_hook(void* frame, void* iface);
-#endif
 
 /**
  * @brief Input hook of ethernet frame

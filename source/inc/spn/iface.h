@@ -2,4 +2,6 @@
 
 #include <lwip/netif.h>
 
-typedef struct netif iface_t;
+typedef struct iface {
+  struct netif netif;
+} iface_t;

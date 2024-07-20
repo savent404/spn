@@ -12,6 +12,7 @@ if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Linux")
     set (LWIP_PORT_SRC
         "${lwipcontribportunix_SRCS}"
         "${lwipcontribportunixnetifs_SRCS}")
+    set (LWIP_PORT_LIB lwipcontribportunix)
 else ()
     set (LWIP_PORT_INC 
         "${LWIP_CONTRIB_DIR}/ports/win32/include"
@@ -34,4 +35,4 @@ add_library(lwip ${lwipnoapps_SRCS} ${lwipsnmp_SRCS} ${LWIP_PORT_SRC})
 target_compile_options(lwip PRIVATE ${LWIP_COMPILER_FLAGS})
 target_compile_definitions(lwip PUBLIC ${LWIP_DEFINITIONS} ${LWIP_MBEDTLS_DEFINITIONS})
 target_include_directories(lwip PUBLIC ${LWIP_INCLUDE_DIRS} ${LWIP_MBEDTLS_INCLUDE_DIRS})
-target_link_libraries(lwip ${LWIP_SANITIZER_LIBS})
+target_link_libraries(lwip ${LWIP_SANITIZER_LIBS} ${LWIP_PORT_LIB})
