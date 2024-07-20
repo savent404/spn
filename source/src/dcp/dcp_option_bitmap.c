@@ -3,7 +3,7 @@
 
 #define BLOCK_TYPE(option, sub_option) ((option) << 8 | (sub_option))
 
-uint32_t dcp_option_bitmap(uint8_t option, uint8_t sub_option) {
+int dcp_option_bitmap(uint8_t option, uint8_t sub_option) {
   switch (BLOCK_TYPE(option, sub_option)) {
     case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_MAC):
       return DCP_BITMAP_IP_MAC_ADDRESS;
@@ -60,7 +60,7 @@ uint32_t dcp_option_bitmap(uint8_t option, uint8_t sub_option) {
     case BLOCK_TYPE(DCP_OPTION_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR):
       return DCP_BITMAP_ALL_SELECTOR;
     default:
-      return 0;
+      return -1;
   }
 }
 

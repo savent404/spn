@@ -3,6 +3,9 @@
 #include <spn/config.h>
 #include <spn/db.h>
 
+#include <lwip/pbuf.h>
+#include <netif/ethernet.h>
+
 #ifndef SPN_DCP_MAX_SIZE
 #define SPN_DCP_MAX_SIZE 1416
 #endif
@@ -236,6 +239,7 @@ struct dcp_ucr_ctx {
   enum dcp_block_error error[DCP_BITMAP_NUM];
 };
 
+  struct dcp_ctx;
 /**
  * Multicast receiver context
  *
@@ -254,14 +258,16 @@ struct dcp_mcr_ctx {
   uint32_t req_options_bitmap;
   uint16_t response_delay_factory;
   uint16_t response_delay;
+  struct eth_addr src_addr;
   enum dcp_state state;
+  struct dcp_ctx* dcp_ctx;
 };
 
 struct dcp_ctx {
   /* Internal variables used when acting controller or devices */
   int interface_id;
+  int port_num;
   struct db_ctx* db;
-
   struct dcp_mcr_ctx mcr_ctx[SPN_CONF_DCP_MAX_IDENT_RSP_INST];
 
   /** Internal variables used when acting controller */
@@ -269,7 +275,7 @@ struct dcp_ctx {
   uint32_t cnf_interface_id; /* auto assigned interface id */
   uint16_t cnf_delay_factory;
 
-  /** Internal variables used when acting device */
+  /** Internal physical layer attributes */
 };
 /**
  * @} end of dcp_internal
@@ -285,7 +291,7 @@ extern "C" {
  */
 int dcp_block_next(struct dcp_block_gen* block);
 const char* dcp_option_name(uint8_t option, uint8_t sub_option);
-uint32_t dcp_option_bitmap(uint8_t option, uint8_t sub_option);
+int dcp_option_bitmap(uint8_t option, uint8_t sub_option);
 uint16_t dcp_option_bit_offset(uint32_t offset);
 /**
  * @}
@@ -319,6 +325,7 @@ int dcp_srv_ident_req();
  * @brief Service handler that indicated by controller that it wants to identify the device
  *
  * @param ctx DCP context
+ * @param mcr_ctx Multicast receiver context, used to track the state of multicast receiver
  * @param payload DCP payload
  * @param length Length of payload
  * @note Syntax: DCP-Header,[NameOfStation]^[AliasName], [OtherFilter]*
@@ -331,7 +338,7 @@ int dcp_srv_ident_req();
  * @returns -SPN_EMSGSIZE if the payload is too short
  * @returns -SPN_EBUSY if no free MCR context
  */
-int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length);
+int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t length);
 
 /**
  * @brief Service handler that indicated by device that it wants to identify itself
@@ -371,8 +378,7 @@ int dcp_srv_hello_ind();
  */
 void dcp_init(struct dcp_ctx* ctx, struct db_ctx* db);
 void dcp_deinit(struct dcp_ctx* ctx);
-int dcp_input(struct dcp_ctx* ctx, void* payload, uint16_t length);
-int dcp_output(struct dcp_ctx* ctx, void* payload, uint16_t length, uint16_t frame_id);
+int dcp_input(struct dcp_ctx* ctx, int port, const struct eth_addr* src, struct pbuf* p);
 
 /**
  * @} end of dcp_api

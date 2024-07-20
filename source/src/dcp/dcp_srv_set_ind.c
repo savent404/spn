@@ -137,5 +137,4 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
   ucr_ctx->xid = SPN_NTOHL(hdr->xid);
   ucr_ctx->req_options_bitmap = req_options;
   return SPN_OK;
-  return res;
 }

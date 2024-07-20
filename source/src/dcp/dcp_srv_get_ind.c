@@ -7,28 +7,40 @@
 #define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
 
+static inline int has_read_attribute(uint16_t bitmap) {
+  const uint32_t read_forbidden = 1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_ALIAS | 1 << DCP_BITMAP_CONTROL_START |
+                                  1 << DCP_BITMAP_CONTROL_STOP | 1 << DCP_BITMAP_CONTROL_SIGNAL |
+                                  1 << DCP_BITMAP_CONTROL_RESPONSE | 1 << DCP_BITMAP_CONTROL_FACTORY_RESET |
+                                  1 << DCP_BITMAP_ALL_SELECTOR;
+  return (bitmap & read_forbidden) == 0;
+}
+
 int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload, uint16_t length) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
   unsigned idx, num_option, offset;
+  int res;
   uint8_t option, sub_option;
 
   SPN_UNUSED_ARG(ctx);
   SPN_UNUSED_ARG(length);
 
   num_option = SPN_NTOHS(hdr->data_length) / 2;
-  if (num_option > DCP_BITMAP_NUM) {
-    return -SPN_EINVAL;
-  }
-
   ucr->req_options_bitmap = 0;
   for (idx = 0; idx < num_option; idx++) {
     offset = sizeof(*hdr) + idx * 2;
     option = *PTR_OFFSET(payload, offset, uint8_t);
     sub_option = *PTR_OFFSET(payload, offset + 1, uint8_t);
-    ucr->req_options_bitmap |= 1 << dcp_option_bitmap(option, sub_option);
+    res = dcp_option_bitmap(option, sub_option);
+    if (res< 0) {
+      continue;
+    }
+    ucr->req_options_bitmap |= 1 << res;
   }
 
-  /* TODO: check option is valid */
+  if (!has_read_attribute(ucr->req_options_bitmap)) {
+    return -SPN_EINVAL;
+  }
+
   ucr->xid = SPN_NTOHL(hdr->xid);
   return SPN_OK;
 }

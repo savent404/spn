@@ -175,7 +175,7 @@ TEST(dcp_option_bitmap, dcp_option_bitmap_all_selector) {
 TEST(dcp_option_bitmap, unknow) {
   // Test case for unknown option
   uint32_t result28 = dcp_option_bitmap(0x00, 0x00);
-  EXPECT_EQ(result28, 0);
+  EXPECT_EQ(result28, -1);
 }
 
 TEST(dcp_option_bit_offset, DCP_BITMAP_IP_MAC_ADDRESS) {

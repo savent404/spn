@@ -25,7 +25,7 @@ TEST_F(Ddcp, ident_ind_all_selector) {
   declare_device_role(1 << device_role::DEV_ROLE_DEVICE_BIT);
   /* drop first 16 bytes */
   frame->erase(frame->begin(), frame->begin() + 16);
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), SPN_OK);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), SPN_OK);
   EXPECT_EQ(dcp.mcr_ctx[0].xid, 0x1000001);
   EXPECT_EQ(dcp.mcr_ctx[0].state, DCP_STATE_IDENT_RES);
 
@@ -43,7 +43,7 @@ TEST_F(Ddcp, ident_ind_syntax_filter) {
       DCP_SRV_ID_IDENT, DCP_SRV_TYPE_REQ,  // srv
       0x00, 0x00, 0x00, 0xEE,              // xid
       0, 1,                                // response delay factor
-      0, 16,                                // length
+      0, 16,                               // length
       // block begin
       DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 4,                                                       // length
@@ -57,7 +57,7 @@ TEST_F(Ddcp, ident_ind_syntax_filter) {
   });
   declare_name_of_station("foob");
   declare_name_of_vendor("foob");
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), -SPN_EAGAIN);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), -SPN_EAGAIN);
 
   frame = parser({
       DCP_SRV_ID_IDENT, DCP_SRV_TYPE_REQ,  // srv
@@ -76,7 +76,7 @@ TEST_F(Ddcp, ident_ind_syntax_filter) {
       'f', 'o', 'o', 'b',                                         // data
                                                                   // block end
   });
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), -SPN_EAGAIN);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), -SPN_EAGAIN);
 
   frame = parser({
       DCP_SRV_ID_IDENT, DCP_SRV_TYPE_REQ,  // srv
@@ -94,16 +94,16 @@ TEST_F(Ddcp, ident_ind_syntax_filter) {
       'f', 'o', 'o', 'b',                                        // data
                                                                  // block end
   });
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), SPN_OK);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), SPN_OK);
 
   dcp.mcr_ctx[0].state = DCP_STATE_IDLE;
   frame = parser({
       DCP_SRV_ID_IDENT, DCP_SRV_TYPE_REQ,  // srv
       0x00, 0x00, 0x00, 0xEE,              // xid
       0, 1,                                // response delay factor
-      0, 0,                               // length
+      0, 0,                                // length
   });
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), -SPN_EAGAIN);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), -SPN_EAGAIN);
 }
 TEST_F(Ddcp, ident_ind_name_of_vendor_but_db_not_set) {
   /**
@@ -127,7 +127,7 @@ TEST_F(Ddcp, ident_ind_name_of_vendor_but_db_not_set) {
       'f', 'b', 'b', 'f',                                        // data
   });
   declare_name_of_station("foob");
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), -SPN_EAGAIN);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), -SPN_EAGAIN);
 }
 
 TEST_F(Ddcp, ident_ind_unknow_option) {
@@ -152,7 +152,7 @@ TEST_F(Ddcp, ident_ind_unknow_option) {
       'f', 'b', 'b', 'f',  // data
   });
   declare_name_of_station("foob");
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), -SPN_EAGAIN);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), -SPN_EAGAIN);
 }
 
 TEST_F(Ddcp, ident_ind_name_of_vendor) {
@@ -178,7 +178,7 @@ TEST_F(Ddcp, ident_ind_name_of_vendor) {
   });
   declare_name_of_station("foob");
   declare_name_of_vendor("fbbf");
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), SPN_OK);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), SPN_OK);
   EXPECT_EQ(dcp.mcr_ctx[0].xid, 0xEE);
   EXPECT_EQ(dcp.mcr_ctx[0].state, DCP_STATE_IDENT_RES);
   dcp.mcr_ctx[0].state = DCP_STATE_IDLE; /* clear state */
@@ -199,7 +199,7 @@ TEST_F(Ddcp, ident_ind_name_of_vendor) {
       0, 4,                                                      // length
       'f', 'x', 'x', 'f',                                        // data
   });
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), -SPN_EAGAIN);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), -SPN_EAGAIN);
 }
 
 TEST_F(Ddcp, ident_ind_name_of_station) {
@@ -220,7 +220,7 @@ TEST_F(Ddcp, ident_ind_name_of_station) {
                                                                   // block end
   });
   declare_name_of_station("foob");
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), SPN_OK);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), SPN_OK);
   EXPECT_EQ(dcp.mcr_ctx[0].xid, 0xEE);
   EXPECT_EQ(dcp.mcr_ctx[0].state, DCP_STATE_IDENT_RES);
   dcp.mcr_ctx[0].state = DCP_STATE_IDLE; /* clear state */
@@ -245,7 +245,7 @@ TEST_F(Ddcp, ident_ind_name_of_station_dyn) {
       // block end
   });
   declare_name_of_station("foobbooftt");
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), SPN_OK);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), SPN_OK);
   EXPECT_EQ(dcp.mcr_ctx[0].xid, 0xEE);
   EXPECT_EQ(dcp.mcr_ctx[0].state, DCP_STATE_IDENT_RES);
 }
@@ -266,7 +266,7 @@ TEST_F(Ddcp, ident_ind_name_of_station_not_match) {
                                                                   // block end
   });
   declare_name_of_station("foob-ver-long");
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), -SPN_EAGAIN);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), -SPN_EAGAIN);
 }
 
 TEST_F(Ddcp, ident_ind_name_of_station_dyn_name_with_invalid_length) {
@@ -285,29 +285,7 @@ TEST_F(Ddcp, ident_ind_name_of_station_dyn_name_with_invalid_length) {
       // block end
   });
   declare_name_of_station("foobbooftt");
-  EXPECT_NE(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), SPN_OK);
-}
-
-TEST_F(Ddcp, ident_ind_no_mcr) {
-  DataParser parser;
-  auto frame = parser({
-      DCP_SRV_ID_IDENT, DCP_SRV_TYPE_REQ,  // srv
-      0x00, 0x00, 0x00, 0xEE,              // xid
-      0, 1,                                // response delay factor
-      0, 8,                                // length
-
-      // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 4,                                                       // length
-      'f', 'o', 'o', 'b',                                         // data
-                                                                  // block end
-  });
-
-  declare_name_of_station("foob");
-  for (int i = 0; i < SPN_CONF_DCP_MAX_IDENT_RSP_INST; i++) {
-    EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), SPN_OK);
-  }
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), -SPN_EBUSY);
+  EXPECT_NE(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), SPN_OK);
 }
 
 TEST_F(Ddcp, ident_ind_craped_frame) {
@@ -329,7 +307,7 @@ TEST_F(Ddcp, ident_ind_craped_frame) {
   });
 
   declare_name_of_station("foob");
-  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), 10), -SPN_EMSGSIZE);
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), 10), -SPN_EMSGSIZE);
 }
 
 TEST_F(Ddcp, ident_ind_invalid_requestion) {

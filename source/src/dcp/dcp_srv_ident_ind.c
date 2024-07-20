@@ -16,15 +16,13 @@ static inline int dcp_obj_strncmp(struct db_object* obj, const char* str, size_t
   }
 }
 
-int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
+int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payload, uint16_t length) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
   struct dcp_block_gen* block = (struct dcp_block_gen*)(hdr + 1);
   struct db_object* obj;
-  struct dcp_mcr_ctx* mcr = NULL;
   uint32_t options = 0, offset = sizeof(*hdr);
   uint16_t option;
   uint16_t data_len;
-  unsigned idx;
 
   if (length < SPN_NTOHS(hdr->data_length) + sizeof(*hdr)) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: payload too short\n");
@@ -32,18 +30,6 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
   }
   length = SPN_NTOHS(hdr->data_length) + sizeof(*hdr);
 
-  /* Find empty MCR context */
-  for (idx = 0; idx < ARRAY_SIZE(ctx->mcr_ctx); idx++) {
-    if (ctx->mcr_ctx[idx].state == DCP_STATE_IDLE) {
-      mcr = &ctx->mcr_ctx[idx];
-      break;
-    }
-  }
-  if (!mcr) {
-    /* No free MCR context */
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: no free MCR context\n");
-    return -SPN_EBUSY;
-  }
   /* occupied MCR context from now on */
   mcr->state = DCP_STATE_IDENT_IND;
 
