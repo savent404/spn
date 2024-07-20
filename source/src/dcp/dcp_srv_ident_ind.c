@@ -76,7 +76,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
         }
         break;
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
-        /* TODO: There is no needs to use name of alias */
+        /* TODO: There are no needs to use name of alias */
         break;
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR):
         if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_VENDOR, &obj) != SPN_OK) {
