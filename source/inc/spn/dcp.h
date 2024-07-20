@@ -341,6 +341,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length);
  * @param[out] payload DCP payload
  * @param length Length of payload
  * @note This function is called in input context, or timer context
+ * @todo Implement the unit test by using \c dcp_srv_ident_cnf
  * @returns 0 on success, negative value on error
  */
 int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t length);
