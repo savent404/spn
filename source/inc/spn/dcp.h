@@ -314,6 +314,17 @@ uint16_t dcp_option_bit_offset(uint32_t offset);
  */
 
 int dcp_srv_ident_req();
+
+/**
+ * @brief Service handler that indicated by controller that it wants to identify the device
+ *
+ * @param ctx DCP context
+ * @param payload DCP payload
+ * @param length Length of payload
+ * @note Syntax: DCP-Header,NameOfStation^AliasName, [OtherFilter]*
+ * @note Cuase rsp could be delayed by controller, the instance are limited with \c SPN_CONF_DCP_MAX_IDENT_RSP_INST
+ * @returns 0 on success, negative value on error
+ */
 int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length);
 int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t length);
 int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length);

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <lwip/opt.h>
 #include <lwip/sys.h>
 
 #define SPN_PP_HTONS(x) PP_HTONS(x)

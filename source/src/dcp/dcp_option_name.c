@@ -33,8 +33,8 @@ const char* dcp_option_name(uint8_t option, uint8_t sub_option) {
       return "DEV_PROP_STD_GATEWAY";
     case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_RSI):
       return "DEV_PROP_RSI";
-    case BLOCK_TYPE(DCP_OPTION_DHCP, DCP_SUB_OPT_DHCP_UNKNOW):
-      return "DHCP_UNKNOW";
+    case BLOCK_TYPE(DCP_OPTION_DHCP, DCP_SUB_OPT_DHCP_CLIENT_IDENT):
+      return "DHCP_CLIENT_IDENT";
     case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_START):
       return "CTRL_START";
     case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_STOP):
