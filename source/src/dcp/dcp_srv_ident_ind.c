@@ -9,7 +9,7 @@
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
 
 static inline int dcp_obj_strncmp(struct db_object* obj, const char* str, size_t len) {
-  if (obj->header.is_dynamic) {
+  if (!db_is_static_object(obj)) {
     return strncmp((char*)obj->data.ptr, str, len);
   } else {
     return strncmp(obj->data.str, str, len);
@@ -46,7 +46,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_STATION, &obj) != SPN_OK) {
           SPN_ASSERT("You must have a name ok?", 0);
         }
-        if (data_len != obj->header.len || dcp_obj_strncmp(obj, block->data, SPN_NTOHS(block->length)) != 0) {
+        if (data_len != db_object_len(obj) || dcp_obj_strncmp(obj, block->data, SPN_NTOHS(block->length)) != 0) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of station mismatch\n");
           goto invalid_req;
         }
@@ -57,7 +57,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: get name of vendor failed\n");
           goto invalid_req;
         }
-        if (data_len != obj->header.len || dcp_obj_strncmp(obj, block->data, SPN_NTOHS(block->length)) != 0) {
+        if (data_len != db_object_len(obj) || dcp_obj_strncmp(obj, block->data, SPN_NTOHS(block->length)) != 0) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of vendor mismatch\n");
           goto invalid_req;
         }

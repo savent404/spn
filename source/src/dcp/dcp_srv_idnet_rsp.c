@@ -62,11 +62,11 @@ const uint16_t supported_options[] = {
 
 static inline int obj_strcpy(void* dst, struct db_object* obj) {
   if (db_is_static_string_object(obj)) {
-    memcpy(dst, obj->data.str, obj->header.len);
+    memcpy(dst, obj->data.str, db_object_len(obj));
   } else {
-    memcpy((char*)dst + 2, obj->data.ptr, obj->header.len);
+    memcpy((char*)dst + 2, obj->data.ptr, db_object_len(obj));
   }
-  return obj->header.len;
+  return db_object_len(obj);
 }
 
 static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_info, struct dcp_block_gen* block) {
@@ -102,7 +102,7 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
       }
       *PTR_OFFSET(block->data, 0, uint16_t) = 0;
       obj_strcpy((char*)block->data + 2, obj);
-      block->length = 2 + obj->header.len;
+      block->length = 2 + db_object_len(obj);
       break;
     }
     case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION): {
@@ -111,7 +111,7 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
       }
       *PTR_OFFSET(block, 0, uint16_t) = 0;
       obj_strcpy((char*)block->data + 2, obj);
-      block->length = 2 + obj->header.len;
+      block->length = 2 + db_object_len(obj);
       break;
     }
     case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID): {

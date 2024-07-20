@@ -124,22 +124,22 @@ int db_dup_port(struct db_port* dst, struct db_port* src) {
 int db_dup_objects(struct db_object_arr* dst, struct db_object_arr* src) {
   unsigned i;
   for (i = 0; i < ARRAY_SIZE(dst->objects); i++) {
-    if (src->objects[i].header.id != DB_ID_INVALID) {
+    if (src->objects[i].addr.obj != DB_ID_INVALID) {
       struct db_object* src_obj = &src->objects[i];
       int res;
-      if (src_obj->header.is_dynamic) {
+      if (src_obj->attr.is_dyn) {
         db_value_t v;
 
-        v.ptr = malloc(src_obj->header.len);
+        v.ptr = malloc(src_obj->attr.len);
         if (!v.ptr) {
           goto err_ret;
         }
-        memcpy(v.ptr, src_obj->data.ptr, src_obj->header.len);
-        res = db_add_object(dst, src_obj->header.id, src_obj->header.is_dynamic, src_obj->header.is_array,
-                            src_obj->header.len, &v);
+        memcpy(v.ptr, src_obj->data.ptr, src_obj->attr.len);
+        res = db_add_object(dst, src_obj->addr.obj, src_obj->attr.is_dyn, src_obj->attr.is_arr,
+                            src_obj->attr.len, &v);
       } else {
-        res = db_add_object(dst, src_obj->header.id, src_obj->header.is_dynamic, src_obj->header.is_array,
-                            src_obj->header.len, &src_obj->data);
+        res = db_add_object(dst, src_obj->addr.obj, src_obj->attr.is_dyn, src_obj->attr.is_arr,
+                            src_obj->attr.len, &src_obj->data);
       }
 
       if (res < 0) {
@@ -158,8 +158,8 @@ void db_clear_objects(struct db_object_arr* objects) {
   unsigned i;
   for (i = 0; i < ARRAY_SIZE(objects->objects); i++) {
     object = &objects->objects[i];
-    if (object->header.is_dynamic) {
-      LWIP_ASSERT("object must be array", object->header.is_array && object->data.ptr != NULL);
+    if (object->attr.is_dyn) {
+      SPN_ASSERT("object must be array", object->attr.is_arr && object->data.ptr != NULL);
       free(object->data.ptr);
       memset(object, 0, sizeof(*object));
     }
@@ -168,8 +168,8 @@ void db_clear_objects(struct db_object_arr* objects) {
 
 int db_add_object(struct db_object_arr* objects,
                   db_id_t id,
-                  unsigned is_dynamic,
-                  unsigned is_array,
+                  unsigned is_dyn,
+                  unsigned is_arr,
                   size_t len,
                   db_value_t* data) {
   struct db_object* object;
@@ -177,18 +177,18 @@ int db_add_object(struct db_object_arr* objects,
   SPN_ASSERT("invalid object size", len <= 255);
   for (i = 0; i < ARRAY_SIZE(objects->objects); i++) {
     object = &objects->objects[i];
-    if (object->header.id == DB_ID_INVALID) {
-      object->header.id = id;
-      object->header.is_dynamic = is_dynamic;
-      object->header.is_array = is_array;
-      object->header.len = len;
-      LWIP_ASSERT("dynamic object must be array", !is_dynamic || is_array);
-      LWIP_ASSERT("dynamic object must have data", !is_dynamic || data->ptr != NULL);
+    if (object->addr.obj == DB_ID_INVALID) {
+      object->addr.obj = id;
+      object->attr.is_dyn = is_dyn;
+      object->attr.is_arr = is_arr;
+      object->attr.len = len;
+      SPN_ASSERT("dynamic object must be array", !is_dyn || is_arr);
+      SPN_ASSERT("dynamic object must have data", !is_dyn || data->ptr != NULL);
       object->data = *data;
       return SPN_OK;
     }
   }
-  LWIP_ASSERT("no free object", 0);
+  SPN_ASSERT("no free object", 0);
   return -SPN_ENOMEM;
 }
 
@@ -197,9 +197,9 @@ int db_del_object(struct db_object_arr* objects, db_id_t id) {
   unsigned i;
   for (i = 0; i < ARRAY_SIZE(objects->objects); i++) {
     object = &objects->objects[i];
-    if (object->header.id == id) {
-      if (object->header.is_dynamic) {
-        LWIP_ASSERT("dynamic object must be array", object->header.is_array);
+    if (object->addr.obj == id) {
+      if (object->attr.is_dyn) {
+        SPN_ASSERT("dynamic object must be array", object->attr.is_arr);
         free(object->data.ptr);
       }
       memset(object, 0, sizeof(*object));
@@ -212,7 +212,7 @@ int db_del_object(struct db_object_arr* objects, db_id_t id) {
 int db_get_object(struct db_object_arr* objects, db_id_t id, struct db_object** object) {
   unsigned i;
   for (i = 0; i < ARRAY_SIZE(objects->objects); i++) {
-    if (objects->objects[i].header.id == id) {
+    if (objects->objects[i].addr.obj == id) {
       *object = &objects->objects[i];
       return SPN_OK;
     }

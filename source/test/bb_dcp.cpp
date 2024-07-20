@@ -364,7 +364,7 @@ TEST_F(Ddcp, ident_cnf_ecopn) {
   EXPECT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_DEVICE_INSTANCE, &obj), SPN_OK);
   EXPECT_EQ(obj->data.u16, 0x0001);
   EXPECT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_DEVICE_OPTIONS, &obj), SPN_OK);
-  EXPECT_EQ(obj->header.len, 4);
+  EXPECT_EQ(db_object_len(obj), 4);
   EXPECT_EQ(obj->data.u32, 0x1FB);
 }
 

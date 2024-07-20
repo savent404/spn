@@ -18,7 +18,8 @@ typedef enum db_id {
   DB_ID_DEVICE_INSTANCE,
   DB_ID_DEVICE_OPTIONS, /* options that device supported */
   DB_ID_OEM_VENDOR_ID,
-  DB_ID_OEM_DEVICE_ID
+  DB_ID_OEM_DEVICE_ID,
+  DB_ID_NUM
 } db_id_t;
 
 enum ip_block_info {

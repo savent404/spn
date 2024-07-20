@@ -48,21 +48,21 @@ TEST(db, object) {
   /* assert */
   struct db_object* object;
   ASSERT_EQ(db_get_object(&ctx.objects, (db_id_t)(DB_ID_INVALID + 1), &object), SPN_OK);
-  ASSERT_EQ(object->header.id, (db_id_t)(DB_ID_INVALID + 1));
+  ASSERT_EQ(object->addr.obj, (db_id_t)(DB_ID_INVALID + 1));
   ASSERT_FALSE(db_is_array_object(object));
   ASSERT_TRUE(db_is_static_object(object));
   ASSERT_FALSE(db_is_static_string_object(object));
   ASSERT_EQ(object->data.u32, 0x12345678);
 
   ASSERT_EQ(db_get_object(&ctx.objects, (db_id_t)(DB_ID_INVALID + 2), &object), SPN_OK);
-  ASSERT_EQ(object->header.id, (db_id_t)(DB_ID_INVALID + 2));
+  ASSERT_EQ(object->addr.obj, (db_id_t)(DB_ID_INVALID + 2));
   ASSERT_FALSE(db_is_array_object(object));
   ASSERT_TRUE(db_is_static_object(object));
   ASSERT_FALSE(db_is_static_string_object(object));
   ASSERT_EQ(object->data.u64, 0x1234567890abcdef);
 
   ASSERT_EQ(db_get_object(&ctx.objects, (db_id_t)(DB_ID_INVALID + 3), &object), SPN_OK);
-  ASSERT_EQ(object->header.id, (db_id_t)(DB_ID_INVALID + 3));
+  ASSERT_EQ(object->addr.obj, (db_id_t)(DB_ID_INVALID + 3));
   ASSERT_TRUE(db_is_array_object(object));
   ASSERT_TRUE(db_is_static_object(object));
   ASSERT_TRUE(db_is_static_string_object(object));
@@ -187,7 +187,7 @@ TEST(db, get_interface_object) {
   /* Get the object from the interface */
   struct db_object* object;
   ASSERT_EQ(db_get_interface_object(&ctx, 0, (db_id_t)(DB_ID_INVALID + 1), &object), SPN_OK);
-  ASSERT_EQ(object->header.id, (db_id_t)(DB_ID_INVALID + 1));
+  ASSERT_EQ(object->addr.obj, (db_id_t)(DB_ID_INVALID + 1));
   ASSERT_FALSE(db_is_array_object(object));
   ASSERT_TRUE(db_is_static_object(object));
   ASSERT_FALSE(db_is_static_string_object(object));
@@ -248,7 +248,7 @@ TEST(db, get_port_object) {
   /* Get the object from the port */
   struct db_object* object;
   ASSERT_EQ(db_get_port_object(&ctx, 0, 0, (db_id_t)(DB_ID_INVALID + 1), &object), SPN_OK);
-  ASSERT_EQ(object->header.id, (db_id_t)(DB_ID_INVALID + 1));
+  ASSERT_EQ(object->addr.obj, (db_id_t)(DB_ID_INVALID + 1));
   ASSERT_FALSE(db_is_array_object(object));
   ASSERT_TRUE(db_is_static_object(object));
   ASSERT_FALSE(db_is_static_string_object(object));

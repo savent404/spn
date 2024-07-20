@@ -179,7 +179,6 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length) {
   if (res < 0 || !intf) {
     goto invalid_ret;
   }
-  intf->flags.is_outside = 1;
 
   res = db_dup_interface(intf, &interface);
   if (res != SPN_OK) {

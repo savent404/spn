@@ -8,11 +8,11 @@
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
 
 static inline void obj_str_free(struct db_object* obj) {
-  if (obj->header.is_dynamic) {
+  if (!db_is_static_object(obj)) {
     free(obj->data.ptr);
   }
-  obj->header.is_dynamic = 0;
-  obj->header.len = 0;
+  obj->attr.is_dyn = 0;
+  obj->attr.len = 0;
 }
 
 static inline int has_upper_case(const char* str, int len) {
@@ -29,16 +29,16 @@ static inline int obj_str_dup(struct db_object* obj, const char* str, unsigned l
   if (len < sizeof(obj->data.str)) {
     memcpy(obj->data.str, str, len);
 
-    obj->header.is_dynamic = 0;
-    obj->header.len = len;
+    obj->attr.is_dyn = 0;
+    obj->attr.len = len;
   } else {
     obj->data.ptr = malloc(len);
     if (!obj->data.ptr) {
       return -SPN_ENOMEM;
     }
     memcpy(obj->data.ptr, str, len);
-    obj->header.is_dynamic = 1;
-    obj->header.len = len;
+    obj->attr.is_dyn = 1;
+    obj->attr.len = len;
   }
   return SPN_OK;
 }

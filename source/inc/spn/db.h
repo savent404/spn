@@ -9,7 +9,48 @@
 extern "C" {
 #endif
 
-typedef void* db_view_t;
+/**
+ * Inherit diagram
+ *
+ * db_ctx
+ * |
+ * +-- db_interface [internal]
+ * |   |
+ * |   +-- id
+ * |   +-- db_port [X1]
+ * |       |
+ * |       +-- id
+ * |       +-- db_object_arr
+ * |           |
+ * |           +-- db_object
+ * |           |   |
+ * |           |   +-- val
+ * |           |   +-- addr
+ * |           |   +-- attr
+ * |           |   +-- view
+ * |           +-- db_object
+ * |           +-- db_object
+ * |           +-- db_object
+ * |           +-- ...
+ * +-- db_interface [external]
+ *     |
+ *     +-- ...
+ */
+
+typedef void* db_view_t;  // view is a dynamic object that can be used to notify listener that object has been changed
+
+typedef struct {
+  uint16_t iface;
+  uint16_t port;
+  enum db_id obj;
+} db_addr_t;
+
+typedef struct {
+  uint16_t len : 10;
+  uint16_t is_dyn : 1;
+  uint16_t is_arr : 1;
+  uint16_t is_valid : 1;
+} db_attr_t;
 
 typedef union db_value {
   void* ptr;
@@ -20,14 +61,13 @@ typedef union db_value {
   char str[8];
 } db_value_t;
 
+typedef enum db_view_type { DB_VIEW_TYPE_SYS, DB_VIEW_TYPE_USR, DB_VIEW_TYPE_NUM } db_view_type_t;
+
 struct db_object {
   db_value_t data;
-  struct {
-    db_id_t id : 6;
-    unsigned is_dynamic : 1;
-    unsigned is_array : 1;
-    unsigned len : 8; /* only for array */
-  } header;
+  db_addr_t addr;
+  db_attr_t attr;
+  db_view_t viewer[DB_VIEW_TYPE_NUM];
 };
 
 struct db_object_arr {
@@ -37,35 +77,37 @@ struct db_object_arr {
 struct db_port {
   struct db_object_arr objects;
   int id;
-  db_view_t view;
 };
 
 struct db_interface {
   struct db_object_arr objects;
-  int id;
-  struct {
-    unsigned is_outside : 1; /* Indicated that interface is outside of the device */
-  } flags;
   struct db_port ports[SPN_DB_MAX_PORT];
-  db_view_t view;
+  int id;
 };
 
 struct db_ctx {
   struct db_object_arr objects;
   struct db_interface interfaces[SPN_DB_MAX_INTERFACE];
-  db_view_t view;
 };
 
 static inline int db_is_static_object(struct db_object* object) {
-  return !object->header.is_dynamic;
+  return !object->attr.is_dyn;
 }
 
 static inline int db_is_array_object(struct db_object* object) {
-  return object->header.is_array;
+  return object->attr.is_arr;
+}
+
+static inline int db_is_valid_object(struct db_object* object) {
+  return object->attr.is_valid;
 }
 
 static inline int db_is_static_string_object(struct db_object* object) {
-  return db_is_static_object(object) && db_is_array_object(object) && object->header.len < 8;
+  return db_is_static_object(object) && db_is_array_object(object) && object->attr.len < 8;
+}
+
+static inline unsigned db_object_len(struct db_object* object) {
+  return object->attr.len;
 }
 
 /* TODO: Need implement this function to notify listener that object has been changed */
