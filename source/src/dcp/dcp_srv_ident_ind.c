@@ -16,29 +16,13 @@ static inline int dcp_obj_strncmp(struct db_object* obj, const char* str, size_t
   }
 }
 
-static inline int syntax_check(uint16_t first_option, uint32_t options) {
-  switch (first_option) {
-    case BLOCK_TYPE(DCP_OPTION_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR):
-      /* All selector must be the only option */
-      if (options != (1 << DCP_BITMAP_ALL_SELECTOR)) {
-        return 0;
-      }
-      /* fall through */
-    case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
-    case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
-      return 1;
-    default:
-      return 0;
-  }
-}
-
 int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
   struct dcp_block_gen* block = (struct dcp_block_gen*)(hdr + 1);
   struct db_object* obj;
   struct dcp_mcr_ctx* mcr = NULL;
   uint32_t options = 0, offset = sizeof(*hdr);
-  uint16_t is_first_opt = 1, first_opt = 0, option;
+  uint16_t option;
   uint16_t data_len;
   unsigned idx;
 
@@ -98,10 +82,6 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: unknown option %d\n", block->option);
         goto invalid_req;
     }
-    if (is_first_opt) {
-      is_first_opt = 0;
-      first_opt = option;
-    }
     options |= 1 << dcp_option_bitmap(block->option, block->sub_option);
   }
 
@@ -111,8 +91,8 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
   }
 
   /* First option check */
-  if (is_first_opt || syntax_check(first_opt, options) == 0) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: syntax check failed, first option invalid: %04x\n", first_opt);
+  if (offset == sizeof(*hdr)) {
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: no option found\n");
     goto invalid_req;
   }
 

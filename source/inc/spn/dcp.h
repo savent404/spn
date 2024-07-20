@@ -321,9 +321,10 @@ int dcp_srv_ident_req();
  * @param ctx DCP context
  * @param payload DCP payload
  * @param length Length of payload
- * @note Syntax: DCP-Header,NameOfStation^AliasName, [OtherFilter]*
+ * @note Syntax: DCP-Header,[NameOfStation]^[AliasName], [OtherFilter]*
  * @note Cuase rsp could be delayed by controller, the instance are limited with \c SPN_CONF_DCP_MAX_IDENT_RSP_INST
  * @todo Implement the response delay
+ * @todo Implement syntax check (this is not nessary, but it is good to have)
  * @todo More filter need to be supported
  * @returns 0 on success, negative value on error
  * @returns -SPN_EAGAIN if no response is expected

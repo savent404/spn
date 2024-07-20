@@ -36,22 +36,24 @@ TEST_F(Ddcp, ident_ind_all_selector) {
   /* Compare with int.resp */
 }
 
-TEST_F(Ddcp, ident_ind_sync_filter) {
-  /**
-   * The first option must be name of station
-   */
+TEST_F(Ddcp, ident_ind_syntax_filter) {
+  /* NameOfStation can't appear with NameOfAlias */
   DataParser parser;
   auto frame = parser({
       DCP_SRV_ID_IDENT, DCP_SRV_TYPE_REQ,  // srv
       0x00, 0x00, 0x00, 0xEE,              // xid
       0, 1,                                // response delay factor
-      0, 8,                                // length
-
+      0, 16,                                // length
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
-      0, 4,                                                      // length
-      'f', 'o', 'o', 'b',                                        // data
-                                                                 // block end
+      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      0, 4,                                                       // length
+      'f', 'o', 'o', 'b',                                         // data
+                                                                  // block end
+      // block begin
+      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS,  // option
+      0, 4,                                                     // length
+      'f', 'o', 'o', 'b',                                       // data
+                                                                // block end
   });
   declare_name_of_station("foob");
   declare_name_of_vendor("foob");
@@ -61,17 +63,18 @@ TEST_F(Ddcp, ident_ind_sync_filter) {
       DCP_SRV_ID_IDENT, DCP_SRV_TYPE_REQ,  // srv
       0x00, 0x00, 0x00, 0xEE,              // xid
       0, 1,                                // response delay factor
-      0, 12,                               // length
+      0, 16,                               // length
       // block begin
-      DCP_OPTION_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR,  // option
-      0, 0,                                               // length
-                                                          // block end
-
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
-      0, 4,                                                      // length
-      'f', 'o', 'o', 'b',                                        // data
-                                                                 // block end
+      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS,  // option
+      0, 4,                                                     // length
+      'f', 'o', 'o', 'b',                                       // data
+                                                                // block end
+      // block begin
+      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      0, 4,                                                       // length
+      'f', 'o', 'o', 'b',                                         // data
+                                                                  // block end
   });
   EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), -SPN_EAGAIN);
 
@@ -92,6 +95,15 @@ TEST_F(Ddcp, ident_ind_sync_filter) {
                                                                  // block end
   });
   EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), SPN_OK);
+
+  dcp.mcr_ctx[0].state = DCP_STATE_IDLE;
+  frame = parser({
+      DCP_SRV_ID_IDENT, DCP_SRV_TYPE_REQ,  // srv
+      0x00, 0x00, 0x00, 0xEE,              // xid
+      0, 1,                                // response delay factor
+      0, 0,                               // length
+  });
+  EXPECT_EQ(dcp_srv_ident_ind(&dcp, frame->data(), frame->size()), -SPN_EAGAIN);
 }
 TEST_F(Ddcp, ident_ind_name_of_vendor_but_db_not_set) {
   /**
