@@ -326,8 +326,22 @@ int dcp_srv_ident_req();
  * @todo Implement the response delay
  * @todo More filter need to be supported
  * @returns 0 on success, negative value on error
+ * @returns -SPN_EAGAIN if no response is expected
+ * @returns -SPN_EMSGSIZE if the payload is too short
+ * @returns -SPN_EBUSY if no free MCR context
  */
 int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length);
+
+/**
+ * @brief Service handler that indicated by device that it wants to identify itself
+ *
+ * @param ctx DCP context
+ * @param mcr_ctx Multicast receiver context, used to track the state of multicast receiver
+ * @param[out] payload DCP payload
+ * @param length Length of payload
+ * @note This function is called in input context, or timer context
+ * @returns 0 on success, negative value on error
+ */
 int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t length);
 int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length);
 

@@ -189,5 +189,5 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
 invalid_option:
 
   mcr->state = DCP_STATE_IDLE;
-  return -SPN_EBADMSG;
+  return -SPN_EAGAIN;
 }
