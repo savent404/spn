@@ -74,6 +74,25 @@ struct DataParser {
     }
     return value;
   }
+
+  value_ptr operator()(void* ptr, size_t size) {
+    value_ptr value = std::make_shared<value_type>();
+    for (size_t i = 0; i < size; i++) {
+      value->push_back(static_cast<uint8_t*>(ptr)[i]);
+    }
+    if (value->size() < 60) {
+      value->resize(60, 0);
+    }
+    return value;
+  }
+
+  value_ptr operator()(std::initializer_list<uint8_t> data) {
+    value_ptr value = std::make_shared<value_type>(data);
+    if (value->size() < 60) {
+      value->resize(60, 0);
+    }
+    return value;
+  }
 };
 }  // namespace dcp
 }  // namespace test_data

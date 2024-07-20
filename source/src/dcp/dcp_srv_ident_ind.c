@@ -16,9 +16,13 @@ static inline int dcp_obj_strncmp(struct db_object* obj, const char* str, size_t
   }
 }
 
-static inline int syntax_check(uint16_t first_option) {
+static inline int syntax_check(uint16_t first_option, uint32_t options) {
   switch (first_option) {
     case BLOCK_TYPE(DCP_OPTION_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR):
+      /* All selector must be the only option */
+      if (options != (1 << DCP_OPTION_ALL_SELECTOR)) {
+        return 0;
+      }
     case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
     case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
       return 1;

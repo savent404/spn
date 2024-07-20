@@ -3,8 +3,7 @@
 
 #define BLOCK_TYPE(option, sub_option) ((option) << 8 | (sub_option))
 
-TEST(dcp_option_bitmap, maxmium_bit_num)
-{
+TEST(dcp_option_bitmap, maxmium_bit_num) {
   ASSERT_LT(DCP_BITMAP_NUM, 32);
 }
 
@@ -174,9 +173,9 @@ TEST(dcp_option_bitmap, dcp_option_bitmap_all_selector) {
 }
 
 TEST(dcp_option_bitmap, unknow) {
-    // Test case for unknown option
-    uint32_t result28 = dcp_option_bitmap(0x00, 0x00);
-    EXPECT_EQ(result28, 0);
+  // Test case for unknown option
+  uint32_t result28 = dcp_option_bitmap(0x00, 0x00);
+  EXPECT_EQ(result28, 0);
 }
 
 TEST(dcp_option_bit_offset, DCP_BITMAP_IP_MAC_ADDRESS) {
@@ -315,6 +314,6 @@ TEST(dcp_option_bit_offset, DCP_BITMAP_ALL_SELECTOR) {
 }
 
 TEST(dcp_option_bit_offset, unknow) {
-    uint16_t result28 = dcp_option_bit_offset(DCP_BITMAP_NUM);
-    EXPECT_EQ(result28, 0);
+  uint16_t result28 = dcp_option_bit_offset(DCP_BITMAP_NUM);
+  EXPECT_EQ(result28, 0);
 }
