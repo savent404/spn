@@ -231,9 +231,9 @@ enum dcp_state {
  */
 struct dcp_ucr_ctx {
   uint32_t xid;
-  uint32_t req_options_bitmap;
-  uint16_t req_qualifier;
-  uint8_t response;
+  uint32_t req_options_bitmap;   /* set if option is requested */
+  uint16_t req_qualifier_bitmap; /* set if persistent mode is requested */
+  enum dcp_block_error error[DCP_BITMAP_NUM];
 };
 
 /**
