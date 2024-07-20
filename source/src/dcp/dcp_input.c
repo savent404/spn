@@ -94,6 +94,10 @@ int dcp_input(struct dcp_ctx* ctx, int port, const struct eth_addr* src, struct 
       } else {
         return -SPN_EINVAL;
       }
+
+      if (out) {
+        ethernet_output(NULL, out, NULL, src, ETHTYPE_PROFINET);
+      }
       break;
     case FRAME_ID_DCP_IDENT_REQ:
       res = SPN_ENOBUFS;
