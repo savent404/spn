@@ -20,9 +20,10 @@ static inline int syntax_check(uint16_t first_option, uint32_t options) {
   switch (first_option) {
     case BLOCK_TYPE(DCP_OPTION_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR):
       /* All selector must be the only option */
-      if (options != (1 << DCP_OPTION_ALL_SELECTOR)) {
+      if (options != (1 << DCP_BITMAP_ALL_SELECTOR)) {
         return 0;
       }
+      /* fall through */
     case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
     case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
       return 1;
@@ -38,6 +39,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
   struct dcp_mcr_ctx* mcr = NULL;
   uint32_t options = 0, offset = sizeof(*hdr);
   uint16_t is_first_opt = 1, first_opt = 0, option;
+  uint16_t data_len;
   unsigned idx;
 
   if (length < SPN_NTOHS(hdr->data_length) + sizeof(*hdr)) {
@@ -70,28 +72,28 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
       case BLOCK_TYPE(DCP_OPTION_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR):
         break;
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
+        data_len = SPN_NTOHS(block->length);
         if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_STATION, &obj) != SPN_OK) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: get name of station failed\n");
+          SPN_ASSERT("You must have a name ok?", 0);
+        }
+        if (data_len != obj->header.len || dcp_obj_strncmp(obj, block->data, SPN_NTOHS(block->length)) != 0) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of station mismatch\n");
           goto invalid_req;
         }
-        if (dcp_obj_strncmp(obj, block->data, block->length) != 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of station mismatch\n");
+        break;
+      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR):
+        data_len = SPN_NTOHS(block->length);
+        if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_VENDOR, &obj) != SPN_OK) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: get name of vendor failed\n");
+          goto invalid_req;
+        }
+        if (data_len != obj->header.len || dcp_obj_strncmp(obj, block->data, SPN_NTOHS(block->length)) != 0) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of vendor mismatch\n");
           goto invalid_req;
         }
         break;
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
         /* TODO: There are no needs to use name of alias */
-        break;
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR):
-        if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_VENDOR, &obj) != SPN_OK) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: get name of vendor failed\n");
-          goto invalid_req;
-        }
-        if (dcp_obj_strncmp(obj, block->data, block->length) != 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of vendor mismatch\n");
-          goto invalid_req;
-        }
-        break;
       default:
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: unknown option %d\n", block->option);
         goto invalid_req;
@@ -103,8 +105,13 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, void* payload, uint16_t length) {
     options |= 1 << dcp_option_bitmap(block->option, block->sub_option);
   }
 
+  if (offset != length) {
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: invalid block length\n");
+    goto invalid_req;
+  }
+
   /* First option check */
-  if (is_first_opt || syntax_check(first_opt) == 0) {
+  if (is_first_opt || syntax_check(first_opt, options) == 0) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: syntax check failed, first option invalid: %04x\n", first_opt);
     goto invalid_req;
   }
