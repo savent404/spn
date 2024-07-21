@@ -67,6 +67,16 @@ int spn_port_init(struct spn_ctx* ctx, struct spn_iface* iface, uint16_t interfa
 int spn_input_hook(void* frame, void* iface);
 
 /**
+ * @brief input hook of ethernet frame (internal)
+ *
+ * @param ctx spn working context
+ * @param p pbuf
+ * @param iface port interface
+ * @return \c  0 if frame is accepted
+ */
+int _spn_input_hook(struct spn_ctx* ctx, struct pbuf* p, struct spn_iface* iface);
+
+/**
  * @brief Input hook of ethernet frame
  * @note this is a weak function that only hooked for test purpose
  */

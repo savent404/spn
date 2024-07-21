@@ -17,6 +17,11 @@ TEST(Dspn, init) {
   int err;
 
   EXPECT_EQ(spn_init(&ctx, &cfg), SPN_OK);
+  EXPECT_EQ(spn_init(&ctx, &cfg), -SPN_EBUSY);  // can't init twice
+  spn_deinit(&ctx);
+
+  // Hope memleak not happen
+  EXPECT_EQ(spn_init(&ctx, &cfg), SPN_OK);
   spn_deinit(&ctx);
 }
 
@@ -35,7 +40,6 @@ TEST(Dspn, warning_init) {
   spn_deinit(&ctx);
 }
 
-
 TEST(Dspn, fatal_init) {
   auto inst = test::Dspn::get_instance();
 
@@ -48,5 +52,5 @@ TEST(Dspn, fatal_init) {
   EXPECT_EQ(spn_init(&ctx, &cfg), -SPN_EINVAL);
 
   // Hope memleak not happen
-  spn_deinit(&ctx);
+  EXPECT_DEATH(spn_deinit(&ctx), ".*");
 }
