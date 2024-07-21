@@ -2,6 +2,7 @@
 
 typedef enum db_id {
   DB_ID_INVALID = 0,
+  DB_ID_IFACE, /* FIXME: Did we need this? */
   DB_ID_NAME_OF_STATION,
   DB_ID_NAME_OF_VENDOR,
   DB_ID_NAME_OF_INTERFACE,

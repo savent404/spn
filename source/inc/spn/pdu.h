@@ -44,7 +44,11 @@ struct pn_pdu {
 };
 #pragma pack(pop)
 
-int spn_pdu_input(void* frame, size_t len, struct eth_hdr* hw_hdr, iface_t* iface);
+int spn_pdu_input(void* frame, size_t len, struct eth_hdr* hw_hdr, spn_iface_t* iface);
 
-int spn_pdu_rtc_output(struct pbuf* p, struct eth_addr* src, struct eth_addr* dest, uint16_t frame_id, iface_t* iface);
+int spn_pdu_rtc_output(struct pbuf* p,
+                       struct eth_addr* src,
+                       struct eth_addr* dest,
+                       uint16_t frame_id,
+                       spn_iface_t* iface);
 int spn_pdu_rta_output();

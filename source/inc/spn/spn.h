@@ -1,21 +1,23 @@
 #pragma once
 
+#include <spn/config.h>
+#include <spn/db.h>
+#include <spn/dcp.h>
+#include <spn/errno.h>
+#include <spn/iface.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-#include <spn/errno.h>
-#include <spn/iface.h>
-
 struct spn_cfg {
-  bool dual_port; /* true: using two port and internal switch,
-                     false: using single port and no switch */
+  bool reserved;
 };
 
 struct spn_ctx {
-  struct netif* iface_port1;
-  struct netif* iface_port2;
+  struct dcp_ctx dcp;
+  struct db_ctx db;
 
+  spn_iface_t ifaces[SPN_CONF_MAX_INTERFACE][SPN_CONF_MAX_PORT_PER_INTERFACE];
   const struct spn_cfg* cfg;
 };
 
@@ -28,15 +30,31 @@ extern "C" {
  *
  * @param ctx working context
  * @param cfg configurations
- * @param iface1 interface 1
- * @param iface2 interface 2 (optional port)
+ *
+ * @note This function not handle fatal error, it might cause memleak if failed to init
  * @return
  *          \c SPN_OK on success
  *          \c SPN_EINVAL if \c cfg is invalid
  */
-int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg, iface_t* iface1, iface_t* iface2);
+int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg);
 
 void spn_deinit(struct spn_ctx* ctx);
+
+/**
+ * @brief Initialize port
+ *
+ * @param ctx spn working context, usually don't need to be used
+ * @param iface port interface
+ * @param interface interface id
+ * @param port port id
+ *
+ * @note This function is called by \c spn_init
+ * @return
+ *          \c SPN_OK on success
+ *          \c SPN_EINVAL if \c iface is invalid
+ *          \c SPN_ENOENT if \c interface is not found
+ */
+int spn_port_init(struct spn_ctx* ctx, struct spn_iface* iface, uint16_t interface, uint16_t port);
 
 /**
  * @brief input hook of ethernet frame

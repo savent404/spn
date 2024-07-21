@@ -2,6 +2,14 @@
 
 #include <lwip/opt.h>
 
+#ifndef SPN_CONF_MAX_INTERFACE
+#define SPN_CONF_MAX_INTERFACE 1
+#endif
+
+#ifndef SPN_CONF_MAX_PORT_PER_INTERFACE
+#define SPN_CONF_MAX_PORT_PER_INTERFACE 2
+#endif
+
 #ifndef SPN_CONF_ROLE_DEVICE
 #define SPN_CONF_ROLE_DEVICE 1
 #endif
@@ -41,7 +49,7 @@
  *
  */
 #ifndef SPN_DB_MAX_INTERFACE
-#define SPN_DB_MAX_INTERFACE 2
+#define SPN_DB_MAX_INTERFACE (SPN_CONF_MAX_INTERFACE + 1) /* FIXME: Add some interfaces for controller due to gtest */
 #endif
 
 /**
@@ -50,7 +58,7 @@
  * @note Per interface has SPN_DB_MAX_PORT ports
  */
 #ifndef SPN_DB_MAX_PORT
-#define SPN_DB_MAX_PORT 3
+#define SPN_DB_MAX_PORT SPN_CONF_MAX_PORT_PER_INTERFACE
 #endif
 
 /**

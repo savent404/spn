@@ -1,7 +1,8 @@
 #pragma once
 
 #include <lwip/netif.h>
+#include <stdint.h>
 
-typedef struct iface {
+typedef struct spn_iface {
   struct netif netif;
-} iface_t;
+} spn_iface_t;
