@@ -72,7 +72,6 @@ struct Ddcp : public ::testing::Test {
   void declare_name_of_vendor(const std::string name) {
     db_value_t value;
     struct db_interface* iface;
-    value.ptr = strdup(name.c_str());
     if (strlen(name.c_str()) > 8) {
       value.ptr = strdup(name.c_str());
       db_get_interface(&db, 0, &iface);
