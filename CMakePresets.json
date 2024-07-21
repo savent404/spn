@@ -3,6 +3,7 @@
     "configurePresets": [
         {
             "name": "Test",
+            "generator": "Ninja",
             "binaryDir": "${sourceDir}/build/tests",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Coverage",
