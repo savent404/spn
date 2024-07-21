@@ -429,7 +429,14 @@ void sys_check_core_locking(void);
 #define LWIP_ASSERT_CORE_LOCKED() sys_check_core_locking()
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern int spn_input_hook(void* frame, void* netif);
+#ifdef __cplusplus
+}
+#endif
+
 #define LWIP_HOOK_UNKNOWN_ETH_PROTOCOL(p, netif) spn_input_hook(p, netif)
 
 #define MIB2_STATS 1

@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 
   parse_args(argc, argv);
 
-  spn_init(&ctx, &cfg, &ifaces[0], NULL);
+  spn_init(&ctx, &cfg);
 
   err = sys_sem_new(&stack_init_sem, 0);
   LWIP_ASSERT("Failed to create semaphore", err == ERR_OK);
@@ -63,7 +63,7 @@ void tcpip_init_cb(void* arg) {
 
   etharp_init();
   udp_init();
-  snmp_init();
+  // snmp_init();
 
   LWIP_DEBUGF(0x80, ("TCP/IP initialized.\n"));
 }

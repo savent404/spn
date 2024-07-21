@@ -29,14 +29,14 @@ static void dcp_mcr_rsp_callback(void* arg) {
   ethernet_output(NULL, out, NULL, &mcr_ctx->src_addr, ETHTYPE_PROFINET);
 }
 
-int dcp_input(struct dcp_ctx* ctx, int port, const struct eth_addr* src, struct pbuf* rtc_pdu) {
+int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_addr* src, struct pbuf* rtc_pdu) {
   uint16_t frame_id;
   struct dcp_header* hdr;
   struct pbuf* out;
   int res;
   unsigned idx;
 
-  SPN_UNUSED_ARG(port);
+  SPN_UNUSED_ARG(iface);
 
   if (rtc_pdu->len < SPN_RTC_MINIMAL_FRAME_SIZE) {
     return SPN_EINVAL;
@@ -103,7 +103,7 @@ int dcp_input(struct dcp_ctx* ctx, int port, const struct eth_addr* src, struct 
       res = SPN_ENOBUFS;
       for (idx = 0; idx < ARRAY_SIZE(ctx->mcr_ctx); idx++) {
         if (ctx->mcr_ctx[idx].state == DCP_STATE_IDLE) {
-          res = dcp_srv_ident_req(ctx, &ctx->mcr_ctx[idx], hdr, rtc_pdu->tot_len - 2);
+          res = dcp_srv_ident_ind(ctx, &ctx->mcr_ctx[idx], hdr, rtc_pdu->tot_len - 2);
           break;
         }
       }

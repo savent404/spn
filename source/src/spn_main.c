@@ -1,5 +1,11 @@
+#include <netif/ethernet.h>
+#include <spn/pdu.h>
 #include <spn/spn.h>
 #include <spn/sys.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
 
 static struct spn_ctx* _holly_protected_ctx = NULL;
 
@@ -74,12 +80,33 @@ int spn_input_hook(void* frame, void* iface) {
   return res;
 }
 
-int _spn_input_hook(struct spn_ctx* ctx, struct pbuf* p, struct spn_iface* iface)
-{
-  SPN_UNUSED_ARG(ctx);
-  SPN_UNUSED_ARG(p);
-  SPN_UNUSED_ARG(iface);
-  return -1;
+int _spn_input_hook(struct spn_ctx* ctx, struct pbuf* p, struct spn_iface* iface) {
+  struct eth_addr src;
+  uint16_t eth_type, frame_id;
+  int res = -1;
+
+  pbuf_remove_header(p, -SIZEOF_ETH_HDR);
+  memcpy(&src, p->payload, sizeof(src));
+
+  eth_type = SPN_NTOHS(*PTR_OFFSET(p->payload, 12, uint16_t));
+  pbuf_remove_header(p, SIZEOF_ETH_HDR);
+
+  if (eth_type == ETHTYPE_PROFINET) {
+    frame_id = SPN_NTOHS(*PTR_OFFSET(p->payload, 0, uint16_t));
+    switch (frame_id) {
+      case FRAME_ID_DCP_IDENT_REQ:
+      case FRAME_ID_DCP_IDENT_RES:
+      case FRAME_ID_DCP_GET_SET:
+      case FRAME_ID_DCP_HELLO_REQ:
+        res = dcp_input(&ctx->dcp, iface, &src, p);
+        break;
+      default:
+        res = -1;
+        SPN_DEBUG_MSG(SPN_DEBUG, "Unknown frame id %d\n", frame_id);
+        break;
+    }
+  }
+  return res;
 }
 
 __attribute((weak)) int spn_port_init(struct spn_ctx* ctx, struct spn_iface* iface, uint16_t interface, uint16_t port) {
