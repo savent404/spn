@@ -38,10 +38,6 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
 
   SPN_UNUSED_ARG(iface);
 
-  if (rtc_pdu->len < SPN_RTC_MINIMAL_FRAME_SIZE) {
-    return SPN_EINVAL;
-  }
-
   frame_id = SPN_NTOHS(*PTR_OFFSET(rtc_pdu->payload, 0, uint16_t));
   hdr = PTR_OFFSET(rtc_pdu->payload, 2, struct dcp_header);
 

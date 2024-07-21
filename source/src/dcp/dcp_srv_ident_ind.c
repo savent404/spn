@@ -87,6 +87,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   mcr->response_delay = 0; /* TODO: need implement it */
   mcr->state = DCP_STATE_IDENT_RES;
   mcr->req_options_bitmap = options;
+  mcr->dcp_ctx = ctx;
   return SPN_OK;
 invalid_req:
   SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: invalid request, drop it...\n");

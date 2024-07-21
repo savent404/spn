@@ -2,6 +2,7 @@
 #include <spn/db.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
+#include <spn/spn.h>
 #include "test_data.hpp"
 
 #include "ddcp.hpp"
