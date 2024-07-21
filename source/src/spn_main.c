@@ -31,10 +31,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
       /* All things done, register iface into db */
       val.ptr = &ctx->ifaces[i][j];
       res = db_add_object(&ctx->db.interfaces[i].ports[j].objects, DB_ID_NAME_OF_PORT, 0, 0, sizeof(val), &val);
-      if (res != SPN_OK) {
-        SPN_DEBUG_MSG(SPN_DEBUG, "Failed to add iface to db, res=%d\n", res);
-        goto err_ret;
-      }
+      SPN_ASSERT("Failed to add iface to db", res == SPN_OK);
     }
   }
 
@@ -42,11 +39,13 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
   dcp_init(&ctx->dcp, &ctx->db);
 
 err_ret:
+  db_deinit(&ctx->db);
   return res;
 }
 
 void spn_deinit(struct spn_ctx* ctx) {
-  SPN_UNUSED_ARG(ctx);
+  dcp_deinit(&ctx->dcp);
+  db_deinit(&ctx->db);
 }
 
 int spn_input_hook(void* frame, void* iface) {
@@ -54,6 +53,14 @@ int spn_input_hook(void* frame, void* iface) {
   SPN_UNUSED_ARG(iface);
   _spn_input_indication(0);
   return 0;
+}
+
+__attribute((weak)) int spn_port_init(struct spn_ctx* ctx, struct spn_iface* iface, uint16_t interface, uint16_t port) {
+  SPN_UNUSED_ARG(ctx);
+  SPN_UNUSED_ARG(iface);
+  SPN_UNUSED_ARG(interface);
+  SPN_UNUSED_ARG(port);
+  return SPN_OK;
 }
 
 __attribute__((weak)) void _spn_input_indication(int result) {
