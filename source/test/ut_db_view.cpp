@@ -69,6 +69,57 @@ TEST_F(View, add_object) {
   EXPECT_EQ(object.viewer[DB_VIEW_TYPE_USR], &view);
 }
 
+TEST_F(View, view_dup_type) {
+  auto& object = ctx.objects.objects[0];
+  EXPECT_EQ(db_view_add_object(&view, DB_VIEW_TYPE_SYS, &object), SPN_OK);
+  EXPECT_EQ(db_view_add_object(&view, DB_VIEW_TYPE_SYS, &object), -SPN_EEXIST);
+  EXPECT_EQ(db_view_add_object(&view, DB_VIEW_TYPE_USR, &object), SPN_OK);
+}
+
+TEST_F(View, notify_dup_type) {
+  auto& object = ctx.objects.objects[0];
+  int called = 0;
+  EXPECT_EQ(db_view_add_object(&view, DB_VIEW_TYPE_SYS, &object), SPN_OK);
+  EXPECT_EQ(db_view_add_object(&view, DB_VIEW_TYPE_USR, &object), SPN_OK);
+
+  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg) {
+    EXPECT_EQ(object, &ctx.objects.objects[0]);
+    EXPECT_EQ(arg, 0x1234);
+    called += 1;
+  };
+
+  EXPECT_EQ(db_view_req(&view, &object, 0x1234), SPN_OK);
+  EXPECT_EQ(called, 2);
+}
+
+TEST_F(View, remove_dup_type) {
+  auto& object = ctx.objects.objects[0];
+  int called = 0;
+  EXPECT_EQ(db_view_add_object(&view, DB_VIEW_TYPE_SYS, &object), SPN_OK);
+  EXPECT_EQ(db_view_add_object(&view, DB_VIEW_TYPE_USR, &object), SPN_OK);
+  EXPECT_EQ(object.viewer[DB_VIEW_TYPE_SYS], &view);
+  EXPECT_EQ(object.viewer[DB_VIEW_TYPE_USR], &view);
+
+  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg) {
+    EXPECT_EQ(object, &ctx.objects.objects[0]);
+    EXPECT_EQ(arg, 0x1234);
+    called += 1;
+  };
+
+  EXPECT_EQ(db_view_remove_object(&view, DB_VIEW_TYPE_USR, &object), SPN_OK);
+  EXPECT_EQ(object.viewer[DB_VIEW_TYPE_SYS], &view);
+  EXPECT_EQ(object.viewer[DB_VIEW_TYPE_USR], nullptr);
+
+  EXPECT_EQ(db_view_req(&view, &object, 0x1234), SPN_OK);
+  EXPECT_EQ(called, 1);
+
+  EXPECT_EQ(db_view_remove_object(&view, DB_VIEW_TYPE_SYS, &object), SPN_OK);
+  EXPECT_EQ(object.viewer[DB_VIEW_TYPE_SYS], nullptr);
+  EXPECT_EQ(object.viewer[DB_VIEW_TYPE_USR], nullptr);
+  EXPECT_EQ(db_view_req(&view, &object, 0x1234), -SPN_ENOENT);
+  EXPECT_EQ(called, 1);
+}
+
 TEST_F(View, add_object_twice) {
   auto& object = ctx.objects.objects[0];
   db_view_add_object(&view, DB_VIEW_TYPE_SYS, &object);
@@ -271,7 +322,7 @@ TEST_F(View, req_already_dead) {
   uintptr_t res;
   db_view_add_object(&view, DB_VIEW_TYPE_SYS, &object);
   db_view_remove_object(&view, DB_VIEW_TYPE_SYS, &object);
-  EXPECT_DEATH(db_view_req(&view, &object, 0x1234), ".*");
+  EXPECT_EQ(db_view_req(&view, &object, 0x1234), -SPN_ENOENT);
 }
 
 TEST_F(View, deinit_already_craped) {

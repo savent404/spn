@@ -82,21 +82,30 @@ void db_view_deinit(db_view_t v) {
 
 int db_view_req(db_view_t v, struct db_object* obj, uintptr_t arg) {
   struct db_view* inst = (struct db_view*)v;
-  int idx;
+  unsigned idx, cnt = 0;
+  int res = -SPN_ENOENT;
   SPN_ASSERT("install is null", inst != NULL);
   SPN_ASSERT("object is null", obj != NULL);
 
-  idx = find_idx_by_object(inst, obj);
-  SPN_ASSERT("object not found", idx >= 0);
+  for (idx = 0; idx < ARRAY_SIZE(inst->objects); idx++) {
+    if (inst->objects[idx] == obj) {
+      if (inst->attrs[idx].state != DB_VIEW_STATE_IDLE && inst->attrs[idx].state != DB_VIEW_STATE_RES) {
+        res = -SPN_EBUSY;
+        continue;
+      }
+      inst->attrs[idx].state = DB_VIEW_STATE_REQ;
+      inst->args[idx] = arg;
 
-  if (inst->attrs[idx].state != DB_VIEW_STATE_IDLE && inst->attrs[idx].state != DB_VIEW_STATE_RES) {
-    return -SPN_EBUSY;
+      /* WORKAROUND: View could be added in the same object by different type,
+       * so we need to check all the objects in the view.
+       * This is not a good design, but it's a workaround for now
+       */
+      res = db_view_ind(v, obj, idx);
+      cnt++;
+    }
   }
-  inst->attrs[idx].state = DB_VIEW_STATE_REQ;
-  inst->args[idx] = arg;
 
-  /* TODO: add async method */
-  return db_view_ind(v, obj, idx);
+  return res;
 }
 
 int db_view_cnf(db_view_t v, struct db_object* obj, uintptr_t* res) {
