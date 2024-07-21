@@ -96,7 +96,7 @@ int db_view_req(db_view_t v, struct db_object* obj, uintptr_t arg) {
       inst->attrs[idx].state = DB_VIEW_STATE_REQ;
       inst->args[idx] = arg;
 
-      /* WORKAROUND: View could be added in the same object by different type,
+      /* FIXME: View could be added in the same object by different type,
        * so we need to check all the objects in the view.
        * This is not a good design, but it's a workaround for now
        */
