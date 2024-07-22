@@ -20,6 +20,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
     return -SPN_EBUSY;
   }
 
+  /* NOTE: */
   db_init(&ctx->db);
 
   /* NOTE: Try to init iface things firstly, in case of the following error */
