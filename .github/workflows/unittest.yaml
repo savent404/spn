@@ -47,7 +47,11 @@ jobs:
       #    path: build/tests/coverage/*
       
       - name: Memory leak check
-        uses: solareenlo/42valgrind-action@v1.0.3
+        uses: Ximaz/valgrind-action@1.2.0
         with:
-          flags: 'valgrind --leak-check=full --suppressions=scripts/valgrind_suppress build/tests/tests'
+          binary_path: build/tests/tests
+          verbose: 1
+        #uses: solareenlo/42valgrind-action@v1.0.3
+        #with:
+        #  flags: 'valgrind --leak-check=full --suppressions=scripts/valgrind_suppress build/tests/tests'
           
