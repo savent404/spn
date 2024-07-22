@@ -23,6 +23,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   uint32_t options = 0, offset = sizeof(*hdr);
   uint16_t option;
   uint16_t data_len;
+  uint16_t mac_k = 0x7843;
 
   if (length < SPN_NTOHS(hdr->data_length) + sizeof(*hdr)) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: payload too short\n");
@@ -82,9 +83,15 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
     goto invalid_req;
   }
 
+  if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MAC_ADDR, &obj) != SPN_OK) {
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: get mac address failed\n");
+  } else {
+    mac_k = obj->data.str[5] | (obj->data.str[4] << 8);
+  }
+
   mcr->xid = SPN_NTOHL(hdr->xid);
   mcr->response_delay_factory = SPN_NTOHS(hdr->response_delay);
-  mcr->response_delay = 0; /* TODO: need implement it */
+  mcr->response_delay = 10 * (mac_k % mcr->response_delay_factory);
   mcr->state = DCP_STATE_IDENT_RES;
   mcr->req_options_bitmap = options;
   mcr->dcp_ctx = ctx;

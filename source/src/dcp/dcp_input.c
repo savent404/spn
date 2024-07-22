@@ -1,3 +1,4 @@
+#include <lwip/timeouts.h>
 #include <netif/ethernet.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
@@ -112,8 +113,7 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
       if (ctx->mcr_ctx[idx].response_delay == 0) {
         dcp_mcr_rsp_callback(&ctx->mcr_ctx[idx]);
       } else {
-        /* TODO: trigger a timer to call dcp_mcr_rsp_callback */
-        return -SPN_ENOSYS;
+        sys_timeout(ctx->mcr_ctx[idx].response_delay, dcp_mcr_rsp_callback, &ctx->mcr_ctx[idx]);
       }
       break;
     default:
