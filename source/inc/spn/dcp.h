@@ -191,7 +191,7 @@ struct dcp_block_gen {
   uint8_t option;
   uint8_t sub_option;
   uint16_t length;
-  uint8_t data[0];
+  char data[0]; /* NOTE: Clang told me it has to be chared */
 };
 #pragma pack(pop)
 

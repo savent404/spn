@@ -46,7 +46,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_STATION, &obj) != SPN_OK) {
           SPN_ASSERT("You must have a name ok?", 0);
         }
-        if (data_len != db_object_len(obj) || dcp_obj_strncmp(obj, block->data, SPN_NTOHS(block->length)) != 0) {
+        if (data_len != db_object_len(obj) || dcp_obj_strncmp(obj, &block->data[0], SPN_NTOHS(block->length)) != 0) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of station mismatch\n");
           goto invalid_req;
         }
