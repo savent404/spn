@@ -26,6 +26,7 @@ struct raw_posix_iface {
   int sockfd;
   char ifname[8];
   struct sockaddr_ll sockaddr;
+  pthread_t bg_task;
 };
 
 static err_t raw_socket_low_level_init(struct netif* netif);
@@ -36,29 +37,40 @@ static void* raw_socket_background_thread(void* arg);
 
 static pthread_t background_thread;
 
-void default_netif_init(struct netif* netifs, const char* port1, const char* port2, const uint32_t ip) {
+void dft_port_init(struct netif* iface, const char* port_name, const uint32_t ip) {
   ip4_addr_t ipaddr, netmask, gw;
-  struct netif* netif = netifs;
-  static struct raw_posix_iface iface[2];
-
-  strcpy(iface[0].ifname, port1);
-  strcpy(iface[1].ifname, port2);
+  struct raw_posix_iface* priv = malloc(sizeof(struct raw_posix_iface));
+  if (!priv) {
+    perror("malloc");
+    return;
+  }
+  strcpy(priv->ifname, port_name);
 
   ip4_addr_set_zero(&gw);
   ip4_addr_set_zero(&ipaddr);
   ip4_addr_set_zero(&netmask);
 
   ipaddr.addr = ip;
-  gw.addr = ip & 0x00FFFFFF | 0x01000000;
-  IP4_ADDR((&netmask), 255, 255, 255, 0);
-  printf("Starting lwIP, local interface(%s) IP is %s\n", iface[0].ifname, ip4addr_ntoa(&ipaddr));
-  /* TODO: add second port */
-  netif_add(netif, &ipaddr, &netmask, &gw, &iface[0], raw_socket_low_level_init, tcpip_input);
-  netif_set_default(netif);
-  netif_set_link_up(netif);
-  netif_set_up(netif);
+  gw.addr = ip & 0x00FFFFFF | 0x01000000; /* NOTE: default gw is xx.xx.xx.01 */
+  IP4_ADDR((&netmask), 255, 255, 255, 0); /* NOTE: default mask is 24-bit */
+  printf("Starting lwIP, local interface(%s) IP is %s\n", priv->ifname, ip4addr_ntoa(&ipaddr));
 
-  pthread_create(&background_thread, NULL, raw_socket_background_thread, netif);
+  if (!netif_add(iface, &ipaddr, &netmask, &gw, priv, raw_socket_low_level_init, tcpip_input)) {
+    perror("netif_add");
+    exit(1);
+  }
+  netif_set_default(iface);
+  netif_set_link_up(iface);
+  netif_set_up(iface);
+  priv->bg_task = pthread_create(&background_thread, NULL, raw_socket_background_thread, iface);
+}
+
+void dft_port_deinit(struct netif* iface) {
+  // cancel background thread, remove netif from stack, and free priv
+  struct raw_posix_iface* priv = (struct raw_posix_iface*)iface->state;
+  pthread_cancel(priv->bg_task);
+  netif_remove(iface);
+  free(priv);
 }
 
 err_t raw_socket_low_level_init(struct netif* netif) {

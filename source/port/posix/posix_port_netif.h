@@ -4,7 +4,8 @@
 extern "C" {
 #endif
 
-void default_netif_init(struct netif* ifaces, const char* port1_name, const char* port2_name, const uint32_t ip);
+void dft_port_init(struct netif* iface, const char* port_name, const uint32_t ip);
+void dft_port_deinit(struct netif* iface);
 
 #ifdef __cplusplus
 }

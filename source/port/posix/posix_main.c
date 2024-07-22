@@ -1,24 +1,17 @@
-#include "lwip/opt.h"
-#include "lwipopts.h"
-
-#include "arch/sys_arch.h"
 #include "lwip/api.h"
-#include "lwip/apps/snmp.h"
-#include "lwip/etharp.h"
-#include "lwip/icmp.h"
-#include "lwip/igmp.h"
-#include "lwip/init.h"
 #include "lwip/netif.h"
-#include "lwip/sys.h"
-#include "lwip/tcp.h"
-#include "lwip/tcpip.h"
-#include "lwip/timeouts.h"
-#include "lwip/udp.h"
-#include "netif/ethernet.h"
-
 #include <getopt.h>
 #include <spn/spn.h>
+#include <spn/sys.h>
+#include <string.h>
 #include "posix_port_netif.h"
+
+// lwip apps
+#include "lwip/etharp.h"
+#include "lwip/apps/snmp.h"
+#include "lwip/tcpip.h"
+#include "lwip/udp.h"
+
 
 static void tcpip_init_cb(void* arg);
 static void parse_args(int argc, char** argv);
@@ -59,13 +52,23 @@ void tcpip_init_cb(void* arg) {
 
   sys_sem_signal(sem);
 
-  default_netif_init((struct netif*)ifaces, port1_name, port2_name, ip);
-
   etharp_init();
   udp_init();
   // snmp_init();
 
   LWIP_DEBUGF(0x80, ("TCP/IP initialized.\n"));
+}
+
+int spn_port_init(struct spn_ctx* ctx, struct spn_iface* iface, uint16_t interface, uint16_t port) {
+  const char* name;
+  SPN_ASSERT("Not supported interface or port", interface == 0 && port < 2);
+
+  name = port == 0 ? port1_name : port2_name;
+  if (!name || !strlen(name)) {
+    return -SPN_ENOENT;
+  }
+  dft_port_init(&iface->netif, name, ip);
+  return SPN_OK;
 }
 
 void parse_args(int argc, char** argv) {
