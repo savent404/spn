@@ -12,6 +12,12 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+        
+      - name: Setup Ninja
+        uses: turtlesec-no/get-ninja@1.1.0
+        
+      - name: Setup gcc
+        uses: egor-tensin/setup-gcc@v1
 
       - name: Set up CMake
         uses: lukka/run-cmake@v10.7
