@@ -1,0 +1,34 @@
+name: Daily Unit Tests
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up CMake
+        uses: actions/setup-cmake@v1
+        with:
+          cmake-version: '3.21'
+
+      - name: Build and run tests
+        run: |
+          cmake --preset Test
+          cmake --build build/tests --target tests
+          ./build/tests/tests
+      
+      - name: Generate coverage report
+        run: |
+          cmake --build build/tests --target tests_cov
+      
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: build/tests/coverage/*
+      
+      - name: Memory leak check
+        run: |
+          valgrind --leak-check=full ./build/tests/tests
