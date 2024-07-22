@@ -52,7 +52,6 @@ jobs:
           minimum-coverage: 80
           artifact-name: code-coverage-report
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          working-directory: apps/my-first-app
           update-comment: true
       
       - name: Memory leak check
