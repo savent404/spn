@@ -53,7 +53,23 @@ jobs:
         run: |
           lcov -l build/tests/coverage.info
           lcov --summary build/tests/coverage.info
-      
+          
+      - name: Generate a coverage value
+        id: coverage
+        # Generates a GitHub Workflow output named `lines`
+        run: |
+          COVERAGE="$( lcov --summary build/tests/coverage.info | grep lines | awk '{print $2}' )"
+          echo "##[set-output name=lines;]${COVERAGE}%"
+  
+      # Use the output from the `coverage` step
+      - name: Generate the badge SVG image
+        uses: emibcn/badge-action@v1
+        with:
+          label: 'Test coverage'
+          status: ${{ steps.coverage.outputs.lines }}
+          color: 'blue,555,daf'
+          path: badge.svg
+
       - name: Memory leak check
         run: |
           valgrind --leak-check=full ./build/tests/tests
