@@ -1,5 +1,10 @@
 name: Daily Unit Tests
 
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
