@@ -12,8 +12,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        with:
-          submodule: true
+
+      - name: Checkout submodules
+        uses: textbook/git-checkout-submodule-action@master
         
       - name: Setup Ninja
         uses: turtlesec-no/get-ninja@1.1.0
