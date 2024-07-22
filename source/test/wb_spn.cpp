@@ -7,13 +7,19 @@ extern "C" int spn_port_init(struct spn_ctx* ctx, struct spn_iface* iface, uint1
   return inst->port_init(ctx, iface, interface, port);
 }
 
+extern "C" int dcp_output(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_addr* dst, struct pbuf* p) {
+  auto inst = test::Dspn::get_instance();
+  return inst->dcp_output(ctx, iface, dst, p);
+}
 TEST(Dspn, init) {
   auto inst = test::Dspn::get_instance();
 
   inst->port_init = [](struct spn_ctx* ctx, spn_iface_t* iface, int interface, int port) { return SPN_OK; };
 
   struct spn_ctx ctx;
-  struct spn_cfg cfg = {};
+  struct spn_cfg cfg = {
+    .vendor_name = "test",
+  };
   int err;
 
   EXPECT_EQ(spn_init(&ctx, &cfg), SPN_OK);
@@ -31,13 +37,12 @@ TEST(Dspn, warning_init) {
   inst->port_init = [](struct spn_ctx* ctx, spn_iface_t* iface, int interface, int port) { return -SPN_ENOENT; };
 
   struct spn_ctx ctx;
-  struct spn_cfg cfg = {};
+  struct spn_cfg cfg = {
+    .vendor_name = "test",
+  };
   int err;
 
   EXPECT_EQ(spn_init(&ctx, &cfg), -SPN_ENOENT);
-
-  // Hope memleak not happen
-  spn_deinit(&ctx);
 }
 
 TEST(Dspn, fatal_init) {
@@ -46,7 +51,9 @@ TEST(Dspn, fatal_init) {
   inst->port_init = [](struct spn_ctx* ctx, spn_iface_t* iface, int interface, int port) { return -SPN_EINVAL; };
 
   struct spn_ctx ctx;
-  struct spn_cfg cfg = {};
+  struct spn_cfg cfg = {
+    .vendor_name = "test",
+  };
   int err;
 
   EXPECT_EQ(spn_init(&ctx, &cfg), -SPN_EINVAL);

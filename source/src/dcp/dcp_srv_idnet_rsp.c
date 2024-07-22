@@ -177,6 +177,8 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
     struct dcp_block_gen* block = (struct dcp_block_gen*)((uintptr_t)payload + offset);
 
     res = pack_ident_rsp(ctx, option, block_info, block);
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "ident.rsp: option %s(%02d:%02d) res=%d\n",
+                  dcp_option_name(option >> 8, option & 0xff), option >> 8, option & 0xFF, res);
     if (res == 0) {
       continue;
     }

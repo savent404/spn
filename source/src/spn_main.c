@@ -24,6 +24,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
 
   /* NOTE: Try to init iface things firstly, in case of the following error */
   for (i = 0; i < SPN_CONF_MAX_INTERFACE; i++) {
+    int valid_port = 0;
     res = db_add_interface(&ctx->db, i);
     SPN_ASSERT("Failed to add interface", res == SPN_OK);
 
@@ -37,6 +38,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
         SPN_DEBUG_MSG(SPN_DEBUG, "Failed to add port %d:%d, res=%d\n", i, j, res);
         goto err_ret;
       }
+      valid_port++;
 
       res = db_add_port(&ctx->db.interfaces[i], j);
       SPN_ASSERT("Failed to add port", res == SPN_OK);
@@ -46,6 +48,61 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
       res = db_add_object(&ctx->db.interfaces[i].ports[j].objects, DB_ID_IFACE, 0, 0, sizeof(val), &val);
       SPN_ASSERT("Failed to add iface to db", res == SPN_OK);
     }
+    if (!valid_port) {
+      SPN_DEBUG_MSG(SPN_DEBUG, "No valid port found for interface %d\n", i);
+      res = -SPN_ENOENT;
+      goto err_ret;
+    }
+
+    val.u16 = 1;
+    res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_BLOCK_INFO, 0, 0, sizeof(val), &val);
+    SPN_ASSERT("Failed to add ip block info", res == SPN_OK);
+
+    val.u32 = ctx->ifaces[i][0].netif.ip_addr.addr;
+    res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_ADDR, 0, 0, sizeof(val), &val);
+    SPN_ASSERT("Failed to add ip addr", res == SPN_OK);
+
+    val.u32 = ctx->ifaces[i][0].netif.netmask.addr;
+    res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_MASK, 0, 0, sizeof(val), &val);
+    SPN_ASSERT("Failed to add netmask", res == SPN_OK);
+
+    val.u32 = ctx->ifaces[i][0].netif.gw.addr;
+    res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_GATEWAY, 0, 0, sizeof(val), &val);
+    SPN_ASSERT("Failed to add gateway", res == SPN_OK);
+
+    SPN_ASSERT("Invalid vendor name", cfg->vendor_name);
+    res = strlen(cfg->vendor_name);
+    if (res < sizeof(val.str)) {
+      strncpy(val.str, cfg->vendor_name, res);
+      res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_VENDOR, 0, 1, res, &val);
+    } else {
+      val.ptr = strdup(cfg->vendor_name);
+      res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_VENDOR, 0, 1, res, &val);
+    }
+    SPN_ASSERT("Failed to add vendor name", res == SPN_OK);
+
+    val.u16 = cfg->device_id;
+    res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_DEVICE_ID, 0, 1, sizeof(val), &val);
+    SPN_ASSERT("Failed to add device id", res == SPN_OK);
+
+    val.u16 = cfg->vendor_id;
+    res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_VENDOR_ID, 0, 1, sizeof(val), &val);
+    SPN_ASSERT("Failed to add vendor id", res == SPN_OK);
+
+    if (cfg->station_name) {
+      res = strlen(cfg->station_name);
+      if (res < sizeof(val.str)) {
+        strncpy(val.str, cfg->station_name, res);
+        res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_STATION, 0, 1, res, &val);
+      } else {
+        val.ptr = strdup(cfg->station_name);
+        res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_STATION, 0, 1, res, &val);
+      }
+    } else {
+      val.str[0] = '\0';
+      res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_STATION, 0, 1, 0, &val);
+    }
+    SPN_ASSERT("Failed to add station name", res == SPN_OK);
   }
 
   /* Now do the general things now */
