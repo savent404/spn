@@ -9,7 +9,8 @@ set (LWIP_INCLUDE_DIRS
     "${LWIP_DIR}/contrib/"
 )
 
-if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Linux")
+if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Linux"
+    OR ${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin")
     set(LWIP_COMPILER_FLAGS
         -Wno-c90-c99-compat
         -Wno-pedantic
@@ -20,5 +21,5 @@ if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Linux")
     set(LWIP_PORT_LIB
         lwip)
 else ()
-    set(LWIP_COMPILER_FLAGS "")
+    message(FATAL_ERROR "Unsupported system")
 endif ()
