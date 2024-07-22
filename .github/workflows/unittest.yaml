@@ -50,13 +50,11 @@ jobs:
           cmake --build build/tests --target tests_cov
           
       - name: Upload coverage report
-        uses: zgosalvez/github-actions-report-lcov@v4.1.12
+        uses: zgosalvez/github-actions-report-lcov@v1
         with:
           coverage-files: build/tests/coverage.info
           minimum-coverage: 80
-          artifact-name: code-coverage-report
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          update-comment: true
       
       - name: Memory leak check
         run: |
