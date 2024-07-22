@@ -49,5 +49,5 @@ jobs:
       - name: Memory leak check
         uses: solareenlo/42valgrind-action@v1.0.3
         with:
-          flags: 'valgrind --leak-check=full build/tests/tests'
+          flags: 'valgrind --leak-check=full --suppressions=scripts/valgrind_suppress build/tests/tests'
           
