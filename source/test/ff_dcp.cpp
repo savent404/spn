@@ -25,6 +25,7 @@ TEST(Fdcp, ident_req) {
   struct spn_cfg cfg = {};
   int err;
 
+  // TODO: add db objects
   lwip_global_init();
 
   DataParser parser;
@@ -51,6 +52,7 @@ TEST(Fdcp, ident_req_delayed) {
   struct spn_cfg cfg = {};
   int err;
 
+  // TODO: add db objects
   lwip_global_init();
 
   DataParser parser;

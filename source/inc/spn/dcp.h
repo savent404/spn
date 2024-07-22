@@ -379,6 +379,7 @@ int dcp_srv_hello_ind();
 void dcp_init(struct dcp_ctx* ctx, struct db_ctx* db);
 void dcp_deinit(struct dcp_ctx* ctx);
 int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_addr* src, struct pbuf* p);
+int dcp_output(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_addr* dst, struct pbuf* p);
 
 /**
  * @} end of dcp_api

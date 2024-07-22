@@ -43,7 +43,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
 
       /* All things done, register iface into db */
       val.ptr = &ctx->ifaces[i][j];
-      res = db_add_object(&ctx->db.interfaces[i].ports[j].objects, DB_ID_NAME_OF_PORT, 0, 0, sizeof(val), &val);
+      res = db_add_object(&ctx->db.interfaces[i].ports[j].objects, DB_ID_IFACE, 0, 0, sizeof(val), &val);
       SPN_ASSERT("Failed to add iface to db", res == SPN_OK);
     }
   }
@@ -52,6 +52,8 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
   dcp_init(&ctx->dcp, &ctx->db);
 
   _holly_protected_ctx = ctx;
+
+  return res;
 
 err_ret:
   db_deinit(&ctx->db);

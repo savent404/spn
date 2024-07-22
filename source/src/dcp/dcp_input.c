@@ -12,22 +12,42 @@
 static void dcp_mcr_rsp_callback(void* arg) {
   struct dcp_mcr_ctx* mcr_ctx = (struct dcp_mcr_ctx*)arg;
   struct dcp_ctx* ctx = mcr_ctx->dcp_ctx;
+  struct db_interface* db_interface;
+  struct db_port* db_port;
+  struct db_object* obj;
   struct pbuf* out;
   int res;
+  unsigned idx;
 
-  out = pbuf_alloc(PBUF_RAW, SPN_DCP_MAX_SIZE + SPN_PDU_HDR_SIZE, PBUF_RAM);
+  res = db_get_interface(ctx->db, ctx->interface_id, &db_interface);
+  SPN_ASSERT("db_get_interface failed", res == SPN_OK);
+
+  out = pbuf_alloc(PBUF_LINK, SPN_DCP_MAX_SIZE + SPN_PDU_HDR_SIZE, PBUF_RAM);
   SPN_ASSERT("pbuf_alloc failed", out != NULL);
 
-  pbuf_header(out, SPN_PDU_HDR_SIZE);
-
+  pbuf_add_header(out, SPN_PDU_HDR_SIZE);
   res = dcp_srv_ident_rsp(ctx, mcr_ctx, out->payload, out->tot_len);
-  SPN_ASSERT("dcp_srv_ident_rsp failed", res <= 0);
+  SPN_ASSERT("dcp_srv_ident_rsp failed", res > 0);
   out->tot_len = res;
+  pbuf_remove_header(out, SPN_PDU_HDR_SIZE);
 
-  pbuf_header(out, -SPN_PDU_HDR_SIZE);
   *PTR_OFFSET(out->payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_IDENT_RES);
 
-  ethernet_output(NULL, out, NULL, &mcr_ctx->src_addr, ETHTYPE_PROFINET);
+  /* TODO: chose iface by LLDP if is unicast frame */
+  if (1 /*is_multicast_addr(&mcr_ctx->src_addr) */) {
+    for (idx = 0; idx < ARRAY_SIZE(db_interface->ports); idx++) {
+      res = db_get_port(db_interface, db_interface->ports[idx].id, &db_port);
+      if (res != SPN_OK) {
+        continue;
+      }
+
+      res = db_get_object(&(db_port->objects), DB_ID_IFACE, &obj);
+      SPN_ASSERT("db_get_object failed", res == SPN_OK);
+
+      res = dcp_output(ctx, (struct spn_iface*)obj->data.ptr, &mcr_ctx->src_addr, out);
+      SPN_ASSERT("dcp_output failed", res == SPN_OK);
+    }
+  }
 }
 
 int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_addr* src, struct pbuf* rtc_pdu) {
