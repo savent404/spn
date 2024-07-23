@@ -54,7 +54,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
        * @todo only supported str[8]:port-xyz,
          need implement more like str[14]:port-xyz-rstuv */
       memcpy(&val.str, "port-xyz", 8);
-      res = i * SPN_CONF_MAX_PORT_PER_INTERFACE + j;
+      res = i * SPN_CONF_MAX_PORT_PER_INTERFACE + j + 1;
       val.str[5] = '0' + res / 100;
       val.str[6] = '0' + (res % 100) / 10;
       val.str[7] = '0' + res % 10;

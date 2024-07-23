@@ -13,17 +13,40 @@ extern "C" int dcp_output(struct dcp_ctx* ctx, struct spn_iface* iface, const st
 }
 TEST(Dspn, init) {
   auto inst = test::Dspn::get_instance();
+  struct db_interface* interface;
+  struct db_port* port;
+  struct db_object* object;
 
   inst->port_init = [](struct spn_ctx* ctx, spn_iface_t* iface, int interface, int port) { return SPN_OK; };
 
   struct spn_ctx ctx;
   struct spn_cfg cfg = {
-    .vendor_name = "test",
+      .vendor_name = "test",
   };
   int err;
 
   EXPECT_EQ(spn_init(&ctx, &cfg), SPN_OK);
   EXPECT_EQ(spn_init(&ctx, &cfg), -SPN_EBUSY);  // can't init twice
+
+  EXPECT_EQ(db_get_interface(&ctx.db, 0, &interface), SPN_OK);
+  EXPECT_EQ(db_get_port_object(&ctx.db, 0, 0, DB_ID_NAME_OF_PORT, &object), SPN_OK);
+  EXPECT_STREQ(object->data.str, "port-001");
+  EXPECT_EQ(db_get_port_object(&ctx.db, 0, 1, DB_ID_NAME_OF_PORT, &object), SPN_OK);
+  EXPECT_STREQ(object->data.str, "port-002");
+  EXPECT_EQ(db_get_port_object(&ctx.db, 0, 1, DB_ID_IFACE, &object), SPN_OK);
+
+  EXPECT_EQ(db_get_interface_object(&ctx.db, 0, DB_ID_IFACE, &object), -SPN_ENOENT);
+  EXPECT_EQ(db_get_interface_object(&ctx.db, 0, DB_ID_NAME_OF_PORT, &object), -SPN_ENOENT);
+
+  EXPECT_EQ(db_get_interface_object(&ctx.db, 0, DB_ID_NAME_OF_INTERFACE, &object), SPN_OK);
+  EXPECT_EQ(db_get_interface_object(&ctx.db, 0, DB_ID_IP_MAC_ADDR, &object), SPN_OK);
+  EXPECT_EQ(db_get_interface_object(&ctx.db, 0, DB_ID_IP_ADDR, &object), SPN_OK);
+  EXPECT_EQ(db_get_interface_object(&ctx.db, 0, DB_ID_IP_MASK, &object), SPN_OK);
+  EXPECT_EQ(db_get_interface_object(&ctx.db, 0, DB_ID_IP_GATEWAY, &object), SPN_OK);
+  EXPECT_EQ(db_get_interface_object(&ctx.db, 0, DB_ID_IP_BLOCK_INFO, &object), SPN_OK);
+  EXPECT_EQ(db_get_interface_object(&ctx.db, 0, DB_ID_DEVICE_ID, &object), SPN_OK);
+  EXPECT_EQ(db_get_interface_object(&ctx.db, 0, DB_ID_VENDOR_ID, &object), SPN_OK);
+
   spn_deinit(&ctx);
 
   // Hope memleak not happen
@@ -38,7 +61,7 @@ TEST(Dspn, warning_init) {
 
   struct spn_ctx ctx;
   struct spn_cfg cfg = {
-    .vendor_name = "test",
+      .vendor_name = "test",
   };
   int err;
 
@@ -52,7 +75,7 @@ TEST(Dspn, fatal_init) {
 
   struct spn_ctx ctx;
   struct spn_cfg cfg = {
-    .vendor_name = "test",
+      .vendor_name = "test",
   };
   int err;
 
