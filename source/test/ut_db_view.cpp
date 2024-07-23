@@ -5,18 +5,20 @@
 
 namespace {
 struct _db_view {
-  using callback_t = std::function<void(struct db_object*, uintptr_t)>;
+  using callback_t = std::function<void(struct db_object*, uintptr_t, uint16_t, uint16_t)>;
 
   static _db_view* get_instance() {
     static _db_view instance;
     return &instance;
   }
 
-  static void callback_wrapper(struct db_object* object, uintptr_t arg) { get_instance()->callback(object, arg); }
+  static void callback_wrapper(struct db_object* object, uintptr_t arg, uint16_t iface, uint16_t port) {
+    get_instance()->callback(object, arg, iface, port);
+  }
 
-  void callback(struct db_object* object, uintptr_t arg) {
+  void callback(struct db_object* object, uintptr_t arg, uint16_t iface, uint16_t port) {
     if (callback_) {
-      callback_(object, arg);
+      callback_(object, arg, iface, port);
     }
   }
 
@@ -82,7 +84,7 @@ TEST_F(View, notify_dup_type) {
   EXPECT_EQ(db_view_add_object(&view, DB_VIEW_TYPE_SYS, &object), SPN_OK);
   EXPECT_EQ(db_view_add_object(&view, DB_VIEW_TYPE_USR, &object), SPN_OK);
 
-  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg) {
+  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg, uint16_t, uint16_t) {
     EXPECT_EQ(object, &ctx.objects.objects[0]);
     EXPECT_EQ(arg, 0x1234);
     called += 1;
@@ -100,7 +102,7 @@ TEST_F(View, remove_dup_type) {
   EXPECT_EQ(object.viewer[DB_VIEW_TYPE_SYS], &view);
   EXPECT_EQ(object.viewer[DB_VIEW_TYPE_USR], &view);
 
-  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg) {
+  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg, uint16_t, uint16_t) {
     EXPECT_EQ(object, &ctx.objects.objects[0]);
     EXPECT_EQ(arg, 0x1234);
     called += 1;
@@ -146,7 +148,7 @@ TEST_F(View, notify) {
   EXPECT_EQ(view.objects[0], &object);
   EXPECT_EQ(object.viewer[DB_VIEW_TYPE_SYS], &view);
 
-  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg) {
+  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg, uint16_t, uint16_t) {
     EXPECT_EQ(object, &ctx.objects.objects[0]);
     EXPECT_EQ(arg, 0x1234);
     called = true;
@@ -168,7 +170,7 @@ TEST_F(View, notify_multiple) {
   EXPECT_EQ(object1.viewer[DB_VIEW_TYPE_SYS], &view);
   EXPECT_EQ(object2.viewer[DB_VIEW_TYPE_SYS], &view);
 
-  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg) {
+  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg, uint16_t, uint16_t) {
     if (object == &ctx.objects.objects[0]) {
       EXPECT_EQ(arg, 0x1234);
       called1 = true;
@@ -192,7 +194,7 @@ TEST_F(View, notify_and_confirm) {
   EXPECT_EQ(view.objects[0], &object);
   EXPECT_EQ(object.viewer[DB_VIEW_TYPE_SYS], &view);
 
-  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg) {
+  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg, uint16_t, uint16_t) {
     EXPECT_EQ(object, &ctx.objects.objects[0]);
     EXPECT_EQ(arg, 0x1234);
     called = true;
@@ -222,7 +224,7 @@ TEST_F(View, notify_and_confirm_multiple) {
   EXPECT_EQ(object1.viewer[DB_VIEW_TYPE_SYS], &view);
   EXPECT_EQ(object2.viewer[DB_VIEW_TYPE_SYS], &view);
 
-  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg) {
+  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg, uint16_t, uint16_t) {
     if (object == &ctx.objects.objects[0]) {
       EXPECT_EQ(arg, 0x1234);
       called1 = true;
@@ -267,7 +269,7 @@ TEST_F(View, notify_twice) {
   EXPECT_EQ(view.objects[0], &object);
   EXPECT_EQ(object.viewer[DB_VIEW_TYPE_SYS], &view);
 
-  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg) {
+  _db_view::get_instance()->callback_ = [&](struct db_object* object, uintptr_t arg, uint16_t, uint16_t) {
     EXPECT_EQ(object, &ctx.objects.objects[0]);
     EXPECT_EQ(arg, 0x1234);
     called = true;

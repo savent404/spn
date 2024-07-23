@@ -23,7 +23,7 @@ struct db_view_attr {
   uint8_t reserved : 6;
 };
 
-typedef void (*db_view_cb_t)(struct db_object* object, uintptr_t arg);
+typedef void (*db_view_cb_t)(struct db_object* object, uintptr_t arg, uint16_t interface, uint16_t port);
 
 struct db_view {
   struct db_view_attr attrs[SPN_VIEW_MAX_OBJECT];

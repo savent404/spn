@@ -141,7 +141,7 @@ int db_view_ind(db_view_t v, struct db_object* obj, int idx) {
   }
   inst->attrs[idx].state = DB_VIEW_STATE_IND;
 
-  inst->callback(obj, inst->args[idx]);
+  inst->callback(obj, inst->args[idx], obj->addr.iface, obj->addr.port);
 
   return SPN_OK;
 }
