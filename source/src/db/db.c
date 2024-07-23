@@ -178,6 +178,7 @@ int db_add_object(struct db_object_arr* objects,
   for (i = 0; i < ARRAY_SIZE(objects->objects); i++) {
     object = &objects->objects[i];
     if (object->addr.obj == DB_ID_INVALID) {
+      /* TODO: set addr.interface and addr.port also */
       object->addr.obj = id;
       object->attr.is_dyn = is_dyn;
       object->attr.is_arr = is_arr;
