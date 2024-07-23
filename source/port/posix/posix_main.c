@@ -40,7 +40,8 @@ int main(int argc, char** argv) {
 
   while (1) {
     /* default_netif_poll(); */
-    sys_msleep(1000);
+    sys_check_timeouts();
+    sys_msleep(1);
   }
 
   /* default_netif_shutdown(); */
