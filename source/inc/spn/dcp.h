@@ -3,8 +3,8 @@
 #include <spn/config.h>
 #include <spn/db.h>
 
-#include <spn/iface.h>
 #include <netif/ethernet.h>
+#include <spn/iface.h>
 
 #ifndef SPN_DCP_MAX_SIZE
 #define SPN_DCP_MAX_SIZE 1416
@@ -82,23 +82,28 @@ enum dcp_block_error {
                                                * AR established, local rules disallow reset */
 };
 
+/**
+ * DCP Bitmap of option/sub option
+ *
+ * @note This order is used to generate right sequence of req/rsp, do not change it
+ */
 enum dcp_bitmap {
-  DCP_BITMAP_IP_MAC_ADDRESS = 0,
+  DCP_BITMAP_CONTROL_START = 0,
+  DCP_BITMAP_ALL_SELECTOR,
+  DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION,
+  DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_ALIAS,
+  DCP_BITMAP_IP_MAC_ADDRESS,
   DCP_BITMAP_IP_PARAMETER,
   DCP_BITMAP_IP_FULL_IP_SUITE,
   DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_VENDOR,
-  DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION,
   DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_ID,
   DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_ROLE,
   DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_OPTIONS,
-  DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_ALIAS,
   DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_INSTANCE,
   DCP_BITMAP_DEVICE_PROPERTIES_OEM_DEVICE_ID,
   DCP_BITMAP_DEVICE_PROPERTIES_STANDARD_GATEWAY,
   DCP_BITMAP_DEVICE_PROPERTIES_RSI_PROPERTIES,
   DCP_BITMAP_DHCP_CLIENT_IDENT,
-  DCP_BITMAP_CONTROL_START,
-  DCP_BITMAP_CONTROL_STOP,
   DCP_BITMAP_CONTROL_SIGNAL,
   DCP_BITMAP_CONTROL_RESPONSE,
   DCP_BITMAP_CONTROL_FACTORY_RESET,
@@ -109,7 +114,7 @@ enum dcp_bitmap {
   DCP_BITMAP_NME_DOMAIN_NME_PARAMETER_UUID,
   DCP_BITMAP_NME_DOMAIN_NME_NAME,
   DCP_BITMAP_NME_DOMAIN_CIM_INTERFACE,
-  DCP_BITMAP_ALL_SELECTOR,
+  DCP_BITMAP_CONTROL_STOP,
   DCP_BITMAP_NUM
 };
 
@@ -239,7 +244,36 @@ struct dcp_ucr_ctx {
   enum dcp_block_error error[DCP_BITMAP_NUM];
 };
 
-  struct dcp_ctx;
+struct dcp_ctx;
+
+/**
+ * Multicast sender context
+ *
+ * @note MCS is a stateful context, it is used to track the state of multicast sender
+ * @note this context is used for handle ident.req & ident.cnf
+ *
+ * IDEL -> IDENT_REQ: send ident.req
+ * IDENT_REQ -> IDENT_REQ: some of device triggered ident.cnf
+ * IDENT_REQ -> IDLE: timeout, no response from device should be handled
+ */
+struct dcp_mcs_ctx {
+  uint32_t xid;
+  uint32_t req_options_bitmap;
+  uint16_t response_delay_factory;
+  uint16_t response_delay;
+  struct dcp_ctx* dcp_ctx;
+  enum dcp_state state;
+  /** So many filter we should support, just pick essential */
+  uint8_t mac_addr[6];
+  uint32_t ip_addr;
+  uint32_t ip_mask;
+  uint32_t ip_gw;
+  const char* station_name;
+  const char* vendor_name;
+  const char* alias_name;
+  uint16_t vendor_id;
+  uint16_t device_id;
+};
 /**
  * Multicast receiver context
  *
@@ -269,6 +303,7 @@ struct dcp_ctx {
   int port_num;
   struct db_ctx* db;
   struct dcp_mcr_ctx mcr_ctx[SPN_CONF_DCP_MAX_IDENT_RSP_INST];
+  struct dcp_mcs_ctx mcs_ctx;
 
   /** Internal variables used when acting controller */
   uint32_t cnf_xid;          /* used to filter response that is not belong to this request */
@@ -319,7 +354,16 @@ uint16_t dcp_option_bit_offset(uint32_t offset);
  * @{
  */
 
-int dcp_srv_ident_req();
+/**
+ * @brief Service handler that triggered by controller to identify new device
+ *
+ * @param ctx DCP context
+ * @param mcs_ctx Multicast sender context, used to track the state of multicast sender
+ * @note Syntax: DCP-Header,[NameOfStation]^[AliasName], [OtherFilter]*
+ * @note One instance is enough for controller
+ * @todo Implement reset of filters
+ */
+int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs_ctx, struct pbuf* p);
 
 /**
  * @brief Service handler that indicated by controller that it wants to identify the device

@@ -1,14 +1,42 @@
 #include <gtest/gtest.h>
+#include <lwip/api.h>
+#include <lwip/timeouts.h>
 #include <spn/db.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
 #include <spn/spn.h>
+#include <cmath>
 #include "test_data.hpp"
 
 #include "ddcp.hpp"
 
 using test::DataParser;
 using test::Ddcp;
+
+TEST_F(Ddcp, ident_req_selector) {
+  mem_init();
+  memp_init();
+  sys_timeouts_init();
+  struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
+  DataParser parser;
+
+  dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BITMAP_ALL_SELECTOR;
+  dcp.mcs_ctx.xid = 0x1000001;
+  dcp.mcs_ctx.response_delay_factory = 1;
+
+  EXPECT_EQ(dcp_srv_ident_req(&dcp, &dcp.mcs_ctx, p), SPN_OK);
+
+  auto f = parser(test_data::dcp::kDcpAllSelector);
+  f->erase(f->begin(), f->begin() + 14);
+  for (unsigned idx = 0; idx < std::min(f->size(), size_t(p->tot_len)); idx++) {
+    EXPECT_EQ(f->at(idx), reinterpret_cast<uint8_t*>(p->payload)[idx]);
+    if (f->at(idx) != reinterpret_cast<uint8_t*>(p->payload)[idx]) {
+      printf("idx: %d, %02x %02x\n", idx, f->at(idx), reinterpret_cast<uint8_t*>(p->payload)[idx]);
+    }
+  }
+
+  pbuf_free(p);
+}
 
 TEST_F(Ddcp, ident_ind_all_selector) {
   /* functional test from wireshark */
@@ -366,7 +394,19 @@ TEST_F(Ddcp, ident_cnf_ecopn) {
   EXPECT_EQ(obj->data.u16, 0x0001);
   EXPECT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_DEVICE_OPTIONS, &obj), SPN_OK);
   EXPECT_EQ(db_object_len(obj), 4);
-  EXPECT_EQ(obj->data.u32, 0x1FB);
+
+  auto bitmap_fn = [](std::initializer_list<int> list) {
+    uint32_t bitmap = 0;
+    for (auto& i : list) {
+      bitmap |= 1 << i;
+    }
+    return bitmap;
+  };
+  EXPECT_EQ(obj->data.u32,
+            bitmap_fn({DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION, DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_ALIAS,
+                       DCP_BITMAP_IP_MAC_ADDRESS, DCP_BITMAP_IP_PARAMETER, DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_VENDOR,
+                       DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_ROLE, DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_ID,
+                       DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_ID, DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_OPTIONS}));
 }
 
 TEST_F(Ddcp, set_ind_name_of_station) {
