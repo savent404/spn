@@ -73,7 +73,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
      * DB_ID_BLOCK_INFO
      * @note only support static ip now, shall be modified by DHCP service
      */
-    val.u16 = 1;
+    val.u16 = IP_BLOCK_INFO_STATIC;
     res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_BLOCK_INFO, 0, 0, sizeof(val), &val);
     SPN_ASSERT("Failed to add ip block info", res == SPN_OK);
 
