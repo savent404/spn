@@ -61,11 +61,11 @@ struct Ddcp : public ::testing::Test {
     if (strlen(name.c_str()) > 8) {
       value.ptr = strdup(name.c_str());
       db_get_interface(&db, 0, &iface);
-      db_add_object(&iface->objects, db_id_t::DB_ID_NAME_OF_STATION, 1, 1, strlen(name.c_str()), &value);
+      db_add_object(&iface->objects, db_id_t::DB_ID_NAME_OF_INTERFACE, 1, 1, strlen(name.c_str()), &value);
     } else {
       strcpy(value.str, name.c_str());
       db_get_interface(&db, 0, &iface);
-      db_add_object(&iface->objects, db_id_t::DB_ID_NAME_OF_STATION, 0, 1, strlen(name.c_str()), &value);
+      db_add_object(&iface->objects, db_id_t::DB_ID_NAME_OF_INTERFACE, 0, 1, strlen(name.c_str()), &value);
     }
   }
 

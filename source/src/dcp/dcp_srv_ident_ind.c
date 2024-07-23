@@ -44,7 +44,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         break;
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
         data_len = SPN_NTOHS(block->length);
-        if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_STATION, &obj) != SPN_OK) {
+        if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj) != SPN_OK) {
           SPN_ASSERT("You must have a name ok?", 0);
         }
         if (data_len != db_object_len(obj) || dcp_obj_strncmp(obj, &block->data[0], SPN_NTOHS(block->length)) != 0) {

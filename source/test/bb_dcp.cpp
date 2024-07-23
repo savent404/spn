@@ -352,7 +352,7 @@ TEST_F(Ddcp, ident_cnf_ecopn) {
   struct db_object* obj;
   EXPECT_EQ(db_get_interface(&db, 0x1000, &intf), SPN_OK);
 
-  EXPECT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_NAME_OF_STATION, &obj), SPN_OK);
+  EXPECT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_NAME_OF_INTERFACE, &obj), SPN_OK);
   EXPECT_STREQ((char*)obj->data.ptr, "et200ecopn.dev7");
   EXPECT_EQ(db_get_object(&intf->objects, db_id_t::DB_ID_NAME_OF_VENDOR, &obj), SPN_OK);
   EXPECT_STREQ((char*)obj->data.ptr, "ET200ecoPN");
@@ -380,7 +380,7 @@ TEST_F(Ddcp, set_ind_name_of_station) {
   frame->erase(frame->begin(), frame->begin() + 16);
   EXPECT_EQ(dcp_srv_set_ind(&dcp, &ucr, frame->data(), frame->size()), SPN_OK);
   EXPECT_EQ(ucr.req_options_bitmap, 1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION | 1 << DCP_BITMAP_CONTROL_STOP);
-  EXPECT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_STATION, &obj), SPN_OK);
+  EXPECT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_INTERFACE, &obj), SPN_OK);
   EXPECT_STRNE((char*)obj->data.ptr, "station_xxx");
 }
 
@@ -416,7 +416,7 @@ TEST_F(Ddcp, set_ind_station_of_name) {
   frame->erase(frame->begin(), frame->begin() + 16);
   EXPECT_EQ(dcp_srv_set_ind(&dcp, &ucr, frame->data(), frame->size()), SPN_OK);
 
-  EXPECT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_STATION, &obj), SPN_OK);
+  EXPECT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_INTERFACE, &obj), SPN_OK);
   EXPECT_STRNE((char*)obj->data.ptr, "station");
 }
 
@@ -469,7 +469,7 @@ TEST_F(Ddcp, set_rsp_name_of_station) {
   frame->erase(frame->begin(), frame->begin() + 16);
   EXPECT_EQ(dcp_srv_set_ind(&dcp, &ucr, frame->data(), frame->size()), SPN_OK);
 
-  EXPECT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_STATION, &obj), SPN_OK);
+  EXPECT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_INTERFACE, &obj), SPN_OK);
   EXPECT_STRNE((char*)obj->data.ptr, "station");
 
   frame = parser(test_data::dcp::kDcpNameOfStationSetResp);

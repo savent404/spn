@@ -47,29 +47,61 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
       val.ptr = &ctx->ifaces[i][j];
       res = db_add_object(&ctx->db.interfaces[i].ports[j].objects, DB_ID_IFACE, 0, 0, sizeof(val), &val);
       SPN_ASSERT("Failed to add iface to db", res == SPN_OK);
+
+      /**
+       * DB_ID_NAME_OF_PORT
+       * @note involve sprintf cost too much RO space
+       * @todo only supported str[8]:port-xyz,
+         need implement more like str[14]:port-xyz-rstuv */
+      memcpy(&val.str, "port-xyz", 8);
+      res = i * SPN_CONF_MAX_PORT_PER_INTERFACE + j;
+      val.str[5] = '0' + res / 100;
+      val.str[6] = '0' + (res % 100) / 10;
+      val.str[7] = '0' + res % 10;
+      res = db_add_object(&ctx->db.interfaces[i].ports[j].objects, DB_ID_NAME_OF_PORT, 0, 1, 8, &val);
+      SPN_ASSERT("Failed to add port name", res == SPN_OK);
     }
+
     if (!valid_port) {
       SPN_DEBUG_MSG(SPN_DEBUG, "No valid port found for interface %d\n", i);
       res = -SPN_ENOENT;
       goto err_ret;
     }
 
+    /* Interface general attributes */
+    /**
+     * DB_ID_BLOCK_INFO
+     * @note only support static ip now, shall be modified by DHCP service
+     */
     val.u16 = 1;
     res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_BLOCK_INFO, 0, 0, sizeof(val), &val);
     SPN_ASSERT("Failed to add ip block info", res == SPN_OK);
 
+    /**
+     * DB_ID_IP_MAC_ADDR
+     */
     val.u32 = ctx->ifaces[i][0].netif.ip_addr.addr;
     res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_ADDR, 0, 0, sizeof(val), &val);
     SPN_ASSERT("Failed to add ip addr", res == SPN_OK);
 
+    /**
+     * DB_ID_IP_MASK
+     */
     val.u32 = ctx->ifaces[i][0].netif.netmask.addr;
     res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_MASK, 0, 0, sizeof(val), &val);
     SPN_ASSERT("Failed to add netmask", res == SPN_OK);
 
+    /**
+     * DB_ID_IP_GATEWAY
+     */
     val.u32 = ctx->ifaces[i][0].netif.gw.addr;
     res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_GATEWAY, 0, 0, sizeof(val), &val);
     SPN_ASSERT("Failed to add gateway", res == SPN_OK);
 
+    /**
+     * DB_ID_NAME_OF_VENDOR
+     * @note read only
+     */
     SPN_ASSERT("Invalid vendor name", cfg->vendor_name);
     res = strlen(cfg->vendor_name);
     if (res < sizeof(val.str)) {
@@ -81,26 +113,37 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
     }
     SPN_ASSERT("Failed to add vendor name", res == SPN_OK);
 
+    /**
+     * DB_ID_DEVICE_ID
+     * @note read only
+     */
     val.u16 = cfg->device_id;
     res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_DEVICE_ID, 0, 1, sizeof(val), &val);
     SPN_ASSERT("Failed to add device id", res == SPN_OK);
 
+    /**
+     * DB_ID_VENDOR_ID
+     * @note read only
+     */
     val.u16 = cfg->vendor_id;
     res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_VENDOR_ID, 0, 1, sizeof(val), &val);
     SPN_ASSERT("Failed to add vendor id", res == SPN_OK);
 
+    /**
+     * DB_ID_NAME_OF_INTERFACE
+     */
     if (cfg->station_name) {
       res = strlen(cfg->station_name);
       if (res < sizeof(val.str)) {
         strncpy(val.str, cfg->station_name, res);
-        res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_STATION, 0, 1, res, &val);
+        res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_INTERFACE, 0, 1, res, &val);
       } else {
         val.ptr = strdup(cfg->station_name);
-        res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_STATION, 0, 1, res, &val);
+        res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_INTERFACE, 0, 1, res, &val);
       }
     } else {
       val.str[0] = '\0';
-      res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_STATION, 0, 1, 0, &val);
+      res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_INTERFACE, 0, 1, 0, &val);
     }
     SPN_ASSERT("Failed to add station name", res == SPN_OK);
   }

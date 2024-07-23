@@ -102,7 +102,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
           err = DCP_BLOCK_ERR_RESOURCE_ERR;
           break;
         }
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_STATION, &obj);
+        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj);
         if (res < 0) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Failed to get station name object\n");
           goto internal_err;

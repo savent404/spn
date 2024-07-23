@@ -98,7 +98,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length) {
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR):
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS): {
-        static const db_id_t ids[] = {DB_ID_NAME_OF_VENDOR, DB_ID_NAME_OF_STATION, DB_ID_NAME_OF_STATION};
+        static const db_id_t ids[] = {DB_ID_NAME_OF_VENDOR, DB_ID_NAME_OF_INTERFACE, DB_ID_NAME_OF_INTERFACE};
         static const uint8_t sub_options[] = {DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,
                                               DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS};
         block_length = SPN_NTOHS(block->length);
