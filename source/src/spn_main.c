@@ -144,9 +144,8 @@ int _spn_input_hook(struct spn_ctx* ctx, struct pbuf* p, struct spn_iface* iface
   uint16_t eth_type, frame_id;
   int res = -1;
 
-  pbuf_remove_header(p, -SIZEOF_ETH_HDR);
+  pbuf_add_header(p, SIZEOF_ETH_HDR);
   memcpy(&src, p->payload, sizeof(src));
-
   eth_type = SPN_NTOHS(*PTR_OFFSET(p->payload, 12, uint16_t));
   pbuf_remove_header(p, SIZEOF_ETH_HDR);
 
