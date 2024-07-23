@@ -24,6 +24,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   uint16_t option;
   uint16_t data_len;
   uint16_t mac_k = 0x7843;
+  unsigned idx;
 
   if (length < SPN_NTOHS(hdr->data_length) + sizeof(*hdr)) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: payload too short\n");
@@ -64,7 +65,33 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         }
         break;
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
-        /* TODO: There are no needs to use name of alias */
+        for (idx = 0; idx < SPN_CONF_MAX_PORT_PER_INTERFACE; idx++) {
+          if (db_get_port_object(ctx->db, ctx->interface_id, idx, DB_ID_NAME_OF_PORT, &obj) != SPN_OK) {
+            continue;
+          }
+          SPN_ASSERT("port name isn't static str(8)", db_object_len(obj) == 8 && db_is_static_object(obj));
+
+          if (strncmp(obj->data.str, block->data, 8)) {
+            continue;
+          }
+
+          if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj) != SPN_OK) {
+            SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: get name of alias failed\n");
+            goto invalid_req;
+          }
+
+          if (block->data[8] != '.' || SPN_NTOHS(block->length) != db_object_len(obj) + 9 ||
+              dcp_obj_strncmp(obj, &block->data[9], db_object_len(obj)) != 0) {
+            SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of alias mismatch\n");
+            goto invalid_req;
+          }
+
+          goto alias_matched;
+        }
+        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of alias mismatch\n");
+        goto invalid_req;
+      alias_matched:
+        break;
       default:
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: unknown option %d\n", block->option);
         goto invalid_req;
