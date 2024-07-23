@@ -78,7 +78,16 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
     SPN_ASSERT("Failed to add ip block info", res == SPN_OK);
 
     /**
-     * DB_ID_IP_MAC_ADDR
+     * DB_ID_MAC_ADDR
+     * @note interface is abstracted as a ethernet device, each port share the same attributes
+     */
+    memcpy(&val.str, ctx->ifaces[i][0].netif.hwaddr, 6);
+    res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_MAC_ADDR, 0, 0, 6, &val);
+    SPN_ASSERT("Failed to add mac addr", res == SPN_OK);
+
+    /**
+     * DB_ID_IP_ADDR
+     * @note interface is abstracted as a ethernet device, each port share the same attributes
      */
     val.u32 = ctx->ifaces[i][0].netif.ip_addr.addr;
     res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_ADDR, 0, 0, sizeof(val), &val);
@@ -86,6 +95,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
 
     /**
      * DB_ID_IP_MASK
+     * @note interface is abstracted as a ethernet device, each port share the same attributes
      */
     val.u32 = ctx->ifaces[i][0].netif.netmask.addr;
     res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_MASK, 0, 0, sizeof(val), &val);
@@ -93,6 +103,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
 
     /**
      * DB_ID_IP_GATEWAY
+     * @note interface is abstracted as a ethernet device, each port share the same attributes
      */
     val.u32 = ctx->ifaces[i][0].netif.gw.addr;
     res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_IP_GATEWAY, 0, 0, sizeof(val), &val);
