@@ -48,6 +48,8 @@ static void dcp_mcr_rsp_callback(void* arg) {
       SPN_ASSERT("dcp_output failed", res == SPN_OK);
     }
   }
+
+  pbuf_free(out);
 }
 
 int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_addr* src, struct pbuf* rtc_pdu) {
