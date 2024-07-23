@@ -11,11 +11,8 @@ endif()
 file(GLOB_RECURSE SOURCES source/src/*.c)
 add_library(SPN ${SOURCES})
 target_compile_options(SPN PRIVATE ${SPN_C_FLAGS})
-target_include_directories(SPN PUBLIC
-    source/inc
-    ${LWIP_INCLUDE_DIRS}
-    ${LWIP_PORT_INC})
-target_link_libraries(SPN PUBLIC ${LWIP_PORT_LIB})
+target_include_directories(SPN PUBLIC source/inc)
+target_link_libraries(SPN PUBLIC lwip)
 
 if (CMAKE_SIZE_TOOL)
 add_custom_target(size ALL
