@@ -113,6 +113,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MAC_ADDR, &obj) != SPN_OK) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: get mac address failed\n");
   } else {
+    /* NOTE: According to the standard, use the last 2 bytes of MAC address as random number */
     mac_k = obj->data.str[5] | (obj->data.str[4] << 8);
   }
 
