@@ -8,14 +8,6 @@
 #define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
 
-static inline void obj_str_free(struct db_object* obj) {
-  if (!db_is_static_object(obj)) {
-    free(obj->data.ptr);
-  }
-  obj->attr.is_dyn = 0;
-  obj->attr.len = 0;
-}
-
 static inline int has_upper_case(const char* str, int len) {
   int i;
   for (i = 0; i < len; i++) {
@@ -24,24 +16,6 @@ static inline int has_upper_case(const char* str, int len) {
     }
   }
   return 0;
-}
-
-static inline int obj_str_dup(struct db_object* obj, const char* str, unsigned len) {
-  if (len < sizeof(obj->data.str)) {
-    memcpy(obj->data.str, str, len);
-
-    obj->attr.is_dyn = 0;
-    obj->attr.len = len;
-  } else {
-    obj->data.ptr = malloc(len);
-    if (!obj->data.ptr) {
-      return -SPN_ENOMEM;
-    }
-    memcpy(obj->data.ptr, str, len);
-    obj->attr.is_dyn = 1;
-    obj->attr.len = len;
-  }
-  return SPN_OK;
 }
 
 int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length) {
@@ -108,8 +82,8 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Failed to get station name object\n");
           goto internal_err;
         }
-        obj_str_free(obj);
-        res = obj_str_dup(obj, PTR_OFFSET(block->data, 2, char), block_length);
+        db_free_objstr(obj);
+        res = db_dup_str2obj(obj, PTR_OFFSET(block->data, 2, char), block_length);
         db_object_updated_ind(ctx->db, obj, qualifier);
         break;
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_START):

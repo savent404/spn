@@ -1,47 +1,20 @@
+#include <spn/db_ll.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
 #include <spn/sys.h>
-
 #include <string.h>
 
 #define BLOCK_TYPE(option, sub_option) ((option) << 8 | (sub_option))
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
 
-/**
- * @brief utils function to copy string to db_value_t
- *
- * @param value pointer to \c db_value_t
- * @param str source string
- * @param len source string length
- * @return string length if > 0, -ENOMEM if malloc failed
- */
-static inline int obj_strdup(db_value_t* value, const char* str, size_t len) {
-  if (len > sizeof(value->str) - 1) {
-    value->ptr = malloc(len + 1);
-    if (!value->ptr) {
-      return -SPN_ENOMEM;
-    }
-    memcpy(value->ptr, str, len);
-    ((char*)value->ptr)[len] = '\0';
-  } else {
-    memcpy(value->str, str, len);
-    value->str[len] = '\0';
-  }
-  return len + 1;
-}
-
-static inline int is_static_str(int length) {
-  db_value_t* v;
-  return (unsigned)length < sizeof(v->str);
-}
-
 int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
-  uint16_t dcp_length = SPN_NTOHS(hdr->data_length), block_length;
   struct dcp_block_gen* block;
+  struct db_interface interface, *intf;
+  struct db_object* obj;
+  uint16_t dcp_length = SPN_NTOHS(hdr->data_length), block_length;
   db_value_t data;
   unsigned offset;
-  struct db_interface interface, *intf;
   int res;
   unsigned i;
 
@@ -103,19 +76,26 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length) {
                                               DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS};
         block_length = SPN_NTOHS(block->length);
         SPN_ASSERT("Invalid block length", block_length > 2 && block_length < 256);
-        res = obj_strdup(&data, PTR_OFFSET(block->data, 2, char), block_length - 2);
-        if (res < 0) {
-          goto invalid_ret;
-        }
+
+        /* Find idx */
         for (i = 0; i < ARRAY_SIZE(sub_options); i++) {
           if (sub_options[i] == block->sub_option) {
             break;
           }
         }
-        res = db_add_object(&interface.objects, ids[i], is_static_str(res) ? 0 : 1, 1, res, &data);
-        if (res != SPN_OK) {
+        if (i == ARRAY_SIZE(sub_options)) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: unhandled option %04x\n",
+                        BLOCK_TYPE(block->option, block->sub_option));
+          res = -SPN_EINVAL;
           goto invalid_ret;
         }
+        /* For re-use db_dup_str2obj, add object firstly */
+        res = db_add_object(&interface.objects, ids[i], 0, 0, 0, &data);
+        SPN_ASSERT("Add object failed", res == SPN_OK);
+        res = db_get_object(&interface.objects, ids[i], &obj);
+        SPN_ASSERT("Get object failed", res == SPN_OK);
+        res = db_dup_str2obj(obj, PTR_OFFSET(block->data, 2, const char), block_length - 2);
+        SPN_ASSERT("db_dup_str2obj failed", res == SPN_OK);
         break;
       }
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID):

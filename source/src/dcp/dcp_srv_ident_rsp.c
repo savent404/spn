@@ -61,15 +61,6 @@ const uint16_t supported_options[] = {
     BLOCK_TYPE(DCP_OPTION_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR),
 };
 
-static inline int obj_strcpy(void* dst, struct db_object* obj) {
-  if (db_is_static_string_object(obj)) {
-    memcpy(dst, obj->data.str, db_object_len(obj));
-  } else {
-    memcpy((char*)dst, obj->data.ptr, db_object_len(obj));
-  }
-  return db_object_len(obj);
-}
-
 static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_info, struct dcp_block_gen* block) {
   struct db_object* obj;
   int res;
@@ -102,7 +93,7 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
         return 0;
       }
       *PTR_OFFSET(block->data, 0, uint16_t) = 0;
-      obj_strcpy((char*)block->data + 2, obj);
+      db_strcpy_obj2str((char*)block->data + 2, obj);
       block->length = 2 + db_object_len(obj);
       break;
     }
@@ -111,7 +102,7 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
         return 0;
       }
       *PTR_OFFSET(block->data, 0, uint16_t) = 0;
-      obj_strcpy((char*)block->data + 2, obj);
+      db_strcpy_obj2str((char*)block->data + 2, obj);
       block->length = 2 + db_object_len(obj);
       break;
     }
