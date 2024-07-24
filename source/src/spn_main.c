@@ -198,7 +198,7 @@ int _spn_input_hook(struct spn_ctx* ctx, struct pbuf* p, struct spn_iface* iface
   uint16_t eth_type, frame_id;
   int res = -1;
 
-  memcpy(&src, p->payload, sizeof(src));
+  memcpy(&src, ((const char*)p->payload) + 6, sizeof(src));
   eth_type = (*PTR_OFFSET(p->payload, 12, uint16_t));
 
   if (eth_type == SPN_HTONS(ETHTYPE_PROFINET)) {
