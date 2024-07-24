@@ -109,7 +109,7 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
       if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj) < 0) {
         return 0;
       }
-      *PTR_OFFSET(block, 0, uint16_t) = 0;
+      *PTR_OFFSET(block->data, 0, uint16_t) = 0;
       obj_strcpy((char*)block->data + 2, obj);
       block->length = 2 + db_object_len(obj);
       break;
@@ -174,7 +174,7 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
 
   for (idx = 0; idx < ARRAY_SIZE(mandatory_options); idx++) {
     uint16_t option = mandatory_options[idx];
-    struct dcp_block_gen* block = (struct dcp_block_gen*)((uintptr_t)payload + offset);
+    struct dcp_block_gen* block = PTR_OFFSET(payload, offset, struct dcp_block_gen);
 
     res = pack_ident_rsp(ctx, option, block_info, block);
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "ident.rsp: option %s(%02d:%02d) res=%d\n",
