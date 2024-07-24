@@ -198,12 +198,12 @@ int _spn_input_hook(struct spn_ctx* ctx, struct pbuf* p, struct spn_iface* iface
   uint16_t eth_type, frame_id;
   int res = -1;
 
-  pbuf_add_header(p, SIZEOF_ETH_HDR);
   memcpy(&src, p->payload, sizeof(src));
-  eth_type = SPN_NTOHS(*PTR_OFFSET(p->payload, 12, uint16_t));
-  pbuf_remove_header(p, SIZEOF_ETH_HDR);
+  eth_type = (*PTR_OFFSET(p->payload, 12, uint16_t));
 
-  if (eth_type == ETHTYPE_PROFINET) {
+  if (eth_type == SPN_HTONS(ETHTYPE_PROFINET)) {
+
+    pbuf_remove_header(p, SIZEOF_ETH_HDR);
     frame_id = SPN_NTOHS(*PTR_OFFSET(p->payload, 0, uint16_t));
     switch (frame_id) {
       case FRAME_ID_DCP_IDENT_REQ:
@@ -213,7 +213,7 @@ int _spn_input_hook(struct spn_ctx* ctx, struct pbuf* p, struct spn_iface* iface
         res = dcp_input(&ctx->dcp, iface, &src, p);
         break;
       default:
-        res = -1;
+        res = 0;
         SPN_DEBUG_MSG(SPN_DEBUG, "Unknown frame id %d\n", frame_id);
         break;
     }
