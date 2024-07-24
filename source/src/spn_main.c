@@ -120,7 +120,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
       res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_VENDOR, 0, 1, res, &val);
     } else {
       val.ptr = strdup(cfg->vendor_name);
-      res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_VENDOR, 0, 1, res, &val);
+      res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_VENDOR, 1, 1, res, &val);
     }
     SPN_ASSERT("Failed to add vendor name", res == SPN_OK);
 
@@ -150,7 +150,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
         res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_INTERFACE, 0, 1, res, &val);
       } else {
         val.ptr = strdup(cfg->station_name);
-        res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_INTERFACE, 0, 1, res, &val);
+        res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_INTERFACE, 1, 1, res, &val);
       }
     } else {
       val.str[0] = '\0';
