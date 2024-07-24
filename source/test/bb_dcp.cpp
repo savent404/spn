@@ -2,6 +2,7 @@
 #include <lwip/api.h>
 #include <lwip/timeouts.h>
 #include <spn/db.h>
+#include <spn/db_ll.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
 #include <spn/spn.h>

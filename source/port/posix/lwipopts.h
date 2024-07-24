@@ -448,5 +448,4 @@ extern int spn_input_hook(void* frame, void* netif);
 #define SPN_DCP_DEBUG LWIP_DBG_ON
 #endif
 
-#define LWIP_DONT_PROVIDE_BYTEORDER_FUNCTIONS 1
 #endif /* LWIP_LWIPOPTS_H */

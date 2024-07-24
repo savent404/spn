@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <spn/db.h>
+#include <spn/db_ll.h>
 #include <spn/errno.h>
 
 TEST(db, add) {
