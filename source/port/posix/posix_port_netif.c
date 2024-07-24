@@ -19,6 +19,7 @@
 #include "lwip/snmp.h"
 #include "lwip/sys.h"
 #include "lwip/tcpip.h"
+#include <netinet/if_ether.h>
 
 #include "posix_port_netif.h"
 
@@ -85,16 +86,22 @@ err_t raw_socket_low_level_init(struct netif* netif) {
     return ERR_IF;
   }
 
-  memset(&ifr, 0, sizeof(ifr));
-  memset(&iface->sockaddr, 0, sizeof(iface->sockaddr));
-  iface->sockaddr.sll_family = AF_PACKET;
-  iface->sockaddr.sll_protocol = htons(ETH_P_ALL);
-  iface->sockaddr.sll_ifindex = if_nametoindex(iface->ifname);
-  strcpy(ifr.ifr_name, iface->ifname);
-  if (setsockopt(sockfd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0) {
-    perror("setsockopt");
-    return ERR_IF;
-  }
+    // Set the interface to promiscuous mode
+    strcpy(ifr.ifr_name, iface->ifname);
+    if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) < 0) {
+        perror("ioctl SIOCGIFFLAGS");
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
+    ifr.ifr_flags |= IFF_PROMISC;
+    if (ioctl(sockfd, SIOCSIFFLAGS, &ifr) < 0) {
+        perror("ioctl SIOCSIFFLAGS");
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
+    iface->sockaddr.sll_ifindex = if_nametoindex(iface->ifname);
+    iface->sockaddr.sll_halen = ETH_ALEN;
+
 
   /* Setup netif's driver functions */
   netif->output = etharp_output;
