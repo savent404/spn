@@ -36,7 +36,7 @@ static void dcp_mcr_rsp_callback(void* arg) {
   /* TODO: chose iface by LLDP if is unicast frame */
   if (1 /*is_multicast_addr(&mcr_ctx->src_addr) */) {
     for (idx = 0; idx < ARRAY_SIZE(db_interface->ports); idx++) {
-      res = db_get_port(db_interface, db_interface->ports[idx].id, &db_port);
+      res = db_get_port(db_interface, idx, &db_port);
       if (res != SPN_OK) {
         continue;
       }
@@ -99,7 +99,7 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
         pbuf_header(out, SPN_PDU_HDR_SIZE);
 
         res = dcp_srv_set_rsp(ctx, &ucr, out->payload, out->tot_len);
-        SPN_ASSERT("dcp_srv_set_rsp failed", res <= 0);
+        SPN_ASSERT("dcp_srv_set_rsp failed", res > 0);
         out->tot_len = res;
 
         pbuf_header(out, -SPN_PDU_HDR_SIZE);
