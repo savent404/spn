@@ -21,7 +21,7 @@ static void dcp_srv_ident_req_cb(void* arg) {
 }
 
 int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf* p) {
-  int res;
+  int res = SPN_OK;
   unsigned idx, option, offset = 0;
   struct dcp_header* hdr;
   struct dcp_block_gen* block;

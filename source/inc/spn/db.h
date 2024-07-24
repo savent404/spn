@@ -37,7 +37,7 @@ extern "C" {
  *     +-- ...
  */
 
-typedef void* db_view_t;  // view is a dynamic object that can be used to notify listener that object has been changed
+typedef void* db_view_t; /* view is a dynamic object that can be used to notify listener that object has been changed */
 
 typedef struct {
   uint16_t iface;

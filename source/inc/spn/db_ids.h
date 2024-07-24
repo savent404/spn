@@ -25,11 +25,11 @@ typedef enum db_id {
 enum ip_block_info {
   IP_BLOCK_INFO_NONE = 0,
   IP_BLOCK_INFO_STATIC = 1,
-  IP_BLOCK_INFO_DHCP = 2,
+  IP_BLOCK_INFO_DHCP = 2
 };
 
 enum device_role {
   DEV_ROLE_DEVICE_BIT = 0,
   DEV_ROLE_CONTROLLER_BIT = 1,
-  DEV_ROLE_SUPERVISOR_BIT = 2,
+  DEV_ROLE_SUPERVISOR_BIT = 2
 };

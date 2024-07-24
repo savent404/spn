@@ -115,7 +115,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
      */
     SPN_ASSERT("Invalid vendor name", cfg->vendor_name);
     res = strlen(cfg->vendor_name);
-    if (res < sizeof(val.str)) {
+    if ((unsigned)res < sizeof(val.str)) {
       strncpy(val.str, cfg->vendor_name, res);
       res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_VENDOR, 0, 1, res, &val);
     } else {
@@ -145,7 +145,7 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
      */
     if (cfg->station_name) {
       res = strlen(cfg->station_name);
-      if (res < sizeof(val.str)) {
+      if ((unsigned)res < sizeof(val.str)) {
         strncpy(val.str, cfg->station_name, res);
         res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_INTERFACE, 0, 1, res, &val);
       } else {

@@ -39,7 +39,7 @@ static pthread_t background_thread;
 
 void dft_port_init(struct netif* iface, const char* port_name, const uint32_t ip) {
   ip4_addr_t ipaddr, netmask, gw;
-  struct raw_posix_iface* priv = malloc(sizeof(struct raw_posix_iface));
+  struct raw_posix_iface* priv = (struct raw_posix_iface*)malloc(sizeof(struct raw_posix_iface));
   if (!priv) {
     perror("malloc");
     return;
@@ -51,7 +51,7 @@ void dft_port_init(struct netif* iface, const char* port_name, const uint32_t ip
   ip4_addr_set_zero(&netmask);
 
   ipaddr.addr = ip;
-  gw.addr = ip & 0x00FFFFFF | 0x01000000; /* NOTE: default gw is xx.xx.xx.01 */
+  gw.addr = (ip & 0x00FFFFFF) | 0x01000000; /* NOTE: default gw is xx.xx.xx.01 */
   IP4_ADDR((&netmask), 255, 255, 255, 0); /* NOTE: default mask is 24-bit */
   printf("Starting lwIP, local interface(%s) IP is %s\n", priv->ifname, ip4addr_ntoa(&ipaddr));
 
@@ -132,7 +132,11 @@ struct pbuf* raw_low_level_input(struct netif* netif) {
 
   /* NOTE: Drop packets sent by this interface */
   if (!memcmp(buf, none_mac, 6) || !memcmp(buf + 6, netif->hwaddr, 6)) {
-    return NULL;
+    /* Accept all multicast frame, else drop it */
+    if ((buf[0] & 0x01) == 0) {
+      MIB2_STATS_NETIF_INC(netif, ifinerrors);
+      return NULL;
+    }
   }
 
   MIB2_STATS_NETIF_ADD(netif, ifinoctets, len);
