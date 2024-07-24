@@ -17,7 +17,10 @@ static void parse_args(int argc, char** argv);
 
 static struct spn_ctx g_spn_ctx = {0};
 static const struct spn_cfg g_spn_cfg = {
-    .vendor_name = "SYS Ltc",
+    .vendor_name = "ShiYuShu Ltc",
+    .station_name = "SPN",
+    .vendor_id = 0xBEEF,
+    .device_id = 0xAEEF,
 };
 static const char *port1_name = "", *port2_name = "";
 static uint32_t ip = 0xF91FA8C0;
