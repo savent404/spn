@@ -1,4 +1,5 @@
 #include <netif/ethernet.h>
+#include <spn/db_ll.h>
 #include <spn/pdu.h>
 #include <spn/spn.h>
 #include <spn/sys.h>
@@ -12,6 +13,7 @@ static struct spn_ctx* _holly_protected_ctx = NULL;
 int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
   int res, i, j;
   db_value_t val;
+  struct db_object* obj;
 
   SPN_UNUSED_ARG(cfg);
 
@@ -114,15 +116,12 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
      * @note read only
      */
     SPN_ASSERT("Invalid vendor name", cfg->vendor_name);
-    res = strlen(cfg->vendor_name);
-    if ((unsigned)res < sizeof(val.str)) {
-      strncpy(val.str, cfg->vendor_name, res);
-      res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_VENDOR, 0, 1, res, &val);
-    } else {
-      val.ptr = strdup(cfg->vendor_name);
-      res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_VENDOR, 1, 1, res, &val);
-    }
+    res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_VENDOR, 0, 0, 0, &val);
     SPN_ASSERT("Failed to add vendor name", res == SPN_OK);
+    res = db_get_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_VENDOR, &obj);
+    SPN_ASSERT("Failed to get vendor name", res == SPN_OK);
+    res = db_dup_str2obj(obj, cfg->vendor_name, strlen(cfg->vendor_name));
+    SPN_ASSERT("Failed to set vendor name", res == SPN_OK);
 
     /**
      * DB_ID_DEVICE_ID
@@ -144,14 +143,12 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
      * DB_ID_NAME_OF_INTERFACE
      */
     if (cfg->station_name) {
-      res = strlen(cfg->station_name);
-      if ((unsigned)res < sizeof(val.str)) {
-        strncpy(val.str, cfg->station_name, res);
-        res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_INTERFACE, 0, 1, res, &val);
-      } else {
-        val.ptr = strdup(cfg->station_name);
-        res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_INTERFACE, 1, 1, res, &val);
-      }
+      res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_INTERFACE, 0, 0, 0, &val);
+      SPN_ASSERT("Failed to add station name", res == SPN_OK);
+      res = db_get_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_INTERFACE, &obj);
+      SPN_ASSERT("Failed to get station name", res == SPN_OK);
+      res = db_dup_str2obj(obj, cfg->station_name, strlen(cfg->station_name));
+      SPN_ASSERT("Failed to set station name", res == SPN_OK);
     } else {
       val.str[0] = '\0';
       res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_NAME_OF_INTERFACE, 0, 1, 0, &val);
@@ -202,7 +199,6 @@ int _spn_input_hook(struct spn_ctx* ctx, struct pbuf* p, struct spn_iface* iface
   eth_type = (*PTR_OFFSET(p->payload, 12, uint16_t));
 
   if (eth_type == SPN_HTONS(ETHTYPE_PROFINET)) {
-
     pbuf_remove_header(p, SIZEOF_ETH_HDR);
     frame_id = SPN_NTOHS(*PTR_OFFSET(p->payload, 0, uint16_t));
     switch (frame_id) {
