@@ -64,7 +64,7 @@ static inline int obj_strcpy(void* dst, struct db_object* obj) {
   if (db_is_static_string_object(obj)) {
     memcpy(dst, obj->data.str, db_object_len(obj));
   } else {
-    memcpy((char*)dst + 2, obj->data.ptr, db_object_len(obj));
+    memcpy((char*)dst, obj->data.ptr, db_object_len(obj));
   }
   return db_object_len(obj);
 }
@@ -90,9 +90,9 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
       }
       gw = obj->data.u32;
       *PTR_OFFSET(block->data, 0, uint16_t) = SPN_HTONS(block_info);
-      *PTR_OFFSET(block->data, 2, uint32_t) = SPN_HTONL(ip);
-      *PTR_OFFSET(block->data, 6, uint32_t) = SPN_HTONL(mask);
-      *PTR_OFFSET(block->data, 10, uint32_t) = SPN_HTONL(gw);
+      *PTR_OFFSET(block->data, 2, uint32_t) = ip;
+      *PTR_OFFSET(block->data, 6, uint32_t) = mask;
+      *PTR_OFFSET(block->data, 10, uint32_t) = gw;
       block->length = 14;
       break;
     }
@@ -155,7 +155,12 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
     default:
       return 0;
   }
+
+  /* Padding must be zero */
   res = block->length;
+  if (res & 1) {
+    block->data[res] = 0;
+  }
   block->length = SPN_HTONS((block->length));
   return sizeof(*block) + ((res + 1) & ~1);
 }
