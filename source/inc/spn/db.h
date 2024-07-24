@@ -2,6 +2,7 @@
 
 #include <spn/config.h>
 #include <spn/db_ids.h>
+#include <spn/sys.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -103,6 +104,9 @@ static inline int db_is_valid_object(struct db_object* object) {
 }
 
 static inline int db_is_static_string_object(struct db_object* object) {
+  SPN_ASSERT("Invalid dynamic object",
+             (object->attr.len > 8 && !db_is_static_object(object) && db_is_array_object(object)) ||
+                 (object->attr.len <= 8 && db_is_static_object(object)));
   return db_is_static_object(object) && db_is_array_object(object) && object->attr.len < 8;
 }
 
