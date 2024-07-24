@@ -52,7 +52,7 @@ void dft_port_init(struct netif* iface, const char* port_name, const uint32_t ip
 
   ipaddr.addr = ip;
   gw.addr = (ip & 0x00FFFFFF) | 0x01000000; /* NOTE: default gw is xx.xx.xx.01 */
-  IP4_ADDR((&netmask), 255, 255, 255, 0); /* NOTE: default mask is 24-bit */
+  IP4_ADDR((&netmask), 255, 255, 255, 0);   /* NOTE: default mask is 24-bit */
   printf("Starting lwIP, local interface(%s) IP is %s\n", priv->ifname, ip4addr_ntoa(&ipaddr));
 
   if (!netif_add(iface, &ipaddr, &netmask, &gw, priv, raw_socket_low_level_init, tcpip_input)) {
@@ -104,12 +104,12 @@ err_t raw_socket_low_level_init(struct netif* netif) {
   netif->mtu = 1500;
   netif->hwaddr_len = 6;
   netif->flags = NETIF_FLAG_BROADCAST | NETIF_FLAG_ETHARP | NETIF_FLAG_LINK_UP | NETIF_FLAG_IGMP;
-  netif->hwaddr[0] = 0x00;
-  netif->hwaddr[1] = 0x0c;
-  netif->hwaddr[2] = 0x29;
-  netif->hwaddr[3] = 0xcd;
-  netif->hwaddr[4] = 0xDD;
-  netif->hwaddr[5] = 0xFF;
+  // query mac addre by socketfd
+  if (ioctl(sockfd, SIOCGIFHWADDR, &ifr) < 0) {
+    perror("ioctl");
+    return ERR_IF;
+  }
+  memcpy(netif->hwaddr, ifr.ifr_hwaddr.sa_data, 6);
   iface->sockfd = sockfd;
 
   netif_set_link_up(netif);
@@ -122,7 +122,6 @@ struct pbuf* raw_low_level_input(struct netif* netif) {
   ssize_t len;
   struct pbuf* q;
   static char buf[1518];
-  const char none_mac[6] = {0, 0, 0, 0, 0, 0};
 
   len = recvfrom(iface->sockfd, buf, sizeof(buf), 0, NULL, NULL);
   if (len < 0) {
@@ -130,13 +129,11 @@ struct pbuf* raw_low_level_input(struct netif* netif) {
     return NULL;
   }
 
+  /* Accept all multicast frame, else drop it */
   /* NOTE: Drop packets sent by this interface */
-  if (!memcmp(buf, none_mac, 6) || !memcmp(buf + 6, netif->hwaddr, 6)) {
-    /* Accept all multicast frame, else drop it */
-    if ((buf[0] & 0x01) == 0) {
-      MIB2_STATS_NETIF_INC(netif, ifinerrors);
-      return NULL;
-    }
+  if (!(buf[0] & 0x01) && memcmp(buf, netif->hwaddr, 6)) {
+    MIB2_STATS_NETIF_INC(netif, ifinerrors);
+    return NULL;
   }
 
   MIB2_STATS_NETIF_ADD(netif, ifinoctets, len);

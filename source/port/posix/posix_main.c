@@ -55,7 +55,6 @@ void tcpip_init_cb(void* arg) {
 
   etharp_init();
   udp_init();
-  etharp_init();
   // snmp_init();
 
   spn_init(&g_spn_ctx, &g_spn_cfg);
