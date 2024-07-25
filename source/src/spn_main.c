@@ -230,7 +230,7 @@ __attribute((weak)) int spn_port_init(struct spn_ctx* ctx, struct spn_iface* ifa
   SPN_UNUSED_ARG(iface);
   SPN_UNUSED_ARG(interface);
   SPN_UNUSED_ARG(port);
-  return SPN_OK;
+  return -SPN_ENOENT;
 }
 
 __attribute__((weak)) void _spn_input_indication(int result) {
