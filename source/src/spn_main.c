@@ -140,6 +140,14 @@ int spn_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
     SPN_ASSERT("Failed to add vendor id", res == SPN_OK);
 
     /**
+     * DB_ID_VENDOR_ID
+     * @note read only
+     */
+    val.u8 = cfg->role;
+    res = db_add_object(&ctx->db.interfaces[i].objects, DB_ID_DEVICE_ROLE, 0, 0, sizeof(val), &val);
+    SPN_ASSERT("Failed to add role", res == SPN_OK);
+
+    /**
      * DB_ID_NAME_OF_INTERFACE
      */
     if (cfg->station_name) {

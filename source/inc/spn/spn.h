@@ -16,6 +16,8 @@ struct spn_cfg {
   const char *vendor_name;
   uint16_t vendor_id;
   uint16_t device_id;
+
+  uint8_t role;
 };
 
 struct spn_ctx {

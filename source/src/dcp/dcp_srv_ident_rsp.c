@@ -129,7 +129,8 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
       }
 
       *PTR_OFFSET(block->data, 0, uint16_t) = 0;
-      *PTR_OFFSET(block->data, 2, uint16_t) = SPN_HTONS(obj->data.u16);
+      *PTR_OFFSET(block->data, 2, uint8_t) = obj->data.u8;
+      *PTR_OFFSET(block->data, 3, uint8_t) = 0;
       block->length = 4;
       break;
     }
