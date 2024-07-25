@@ -51,7 +51,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
           err = DCP_BLOCK_ERR_LOCAL_ERR;
           goto internal_err;
         }
-        obj->data.u32 = SPN_NTOHL(*PTR_OFFSET(block->data, 2, uint32_t));
+        obj->data.u32 = *PTR_OFFSET(block->data, 2, uint32_t);
         db_object_updated_ind(ctx->db, obj, qualifier);
 
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &obj);
@@ -60,7 +60,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
           err = DCP_BLOCK_ERR_LOCAL_ERR;
           goto internal_err;
         }
-        obj->data.u32 = SPN_NTOHL(*PTR_OFFSET(block->data, 6, uint32_t));
+        obj->data.u32 = *PTR_OFFSET(block->data, 6, uint32_t);
         db_object_updated_ind(ctx->db, obj, qualifier);
 
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &obj);
@@ -68,12 +68,13 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Failed to get gateway object\n");
           goto internal_err;
         }
-        obj->data.u32 = SPN_NTOHL(*PTR_OFFSET(block->data, 10, uint32_t));
+        obj->data.u32 = *PTR_OFFSET(block->data, 10, uint32_t);
         db_object_updated_ind(ctx->db, obj, qualifier);
         break;
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
         block_length = SPN_NTOHS(block->length);
         if (has_upper_case(PTR_OFFSET(block->data, 2, char), block_length - 2)) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Station name contains upper case characters\n");
           err = DCP_BLOCK_ERR_RESOURCE_ERR;
           break;
         }
@@ -83,7 +84,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
           goto internal_err;
         }
         db_free_objstr(obj);
-        res = db_dup_str2obj(obj, PTR_OFFSET(block->data, 2, char), block_length);
+        res = db_dup_str2obj(obj, PTR_OFFSET(block->data, 2, char), block_length - 2);
         db_object_updated_ind(ctx->db, obj, qualifier);
         break;
       case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_START):
