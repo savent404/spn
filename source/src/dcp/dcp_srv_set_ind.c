@@ -1,3 +1,5 @@
+#include <lwip/ip_addr.h>
+#include <lwip/netif.h>
 #include <spn/db.h>
 #include <spn/db_ll.h>
 #include <spn/dcp.h>
@@ -18,12 +20,23 @@ static inline int has_upper_case(const char* str, int len) {
   return 0;
 }
 
+static inline void set_netif_address(spn_iface_t* iface, uint32_t addr, uint32_t mask, uint32_t gw) {
+  ip4_addr_t i, m, g;
+  i.addr = addr;
+  m.addr = mask;
+  g.addr = gw;
+  netif_set_addr(&iface->netif, &i, &m, &g);
+  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set IP address: %s\n", ipaddr_ntoa(&iface->netif.ip_addr));
+  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set netmask: %s\n", ipaddr_ntoa(&iface->netif.netmask));
+  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set gateway: %s\n", ipaddr_ntoa(&iface->netif.gw));
+}
+
 int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
   struct db_object* obj;
   struct dcp_block_gen* block;
   uint16_t block_length, dcp_length = SPN_NTOHS(hdr->data_length);
-  uint32_t req_options = 0, qualifier;
+  uint32_t req_options = 0, qualifier, ip_addr, ip_mask, ip_gw, idx;
   unsigned offset, bitmap_idx;
   int res;
 
@@ -51,7 +64,8 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
           err = DCP_BLOCK_ERR_LOCAL_ERR;
           goto internal_err;
         }
-        obj->data.u32 = *PTR_OFFSET(block->data, 2, uint32_t);
+        ip_addr = *PTR_OFFSET(block->data, 2, uint32_t);
+        obj->data.u32 = ip_addr;
         db_object_updated_ind(ctx->db, obj, qualifier);
 
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &obj);
@@ -60,7 +74,8 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
           err = DCP_BLOCK_ERR_LOCAL_ERR;
           goto internal_err;
         }
-        obj->data.u32 = *PTR_OFFSET(block->data, 6, uint32_t);
+        ip_mask = *PTR_OFFSET(block->data, 6, uint32_t);
+        obj->data.u32 = ip_mask;
         db_object_updated_ind(ctx->db, obj, qualifier);
 
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &obj);
@@ -68,8 +83,18 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Failed to get gateway object\n");
           goto internal_err;
         }
-        obj->data.u32 = *PTR_OFFSET(block->data, 10, uint32_t);
+        ip_gw = *PTR_OFFSET(block->data, 10, uint32_t);
+        obj->data.u32 = ip_gw;
         db_object_updated_ind(ctx->db, obj, qualifier);
+
+        for (idx = 0; idx < ARRAY_SIZE(ctx->db->interfaces[0].ports); idx++) {
+          res = db_get_port_object(ctx->db, ctx->interface_id, (int)idx, DB_ID_IFACE, &obj);
+          if (res == -SPN_ENOENT) {
+            continue;
+          }
+          SPN_ASSERT("Get port's iface failed", res == SPN_OK);
+          set_netif_address((spn_iface_t*)obj->data.ptr, ip_addr, ip_mask, ip_gw);
+        }
         break;
       case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
         block_length = SPN_NTOHS(block->length);
