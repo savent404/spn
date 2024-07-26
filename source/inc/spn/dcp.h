@@ -374,7 +374,6 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs_ctx, struct p
  * @param length Length of payload
  * @note Syntax: DCP-Header,[NameOfStation]^[AliasName], [OtherFilter]*
  * @note Cuase rsp could be delayed by controller, the instance are limited with \c SPN_CONF_DCP_MAX_IDENT_RSP_INST
- * @todo Implement the response delay
  * @todo Implement syntax check (this is not nessary, but it is good to have)
  * @todo More filter need to be supported
  * @returns 0 on success, negative value on error
