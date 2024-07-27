@@ -60,6 +60,7 @@ typedef union db_value {
   uint32_t u32;
   uint64_t u64;
   char str[8];
+  uint8_t mac[6];
 } db_value_t;
 
 typedef enum db_view_type { DB_VIEW_TYPE_SYS, DB_VIEW_TYPE_USR, DB_VIEW_TYPE_NUM } db_view_type_t;

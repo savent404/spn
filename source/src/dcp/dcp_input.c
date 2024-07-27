@@ -56,6 +56,9 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
   uint16_t frame_id;
   struct dcp_header* hdr;
   struct pbuf* out;
+  uint16_t ex_iface;
+  struct db_interface* db_iface;
+  struct db_object* db_obj;
   int res;
   unsigned idx;
 
@@ -70,8 +73,24 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
       if (hdr->service_id != DCP_SRV_ID_IDENT && hdr->service_type != DCP_SRV_TYPE_RES) {
         return -SPN_EINVAL;
       }
-      res = dcp_srv_ident_cnf(ctx, hdr, rtc_pdu->tot_len - 2);
+      /**
+       * @brief call ident.cnf and fill the mac address info if device did not response it
+       */
+      res = dcp_srv_ident_cnf(ctx, &ctx->mcs_ctx, hdr, rtc_pdu->tot_len - 2, &ex_iface);
       SPN_ASSERT("dcp_srv_ident_cnf failed", res == SPN_OK);
+
+      if (db_get_interface_object(ctx->db, ex_iface, DB_ID_IP_MAC_ADDR, &db_obj) == SPN_ENOENT) {
+        db_value_t val;
+        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "device didn't response mac address, fill it based on ethframe\n");
+        pbuf_add_header(rtc_pdu, SPN_PDU_HDR_SIZE + SIZEOF_ETH_HDR);
+        memcpy(val.mac, PTR_OFFSET(rtc_pdu->payload, 6, uint8_t), sizeof(val.mac));
+        pbuf_remove_header(rtc_pdu, SPN_PDU_HDR_SIZE + SIZEOF_ETH_HDR);
+
+        res = db_get_interface(ctx->db, ex_iface, &db_iface);
+        SPN_ASSERT("db_get_interface failed", res == SPN_OK);
+        res = db_add_object(&db_iface->objects, DB_ID_IP_MAC_ADDR, 0, 0, sizeof(val.mac), &val);
+        SPN_ASSERT("db_add_object failed", res == SPN_OK);
+      }
       break;
     case FRAME_ID_DCP_GET_SET:
       /* TODO: if in operating mode, should ignore this request */
