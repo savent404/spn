@@ -27,7 +27,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
   for (idx = 0; idx < DCP_BITMAP_NUM && options; idx++) {
     uint16_t type;
     uint16_t qual;
-    struct dcp_block_gen* block = PTR_OFFSET(hdr, offset, struct dcp_block_gen);
+    struct dcp_block_gen* block = PTR_OFFSET(p->payload, offset, struct dcp_block_gen);
 
     if ((options & (1 << idx)) == 0) {
       continue;
