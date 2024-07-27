@@ -232,6 +232,22 @@ enum dcp_state {
 };
 
 /**
+ * Unicast sender context
+ */
+struct dcp_ucs_ctx {
+  uint32_t xid;
+  uint32_t req_options_bitmap;   /* set if option is requested */
+  uint16_t req_qualifier_bitmap; /* set if persistent mode is requested */
+  enum dcp_block_error resp_errors[DCP_BITMAP_NUM];
+
+  /* set if option is requested */
+  uint32_t ip_addr;
+  uint32_t ip_mask;
+  uint32_t ip_gw;
+  const char* station_name;
+};
+
+/**
  * Unicast receiver context
  *
  * @note UCR is a none-stateful context, it is used to store some temporary variables
@@ -399,7 +415,7 @@ int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
 int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
 int dcp_srv_get_cnf();
 
-int dcp_srv_set_req();
+int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbuf* p);
 int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
 int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
 int dcp_srv_set_cnf();
