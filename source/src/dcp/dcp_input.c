@@ -55,7 +55,7 @@ static void dcp_mcr_rsp_callback(void* arg) {
 int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_addr* src, struct pbuf* rtc_pdu) {
   uint16_t frame_id;
   struct dcp_header* hdr;
-  struct pbuf* out;
+  struct pbuf* out = NULL;
   uint16_t ex_iface;
   struct db_interface* db_iface;
   struct db_object* db_obj;
