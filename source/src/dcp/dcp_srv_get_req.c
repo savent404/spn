@@ -2,8 +2,8 @@
 #include <spn/db.h>
 #include <spn/errno.h>
 #include <spn/spn.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
@@ -56,7 +56,7 @@ int dcp_srv_get_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, struct pbuf* p
 
   /* update output length */
   if (offset + sizeof(*hdr) < SPN_DCP_MIN_SIZE) {
-    memset(PTR_OFFSET(p->payload, offset, uint8_t), 0, SPN_DCP_MIN_SIZE - offset - sizeof(*hdr));
+    memset(PTR_OFFSET(p->payload, offset + sizeof(*hdr), uint8_t), 0, SPN_DCP_MIN_SIZE - offset - sizeof(*hdr));
     p->tot_len = SPN_DCP_MIN_SIZE;
   } else {
     p->tot_len = offset + sizeof(*hdr);
