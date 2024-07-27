@@ -19,7 +19,6 @@ void _dcp_srv_set_req_timeout(void* arg) {
 int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbuf* p) {
   struct dcp_header* hdr = (struct dcp_header*)p->payload;
   unsigned offset = 0;
-  int res = SPN_OK;
   unsigned idx;
   unsigned options = ucs_ctx->req_options_bitmap, qualifer = ucs_ctx->req_qualifier_bitmap;
 
@@ -110,5 +109,5 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
 
   sys_timeout(SPN_DCP_UC_TIMEOUT, _dcp_srv_set_req_timeout, ucs_ctx);
 
-  return res;
+  return SPN_OK;
 }
