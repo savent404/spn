@@ -17,7 +17,7 @@ void _dcp_srv_set_req_timeout(void* arg) {
 }
 
 int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbuf* p) {
-  struct dcp_header* hdr;
+  struct dcp_header* hdr = NULL;
   unsigned offset = 0;
   unsigned idx;
   unsigned options = ucs_ctx->req_options_bitmap, qualifer = ucs_ctx->req_qualifier_bitmap;
