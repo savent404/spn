@@ -67,8 +67,12 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
   switch (frame_id) {
     case FRAME_ID_DCP_HELLO_REQ:
     case FRAME_ID_DCP_IDENT_RES:
-      /* TODO: This is for IOC use */
-      return -SPN_ENOSYS;
+      if (hdr->service_id != DCP_SRV_ID_IDENT && hdr->service_type != DCP_SRV_TYPE_RES) {
+        return -SPN_EINVAL;
+      }
+      res = dcp_srv_ident_cnf(ctx, hdr, rtc_pdu->tot_len - 2);
+      SPN_ASSERT("dcp_srv_ident_cnf failed", res == SPN_OK);
+      break;
     case FRAME_ID_DCP_GET_SET:
       /* TODO: if in operating mode, should ignore this request */
       if (hdr->service_id == DCP_SRV_ID_GET && hdr->service_type == DCP_SRV_TYPE_REQ) {

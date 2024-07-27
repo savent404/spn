@@ -51,6 +51,7 @@ static void app_rta_timer_handler(void* arg) {
         }
         pbuf_free(p);
       }
+      inst->state = APP_STATE_DCP;
       next_time = 500;  // device should response in 400ms, but we need some mercy time
       break;
     case APP_STATE_DCP:
@@ -65,7 +66,7 @@ static void app_rta_timer_handler(void* arg) {
         struct db_object* obj;
         char* station_name;
 
-        res = db_get_interface(&inst->ctx->db, SPN_EXTERNAL_INTERFACE_BASE + 1, &iface);
+        res = db_get_interface(&inst->ctx->db, SPN_EXTERNAL_INTERFACE_BASE, &iface);
         assert(res == SPN_OK);
 
         res = db_get_object(&iface->objects, DB_ID_NAME_OF_INTERFACE, &obj);
@@ -124,6 +125,8 @@ static void app_rta_timer_handler(void* arg) {
           printf("gateway: %s\n", ip4addr_ntoa((ip4_addr_t*)&obj->data.u32));
         }
       }
+
+      inst->state = APP_STATE_PRM;
       break;
     case APP_STATE_PRM:
       printf("prm state\n");
@@ -135,9 +138,7 @@ static void app_rta_timer_handler(void* arg) {
       break;
   }
 
-  LOCK_TCPIP_CORE();
   sys_timeout(next_time, app_rta_timer_handler, inst);
-  UNLOCK_TCPIP_CORE();
 }
 
 int app_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {

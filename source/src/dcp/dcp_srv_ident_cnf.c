@@ -50,19 +50,19 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length) {
           goto invalid_ret;
         }
 
-        data.u32 = SPN_NTOHL(*(PTR_OFFSET(block->data, 2, uint32_t)));
+        data.u32 = *(PTR_OFFSET(block->data, 2, uint32_t));
         res = db_add_object(&interface.objects, DB_ID_IP_ADDR, 0, 0, 4, &data);
         if (res != SPN_OK) {
           goto invalid_ret;
         }
 
-        data.u32 = SPN_NTOHL(*(PTR_OFFSET(block->data, 6, uint32_t)));
+        data.u32 = *(PTR_OFFSET(block->data, 6, uint32_t));
         res = db_add_object(&interface.objects, DB_ID_IP_MASK, 0, 0, 4, &data);
         if (res != SPN_OK) {
           goto invalid_ret;
         }
 
-        data.u32 = SPN_NTOHL(*(PTR_OFFSET(block->data, 10, uint32_t)));
+        data.u32 = *(PTR_OFFSET(block->data, 10, uint32_t));
         res = db_add_object(&interface.objects, DB_ID_IP_GATEWAY, 0, 0, 4, &data);
         if (res != SPN_OK) {
           goto invalid_ret;

@@ -17,7 +17,9 @@ static void dcp_srv_ident_req_cb(void* arg) {
   SPN_ASSERT("dcp_srv_ident_req_cb: invalid ctx", ctx != NULL);
 
   /* Devices are already added to db by dcp_srv_ident_cnf */
-  memset(mcs, 0, sizeof(*mcs));
+  mcs->state = DCP_STATE_IDLE;
+  mcs->req_options_bitmap = 0;
+  mcs->xid++;
 }
 
 int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf* p) {
