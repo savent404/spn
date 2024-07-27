@@ -7,12 +7,16 @@
 #define BLOCK_TYPE(option, sub_option) ((option) << 8 | (sub_option))
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
 
-int dcp_srv_ident_cnf(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payload, uint16_t length) {
+int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
+                      struct dcp_mcs_ctx* mcs,
+                      void* payload,
+                      uint16_t length,
+                      uint16_t* pexiface) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
   struct dcp_block_gen* block;
   struct db_interface interface, *intf;
   struct db_object* obj;
-  uint16_t dcp_length = SPN_NTOHS(hdr->data_length), block_length;
+  uint16_t dcp_length = SPN_NTOHS(hdr->data_length), block_length, exiface;
   db_value_t data;
   unsigned offset;
   int res;
@@ -150,12 +154,14 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
   }
 
   /* Find empty interface and assigned new interface_id */
-  res = db_add_interface(ctx->db, mcs->response_interface_id);
+  /* FIXME: its not thread-safe */
+  exiface = mcs->response_interface_id++;
+  res = db_add_interface(ctx->db, exiface);
   if (res < 0) {
     goto invalid_ret;
   }
 
-  res = db_get_interface(ctx->db, mcs->response_interface_id, &intf);
+  res = db_get_interface(ctx->db, exiface, &intf);
   if (res < 0 || !intf) {
     goto invalid_ret;
   }
@@ -165,10 +171,14 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
     res = -SPN_ENOMEM;
     goto cleanup_interface;
   }
-  mcs->response_interface_id++;
+
+  if (pexiface) {
+    *pexiface = exiface;
+  }
   db_del_interface(&interface);
   return SPN_OK;
 cleanup_interface:
+  mcs->response_interface_id--; /* FIXME: its not thread-safe */
   db_del_interface(intf);
 invalid_ret:
   db_del_interface(&interface);
