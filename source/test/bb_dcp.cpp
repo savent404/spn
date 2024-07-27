@@ -367,7 +367,7 @@ TEST_F(Ddcp, ident_cnf_invalid) {
 
   /* drop first 16 bytes */
   frame->erase(frame->begin(), frame->begin() + 16);
-  EXPECT_EQ(dcp_srv_ident_cnf(&dcp, frame->data(), frame->size()), -SPN_ENXIO);
+  EXPECT_EQ(dcp_srv_ident_cnf(&dcp, &dcp.mcs_ctx, frame->data(), frame->size()), -SPN_ENXIO);
 }
 
 TEST_F(Ddcp, ident_cnf_ecopn) {
@@ -380,7 +380,7 @@ TEST_F(Ddcp, ident_cnf_ecopn) {
 
   /* drop first 16 bytes */
   frame->erase(frame->begin(), frame->begin() + 16);
-  EXPECT_EQ(dcp_srv_ident_cnf(&dcp, frame->data(), frame->size()), SPN_OK);
+  EXPECT_EQ(dcp_srv_ident_cnf(&dcp, &dcp.mcs_ctx, frame->data(), frame->size()), SPN_OK);
 
   struct db_interface* intf;
   struct db_object* obj;

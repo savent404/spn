@@ -408,7 +408,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* pa
  * @returns 0 on success, negative value on error
  */
 int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t length);
-int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length);
+int dcp_srv_ident_cnf(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs_ctx, void* payload, uint16_t length);
 
 int dcp_srv_get_req();
 int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
