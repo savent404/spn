@@ -31,6 +31,8 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
     struct dcp_block_gen* block = PTR_OFFSET(hdr, offset, struct dcp_block_gen);
     options &= ~(1 << idx);
 
+    SPN_UNUSED_ARG(ctx);
+
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.req: packing type: %s(%04x)...\n", dcp_option_name(type >> 8, type & 0xFF),
                   type);
 
