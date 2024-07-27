@@ -93,6 +93,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
   }
 
   pbuf_add_header(p, sizeof(*hdr));
+  hdr = PTR_OFFSET(p->payload, 0, struct dcp_header);
 
   if ((offset + sizeof(*hdr)) < SPN_DCP_MIN_SIZE) {
     memset(PTR_OFFSET(hdr, offset + sizeof(*hdr), uint8_t), 0, SPN_DCP_MIN_SIZE - offset - sizeof(*hdr));
@@ -101,7 +102,6 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
     p->tot_len = offset + sizeof(*hdr);
   }
 
-  hdr = PTR_OFFSET(p->payload, 0, struct dcp_header);
   hdr->service_id = DCP_SRV_ID_SET;
   hdr->service_type = DCP_SRV_TYPE_REQ;
   hdr->data_length = SPN_NTOHS(offset);
