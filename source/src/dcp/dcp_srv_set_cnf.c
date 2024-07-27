@@ -14,6 +14,7 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
   uint16_t dcp_length, offset = sizeof(*hdr);
 
   SPN_UNUSED_ARG(ctx);
+  SPN_UNUSED_ARG(length);
 
   hdr = (struct dcp_header*)payload;
 
