@@ -14,6 +14,7 @@ void _dcp_srv_set_req_timeout(void* arg) {
   ucs_ctx->state = DCP_STATE_IDLE;
   ucs_ctx->req_options_bitmap = 0;
   ucs_ctx->req_qualifier_bitmap = 0;
+  ucs_ctx->xid++;
 }
 
 int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbuf* p) {
@@ -106,7 +107,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
   hdr->service_type = DCP_SRV_TYPE_REQ;
   hdr->data_length = SPN_NTOHS(offset);
   hdr->response_delay = 0; /* NOTE: this is reserved, need to be zero */
-  hdr->xid = SPN_NTOHL(ucs_ctx->xid++);
+  hdr->xid = SPN_NTOHL(ucs_ctx->xid);
 
   pbuf_add_header(p, SPN_PDU_HDR_SIZE);
   *PTR_OFFSET(p->payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_GET_SET);
