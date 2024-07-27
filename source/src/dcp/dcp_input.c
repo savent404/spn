@@ -79,7 +79,7 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
       res = dcp_srv_ident_cnf(ctx, &ctx->mcs_ctx, hdr, rtc_pdu->tot_len - 2, &ex_iface);
       SPN_ASSERT("dcp_srv_ident_cnf failed", res == SPN_OK);
 
-      if (db_get_interface_object(ctx->db, ex_iface, DB_ID_IP_MAC_ADDR, &db_obj) == SPN_ENOENT) {
+      if (db_get_interface_object(ctx->db, ex_iface, DB_ID_IP_MAC_ADDR, &db_obj) == -SPN_ENOENT) {
         db_value_t val;
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "device didn't response mac address, fill it based on ethframe\n");
         pbuf_add_header(rtc_pdu, SPN_PDU_HDR_SIZE + SIZEOF_ETH_HDR);
