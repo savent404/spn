@@ -26,7 +26,7 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
 
   dcp_length = SPN_NTOHS(hdr->data_length);
 
-  for (; offset < dcp_length; offset += dcp_block_next(block)) {
+  for (; offset < dcp_length + sizeof(*hdr); offset += dcp_block_next(block)) {
     uint16_t err;
     uint8_t opt, sub_opt;
     int idx;
