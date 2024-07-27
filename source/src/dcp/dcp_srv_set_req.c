@@ -101,6 +101,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
     p->tot_len = offset + sizeof(*hdr);
   }
 
+  hdr = PTR_OFFSET(p->payload, 0, struct dcp_header);
   hdr->service_id = DCP_SRV_ID_SET;
   hdr->service_type = DCP_SRV_TYPE_REQ;
   hdr->data_length = SPN_NTOHS(offset);
