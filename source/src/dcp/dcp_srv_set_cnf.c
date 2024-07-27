@@ -10,8 +10,10 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
   struct dcp_header* hdr;
   struct dcp_block_gen* block;
   int res = SPN_OK;
-  unsigned options = ucs->req_options_bitmap, qualifer = ucs->req_qualifier_bitmap;
+  unsigned options = ucs->req_options_bitmap;
   uint16_t dcp_length, offset = sizeof(*hdr);
+
+  SPN_UNUSED_ARG(ctx);
 
   hdr = (struct dcp_header*)payload;
 
@@ -22,10 +24,11 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
 
   dcp_length = SPN_NTOHS(hdr->data_length);
 
-  for (; offset < length; offset += dcp_block_next(block)) {
+  for (; offset < dcp_length; offset += dcp_block_next(block)) {
     uint16_t err;
     uint8_t opt, sub_opt;
     int idx;
+    block = PTR_OFFSET(payload, offset, struct dcp_block_gen);
     if (block->option != DCP_OPTION_CONTROL || block->sub_option != DCP_SUB_OPT_CTRL_RESPONSE) {
       SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: invalid block, want a response block\n");
       continue;
@@ -44,7 +47,7 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
       continue;
     }
 
-    ucs->resp_errors[idx] = err;
+    ucs->resp_errors[idx] = (enum dcp_block_error)err;
     options &= ~(1 << idx);
 
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: response block %d.%d, err %d\n", opt, sub_opt, err);
