@@ -148,6 +148,7 @@ static void app_rta_timer_handler(void* arg) {
         struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
         struct db_object* obj;
         struct spn_iface* iface;
+        struct eth_addr addr;
         res = dcp_srv_set_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, p);
         assert(res == SPN_OK);
 
@@ -158,8 +159,9 @@ static void app_rta_timer_handler(void* arg) {
 
         res = db_get_interface_object(&inst->ctx->db, 0, DB_ID_IP_MAC_ADDR, &obj);
         assert(res == SPN_OK);
+        memcpy(addr.addr, obj->data.mac, sizeof(addr.addr));
 
-        res = dcp_output(&inst->ctx->dcp, iface, (const struct eth_addr*)obj->data.mac, p);
+        res = dcp_output(&inst->ctx->dcp, iface, &addr, p);
         assert(res == SPN_OK);
 
         pbuf_free(p);
