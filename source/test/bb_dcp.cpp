@@ -5,19 +5,20 @@
 #include <spn/db_ll.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
+#include <spn/pdu.h>
 #include <spn/spn.h>
 #include <cmath>
+#include "global.hpp"
 #include "test_data.hpp"
 
 #include "ddcp.hpp"
 
+using test::Cdcp;
 using test::DataParser;
 using test::Ddcp;
 
 TEST_F(Ddcp, ident_req_selector) {
-  mem_init();
-  memp_init();
-  sys_timeouts_init();
+  LwipCtx::get_instance(LwipCtx::level::timer);
   struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
   DataParser parser;
 
@@ -37,6 +38,9 @@ TEST_F(Ddcp, ident_req_selector) {
   }
 
   pbuf_free(p);
+
+  // remove pending timeouts
+  sys_check_timeouts();
 }
 
 TEST_F(Ddcp, ident_ind_all_selector) {
@@ -573,4 +577,27 @@ TEST_F(Ddcp, get_rsp_simple) {
     uint8_t a = out[i], b = f_rsp->at(i);
     EXPECT_EQ(a, b) << "mismatch at " << i;
   }
+}
+
+TEST_F(Cdcp, ident_req) {
+  LwipCtx::get_instance(LwipCtx::level::timer);
+  // Generate ident.req from controller
+  struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
+  controller.dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BITMAP_ALL_SELECTOR;
+  controller.dcp.mcs_ctx.xid = 0xAABBCCDD;
+  controller.dcp.mcs_ctx.response_delay_factory = 1;
+  EXPECT_EQ(dcp_srv_ident_req(&controller.dcp, &controller.dcp.mcs_ctx, p), 0);
+  pbuf_remove_header(p, SPN_PDU_HDR_SIZE);
+
+  // Parse ident.req from device, check its status can verify the ident.req
+  EXPECT_EQ(dcp_srv_ident_ind(&device.dcp, &device.dcp.mcr_ctx[0], p->payload, p->tot_len), 0);
+  pbuf_free(p);  // Ident.req can be free now
+  EXPECT_EQ(device.dcp.mcr_ctx[0].state, DCP_STATE_IDENT_RES);
+  EXPECT_EQ(device.dcp.mcr_ctx[0].xid, 0xAABBCCDD);
+  EXPECT_EQ(device.dcp.mcr_ctx[0].response_delay, 0);
+
+  // Trigger ident.res from device's timer
+  sys_check_timeouts();
+  EXPECT_EQ(device.dcp.mcr_ctx[0].state, DCP_STATE_IDENT_RES);
+  sys_check_timeouts();
 }

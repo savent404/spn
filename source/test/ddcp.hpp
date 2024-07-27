@@ -10,16 +10,16 @@ namespace test {
 
 using DataParser = test_data::dcp::DataParser;
 
-struct Ddcp : public ::testing::Test {
+struct _Ddcp {
   struct dcp_ctx dcp;
   struct db_ctx db;
 
-  explicit Ddcp() {
+  explicit _Ddcp() {
     memset(&dcp, 0, sizeof(dcp));
     memset(&db, 0, sizeof(db));
   }
 
-  void SetUp() override {
+  void SetUp() {
     struct db_interface* iface;
 
     db_init(&db);
@@ -30,7 +30,7 @@ struct Ddcp : public ::testing::Test {
     db_add_port(iface, 0);
   }
 
-  void TearDown() override {
+  void TearDown() {
     dcp_deinit(&dcp);
     db_deinit(&db);
   }
@@ -100,6 +100,28 @@ struct Ddcp : public ::testing::Test {
     db_get_interface(&db, 0, &iface);
     value.u16 = role;
     db_add_object(&iface->objects, db_id_t::DB_ID_DEVICE_ROLE, 0, 0, 0, &value);
+  }
+};
+
+struct Ddcp : public _Ddcp, public ::testing::Test {
+  explicit Ddcp() : _Ddcp() {}
+  virtual ~Ddcp() {}
+  void SetUp() override { _Ddcp::SetUp(); }
+  void TearDown() override { _Ddcp::TearDown(); }
+};
+
+struct Cdcp : public ::testing::Test {
+  struct _Ddcp controller, device;
+
+  explicit Cdcp() : controller(), device() {}
+  virtual ~Cdcp() {}
+  void SetUp() {
+    controller.SetUp();
+    device.SetUp();
+  }
+  void TearDown() {
+    controller.TearDown();
+    device.TearDown();
   }
 };
 

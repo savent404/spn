@@ -116,6 +116,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
   mcs->response_delay = mcs->response_delay_factory > 1 ? ((1999 + mcs->response_delay_factory * 10) / 1000) : 400;
   mcs->dcp_ctx = ctx;
   mcs->state = DCP_STATE_IDENT_REQ;
+  mcs->dcp_ctx = ctx;
 
   sys_timeout(mcs->response_delay, dcp_srv_ident_req_cb, mcs);
 
