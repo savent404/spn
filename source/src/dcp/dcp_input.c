@@ -132,7 +132,7 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
         }
         /* TODO: callback or notify set.req is done */
       } else if (hdr->service_id == DCP_SRV_ID_GET && hdr->service_type == DCP_SRV_TYPE_RES) {
-        res = dcp_srv_get_cnf(ctx, &ctx->ucs_ctx, rtc_pdu->payload, rtc_pdu->tot_len - 2);
+        res = dcp_srv_get_cnf(ctx, &ctx->ucs_ctx, hdr, rtc_pdu->tot_len - 2);
         if (res != SPN_OK) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: dcp_input: get.cnf failed: %d\n", res);
           return res;

@@ -20,7 +20,7 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
 
   /* ignore it if xid didn't match */
   if (SPN_NTOHL(hdr->xid) != ucs->xid) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: xid mismatched %08x(%08x)\n", SPN_NTOHL(hdr->xid), ucs->xid);
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: xid mismatched expect %d, got %d\n", ucs->xid, SPN_NTOHL(hdr->xid));
     return -SPN_EAGAIN;
   }
 
