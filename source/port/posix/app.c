@@ -32,6 +32,7 @@ static void app_rta_timer_handler(void* arg) {
 
   switch (inst->state) {
     case APP_STATE_INIT:
+      printf(">>> dcp init");
       /** Discovery DCP devices, filted by station name */
       // TODO: topology should be well defined
       inst->ctx->dcp.mcs_ctx.station_name = "et200ecopn.dev5";
@@ -56,7 +57,7 @@ static void app_rta_timer_handler(void* arg) {
       next_time = inst->ctx->dcp.mcs_ctx.response_delay + 100;  // we need some mercy time
       break;
     case APP_STATE_DCP_IDENT:
-      printf("dcp state\n");
+      printf(">>> dcp state\n");
       // make sure that ident.req context is cleared, and device should be located in the db
       assert(inst->ctx->dcp.mcs_ctx.req_options_bitmap == 0);
       assert(inst->ctx->dcp.mcs_ctx.state == DCP_STATE_IDLE);
@@ -133,7 +134,7 @@ static void app_rta_timer_handler(void* arg) {
       inst->state = APP_STATE_DCP_SET;
       break;
     case APP_STATE_DCP_SET:
-      printf("dcp set state\n");
+      printf(">>> dcp set state\n");
 
       inst->ctx->dcp.ucs_ctx.xid = 0xFFAA;
       inst->ctx->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BITMAP_IP_PARAMETER;
@@ -165,7 +166,7 @@ static void app_rta_timer_handler(void* arg) {
       inst->state = APP_STATE_PRM;
       break;
     case APP_STATE_PRM:
-      printf("prm state\n");
+      printf(">>> prm state\n");
       inst->state = APP_STATE_RUN;
       break;
     case APP_STATE_RUN:
