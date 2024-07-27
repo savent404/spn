@@ -26,9 +26,17 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
   pbuf_remove_header(p, sizeof(*hdr));
 
   for (idx = 0; idx < DCP_BITMAP_NUM && options; idx++) {
-    const uint16_t type = dcp_option_bit_offset(idx);
-    uint16_t qual = qualifer & (1 << idx) ? SPN_HTONS(DCP_QUALIFER_PERSISTENT) : SPN_HTONS(DCP_QUALIFER_TEMP);
+    uint16_t type;
+    uint16_t qual;
     struct dcp_block_gen* block = PTR_OFFSET(hdr, offset, struct dcp_block_gen);
+
+    if ((options & (1 << idx)) == 0) {
+      continue;
+    }
+
+    type = dcp_option_bit_offset(idx);
+    qual = qualifer & (1 << idx) ? SPN_HTONS(DCP_QUALIFER_PERSISTENT) : SPN_HTONS(DCP_QUALIFER_TEMP);
+    block = PTR_OFFSET(hdr, offset, struct dcp_block_gen);
     options &= ~(1 << idx);
 
     SPN_UNUSED_ARG(ctx);
