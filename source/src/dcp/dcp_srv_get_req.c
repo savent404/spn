@@ -50,7 +50,7 @@ int dcp_srv_get_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, struct pbuf* p
   hdr = (struct dcp_header*)p->payload;
   hdr->service_id = DCP_SRV_ID_GET;
   hdr->service_type = DCP_SRV_TYPE_REQ;
-  hdr->xid = SPN_HTONS(ucs->xid);
+  hdr->xid = SPN_HTONL(ucs->xid);
   hdr->response_delay = 0;
   hdr->data_length = SPN_HTONS(offset);
 
