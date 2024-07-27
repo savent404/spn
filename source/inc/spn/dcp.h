@@ -357,8 +357,10 @@ int dcp_block_next(struct dcp_block_gen* block);
 const char* dcp_option_name(uint8_t option, uint8_t sub_option);
 int dcp_option_bitmap(uint8_t option, uint8_t sub_option);
 uint16_t dcp_option_bit_offset(uint32_t offset);
-void _dcp_srv_set_req_timeout(
-    void* arg); /* this function be opened cause it is used in multiple source file. do not use it in any where */
+
+/* this function be opened cause it is used in multiple source file. do not use it in any where */
+void _dcp_srv_set_req_timeout(void* arg);
+void _dcp_srv_get_req_timeout(void* arg);
 /**
  * @}
  */
@@ -432,10 +434,10 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
                       uint16_t length,
                       uint16_t* ex_itface_id);
 
-int dcp_srv_get_req();
+int dcp_srv_get_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbuf* p);
 int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
 int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
-int dcp_srv_get_cnf();
+int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t length);
 
 int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbuf* p);
 int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);

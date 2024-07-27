@@ -14,6 +14,7 @@ enum app_state {
   APP_STATE_INIT,
   APP_STATE_DCP_IDENT,
   APP_STATE_DCP_SET,
+  APP_STATE_DCP_CONFIRM,
   APP_STATE_PRM,
   APP_STATE_RUN,
 };
@@ -168,6 +169,39 @@ static void app_rta_timer_handler(void* arg) {
 
         pbuf_free(p);
       }
+
+      next_time = SPN_DCP_UC_TIMEOUT;
+      inst->state = APP_STATE_DCP_CONFIRM;
+      break;
+    case APP_STATE_DCP_CONFIRM:
+      printf(">>> dcp confirm state\n");
+      inst->ctx->dcp.ucs_ctx.req_options_bitmap = (1 << DCP_BITMAP_IP_MAC_ADDRESS) | (1 << DCP_BITMAP_IP_PARAMETER) |
+                                                  (1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION);
+      inst->ctx->dcp.ucs_ctx.xid = 0xFFAA;
+
+      {
+        struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
+        struct spn_iface* iface;
+        struct eth_addr addr;
+
+        res = dcp_src_get_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, p);
+        assert(res == SPN_OK);
+
+        /* TODO: find the right port to send package */
+        res = db_get_port_object(&inst->ctx->db, 0, 0, DB_ID_IFACE, &obj);
+        assert(res == SPN_OK);
+        iface = obj->data.ptr;
+
+        res = db_get_interface_object(&inst->ctx->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_MAC_ADDR, &obj);
+        assert(res == SPN_OK);
+        memcpy(addr.addr, obj->data.mac, sizeof(addr.addr));
+
+        res = dcp_output(&inst->ctx->dcp, iface, &addr, p);
+        assert(res == SPN_OK);
+
+        pbuf_free(p);
+      }
+      next_time = SPN_DCP_UC_TIMEOUT;
       inst->state = APP_STATE_PRM;
       break;
     case APP_STATE_PRM:
