@@ -94,6 +94,7 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
       break;
     case FRAME_ID_DCP_GET_SET:
       /* TODO: if in operating mode, should ignore this request */
+      SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: get/set request: %02d:%02d\n", hdr->service_id, hdr->service_type);
       if (hdr->service_id == DCP_SRV_ID_GET && hdr->service_type == DCP_SRV_TYPE_REQ) {
         struct dcp_ucr_ctx ucr;
         res = dcp_srv_get_ind(ctx, &ucr, hdr, rtc_pdu->tot_len - 2);
@@ -124,13 +125,13 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
         pbuf_add_header(out, SPN_PDU_HDR_SIZE);
 
       } else if (hdr->service_id == DCP_SRV_ID_SET && hdr->service_type == DCP_SRV_TYPE_RES) {
-        /* TODO: implement this */
         res = dcp_srv_set_cnf(ctx, &ctx->ucs_ctx, hdr, rtc_pdu->tot_len - 2);
         if (res != SPN_OK) {
           return res;
         }
         /* TODO: callback or notify set.req is done */
       } else if (hdr->service_id == DCP_SRV_ID_GET && hdr->service_type == DCP_SRV_TYPE_RES) {
+        /* TODO: implement this */
         return -SPN_ENOSYS;
       } else {
         return -SPN_EINVAL;
