@@ -98,6 +98,15 @@
 #endif
 
 /**
+ * Base address of external interface
+ *
+ * @note used for accessing external interface(device) as a controller
+ */
+#ifndef SPN_EXTERNAL_INTERFACE_BASE
+#define SPN_EXTERNAL_INTERFACE_BASE 0x1000
+#endif
+
+/**
  * @brief SPN GLOBAL DEBUG OPTION
  * @details set as LWIP_DBG_ON to enable it
  */

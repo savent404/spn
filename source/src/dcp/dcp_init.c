@@ -8,7 +8,7 @@ void dcp_init(struct dcp_ctx* ctx, struct db_ctx* db) {
   memset(ctx, 0, sizeof(*ctx));
   ctx->db = db;
 
-  ctx->cnf_interface_id = 100;
-  ctx->cnf_delay_factory = 1;
-  ctx->cnf_xid = 0x12345678;
+  ctx->mcs_ctx.xid = 0x88000000;
+  ctx->mcs_ctx.response_delay_factory = 1;
+  ctx->mcs_ctx.response_interface_id = SPN_EXTERNAL_INTERFACE_BASE;
 }

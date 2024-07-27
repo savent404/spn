@@ -261,6 +261,8 @@ struct dcp_mcs_ctx {
   uint32_t req_options_bitmap;
   uint16_t response_delay_factory;
   uint16_t response_delay;
+  uint16_t response_interface_id; /* tell ident_rsp should place it in which interface, should start at \c
+                                     SPN_EXTERNAL_INTERFACE_BASE */
   struct dcp_ctx* dcp_ctx;
   enum dcp_state state;
   /** So many filter we should support, just pick essential */
@@ -304,11 +306,6 @@ struct dcp_ctx {
   struct db_ctx* db;
   struct dcp_mcr_ctx mcr_ctx[SPN_CONF_DCP_MAX_IDENT_RSP_INST];
   struct dcp_mcs_ctx mcs_ctx;
-
-  /** Internal variables used when acting controller */
-  uint32_t cnf_xid;          /* used to filter response that is not belong to this request */
-  uint32_t cnf_interface_id; /* auto assigned interface id */
-  uint16_t cnf_delay_factory;
 
   /** Internal physical layer attributes */
 };

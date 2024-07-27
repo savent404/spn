@@ -25,6 +25,7 @@ TEST_F(Ddcp, ident_req_selector) {
   dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BITMAP_ALL_SELECTOR;
   dcp.mcs_ctx.xid = 0x1000001;
   dcp.mcs_ctx.response_delay_factory = 1;
+  dcp.mcs_ctx.response_interface_id = SPN_EXTERNAL_INTERFACE_BASE + 0;
 
   EXPECT_EQ(dcp_srv_ident_req(&dcp, &dcp.mcs_ctx, p), SPN_OK);
 
@@ -361,8 +362,8 @@ TEST_F(Ddcp, ident_cnf_invalid) {
   auto frame = parser(test_data::dcp::kDcpIdentRespX208);
 
   /** assume that new interface is registered in 0x1000 */
-  dcp.cnf_interface_id = 0x1000;
-  dcp.cnf_xid = 0xBEEF;
+  dcp.mcs_ctx.response_interface_id = 0x1000;
+  dcp.mcs_ctx.xid = 0xBEEF;
 
   /* drop first 16 bytes */
   frame->erase(frame->begin(), frame->begin() + 16);
@@ -374,8 +375,8 @@ TEST_F(Ddcp, ident_cnf_ecopn) {
   auto frame = parser(test_data::dcp::kDcpIdentRespEcoPn);
 
   /** assume that new interface is registered in 0x1000 */
-  dcp.cnf_interface_id = 0x1000;
-  dcp.cnf_xid = 0x0001'94EF;
+  dcp.mcs_ctx.response_interface_id = 0x1000;
+  dcp.mcs_ctx.xid = 0x0001'94EF;
 
   /* drop first 16 bytes */
   frame->erase(frame->begin(), frame->begin() + 16);
@@ -586,6 +587,7 @@ TEST_F(Cdcp, ident_req) {
   controller.dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BITMAP_ALL_SELECTOR;
   controller.dcp.mcs_ctx.xid = 0xAABBCCDD;
   controller.dcp.mcs_ctx.response_delay_factory = 1;
+  controller.dcp.mcs_ctx.response_interface_id = SPN_EXTERNAL_INTERFACE_BASE + 0;
   EXPECT_EQ(dcp_srv_ident_req(&controller.dcp, &controller.dcp.mcs_ctx, p), 0);
   pbuf_remove_header(p, SPN_PDU_HDR_SIZE);
 

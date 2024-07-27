@@ -40,6 +40,11 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
     return -SPN_EINVAL;
   }
 
+  if (mcs->response_interface_id < SPN_EXTERNAL_INTERFACE_BASE) {
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req: invalid response interface id %d\n", mcs->response_interface_id);
+    return -SPN_EINVAL;
+  }
+
   pbuf_remove_header(p, SPN_PDU_HDR_SIZE + sizeof(*hdr));
 
   for (idx = 0; idx < DCP_BITMAP_NUM && options; idx++) {

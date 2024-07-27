@@ -12,8 +12,8 @@
 struct spn_cfg {
   bool reserved;
 
-  const char *station_name;
-  const char *vendor_name;
+  const char* station_name;
+  const char* vendor_name;
   uint16_t vendor_id;
   uint16_t device_id;
 

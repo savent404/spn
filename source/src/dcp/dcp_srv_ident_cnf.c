@@ -23,7 +23,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length) {
     return -SPN_EBADMSG;
   }
 
-  if (ctx->cnf_xid != SPN_NTOHL(hdr->xid)) {
+  if (ctx->mcs_ctx.xid != SPN_NTOHL(hdr->xid)) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: invalid xid\n");
     return -SPN_ENXIO;
   }
@@ -150,12 +150,12 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length) {
   }
 
   /* Find empty interface and assigned new interface_id */
-  res = db_add_interface(ctx->db, ctx->cnf_interface_id);
+  res = db_add_interface(ctx->db, ctx->mcs_ctx.response_interface_id);
   if (res < 0) {
     goto invalid_ret;
   }
 
-  res = db_get_interface(ctx->db, ctx->cnf_interface_id, &intf);
+  res = db_get_interface(ctx->db, ctx->mcs_ctx.response_interface_id, &intf);
   if (res < 0 || !intf) {
     goto invalid_ret;
   }
@@ -166,7 +166,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx, void* payload, uint16_t length) {
     goto cleanup_interface;
   }
 
-  ctx->cnf_interface_id++;
+  ctx->mcs_ctx.response_interface_id++;
   db_del_interface(&interface);
   return SPN_OK;
 cleanup_interface:
