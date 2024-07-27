@@ -13,6 +13,8 @@
 #include "lwip/tcpip.h"
 #include "lwip/udp.h"
 
+extern int app_init(struct spn_ctx* ctx, const struct spn_cfg* cfg);
+
 static void tcpip_init_cb(void* arg);
 static void parse_args(int argc, char** argv);
 
@@ -39,12 +41,14 @@ int main(int argc, char** argv) {
   sys_sem_wait(&stack_init_sem);
   sys_sem_free(&stack_init_sem);
 
+  app_init(&g_spn_ctx, &g_spn_cfg);
+
   while (1) {
     /* default_netif_poll(); */
     LOCK_TCPIP_CORE();
     { sys_check_timeouts(); }
     UNLOCK_TCPIP_CORE();
-    sys_msleep(1);
+    sys_msleep(10);
   }
 
   /* default_netif_shutdown(); */
