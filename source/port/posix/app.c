@@ -38,7 +38,7 @@ static void app_rta_timer_handler(void* arg) {
       inst->ctx->dcp.mcs_ctx.station_name = "et200ecopn.dev5";
       inst->ctx->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION;
       inst->ctx->dcp.mcs_ctx.response_delay_factory = 1;
-      inst->ctx->dcp.mcs_ctx.xid = 0x88000001;
+      inst->ctx->dcp.mcs_ctx.xid = 0x88000000;
       {
         struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
         struct eth_addr dst_addr = {.addr = {0x01, 0x0e, 0xcf, 00, 00, 00}};
