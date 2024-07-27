@@ -52,7 +52,7 @@ static void app_rta_timer_handler(void* arg) {
         pbuf_free(p);
       }
       inst->state = APP_STATE_DCP;
-      next_time = 500;  // device should response in 400ms, but we need some mercy time
+      next_time = inst->ctx->dcp.mcs_ctx.response_delay + 100;  // we need some mercy time
       break;
     case APP_STATE_DCP:
       printf("dcp state\n");

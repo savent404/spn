@@ -16,6 +16,7 @@ static void dcp_srv_ident_req_cb(void* arg) {
   SPN_ASSERT("dcp_srv_ident_req_cb: invalid mcs", mcs != NULL);
   SPN_ASSERT("dcp_srv_ident_req_cb: invalid ctx", ctx != NULL);
 
+  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req_cb: xid %x\n", mcs->xid);
   /* Devices are already added to db by dcp_srv_ident_cnf */
   mcs->state = DCP_STATE_IDLE;
   mcs->req_options_bitmap = 0;
@@ -120,7 +121,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
    *
    * @note Fuck the vendors, that giving factor(0) some meanings.
    */
-  mcs->response_delay = mcs->response_delay_factory > 1 ? ((1999 + mcs->response_delay_factory * 10) / 1000) : 400;
+  mcs->response_delay = mcs->response_delay_factory > 1 ? ((1999 + mcs->response_delay_factory * 10) / 1000 * 1000) : 400;
   mcs->dcp_ctx = ctx;
   mcs->state = DCP_STATE_IDENT_REQ;
   mcs->dcp_ctx = ctx;
