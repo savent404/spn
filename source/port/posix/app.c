@@ -175,11 +175,8 @@ static void app_rta_timer_handler(void* arg) {
       break;
     case APP_STATE_DCP_CONFIRM:
       printf(">>> dcp confirm state\n");
-      inst->ctx->dcp.ucs_ctx.req_options_bitmap = 
-	      //(1 << DCP_BITMAP_IP_MAC_ADDRESS) | 
-	      (1 << DCP_BITMAP_IP_PARAMETER) |
-              (1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION) |
-	      0;
+      inst->ctx->dcp.ucs_ctx.req_options_bitmap = (1 << DCP_BITMAP_IP_MAC_ADDRESS) | (1 << DCP_BITMAP_IP_PARAMETER) |
+                                                  (1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION);
       inst->ctx->dcp.ucs_ctx.xid = 0xFFAA;
 
       {
