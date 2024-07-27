@@ -110,6 +110,7 @@ static void app_rta_timer_handler(void* arg) {
           printf("ip address not found\n");
         } else {
           printf("device ip: %s\n", ip4addr_ntoa((ip4_addr_t*)&obj->data.u32));
+          inst->ctx->dcp.ucs_ctx.ip_addr = obj->data.u32;
         }
 
         res = db_get_object(&iface->objects, DB_ID_IP_MASK, &obj);
@@ -117,6 +118,7 @@ static void app_rta_timer_handler(void* arg) {
           printf("subnet mask not found\n");
         } else {
           printf("subnet mask: %s\n", ip4addr_ntoa((ip4_addr_t*)&obj->data.u32));
+          inst->ctx->dcp.ucs_ctx.ip_mask = obj->data.u32;
         }
 
         res = db_get_object(&iface->objects, DB_ID_IP_GATEWAY, &obj);
@@ -124,6 +126,7 @@ static void app_rta_timer_handler(void* arg) {
           printf("gateway not found\n");
         } else {
           printf("gateway: %s\n", ip4addr_ntoa((ip4_addr_t*)&obj->data.u32));
+          inst->ctx->dcp.ucs_ctx.ip_gw = obj->data.u32;
         }
       }
 
@@ -131,6 +134,34 @@ static void app_rta_timer_handler(void* arg) {
       break;
     case APP_STATE_DCP_SET:
       printf("dcp set state\n");
+
+      inst->ctx->dcp.ucs_ctx.xid = 0xFFAA;
+      inst->ctx->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BITMAP_IP_PARAMETER;
+      {
+        uint8_t i = inst->ctx->dcp.ucs_ctx.ip_addr >> 24;
+        i = (i - 20 + 1) % 20 + 20;  // range: [20,40), incremental
+        inst->ctx->dcp.ucs_ctx.ip_addr &= 0x00FFFFFF;
+        inst->ctx->dcp.ucs_ctx.ip_addr |= i << 24;
+      }
+      {
+        struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
+        struct db_object* obj;
+        struct spn_netif* iface;
+        res = dcp_srv_set_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, p);
+        assert(res == SPN_OK);
+
+        res = db_get_interface_object(&inst->ctx->db, 0, DB_ID_IFACE, &obj);
+        assert(res == SPN_OK);
+        iface = obj->data.ptr;
+
+        res = db_get_interface_object(&inst->ctx->db, 0, DB_ID_IP_MAC_ADDR, &obj);
+        assert(res == SPN_OK);
+
+        res = dcp_output(&inst->ctx->dcp, iface, (const struct eth_addr*)obj->data.mac, p);
+        assert(res == SPN_OK);
+
+        pbuf_free(p);
+      }
       inst->state = APP_STATE_PRM;
       break;
     case APP_STATE_PRM:
