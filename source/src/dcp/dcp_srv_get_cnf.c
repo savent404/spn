@@ -10,6 +10,7 @@
 
 static inline void object_view_update_req(struct db_object* object) {
   /* TODO: indicate observer that value has been changed */
+  SPN_UNUSED_ARG(object);
 }
 
 int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload, uint16_t length) {
@@ -111,6 +112,9 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
         db_dup_str2obj(object, PTR_OFFSET(block->data, 2, char), block_length - 2);
         break;
       }
+      default:
+        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "Unhandled option:%04x\n", option);
+        break;
     }
   }
 

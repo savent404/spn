@@ -175,16 +175,20 @@ static void app_rta_timer_handler(void* arg) {
       break;
     case APP_STATE_DCP_CONFIRM:
       printf(">>> dcp confirm state\n");
-      inst->ctx->dcp.ucs_ctx.req_options_bitmap = (1 << DCP_BITMAP_IP_MAC_ADDRESS) | (1 << DCP_BITMAP_IP_PARAMETER) |
-                                                  (1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION);
+      inst->ctx->dcp.ucs_ctx.req_options_bitmap = 
+	      //(1 << DCP_BITMAP_IP_MAC_ADDRESS) | 
+	      (1 << DCP_BITMAP_IP_PARAMETER) |
+              (1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION) |
+	      0;
       inst->ctx->dcp.ucs_ctx.xid = 0xFFAA;
 
       {
         struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
+        struct db_object* obj;
         struct spn_iface* iface;
         struct eth_addr addr;
 
-        res = dcp_src_get_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, p);
+        res = dcp_srv_get_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, p);
         assert(res == SPN_OK);
 
         /* TODO: find the right port to send package */
