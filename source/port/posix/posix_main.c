@@ -12,6 +12,7 @@
 #include "lwip/etharp.h"
 #include "lwip/tcpip.h"
 #include "lwip/udp.h"
+#include "app.h"
 
 extern int app_init(struct spn_ctx* ctx, const struct spn_cfg* cfg);
 

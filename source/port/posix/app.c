@@ -6,6 +6,7 @@
 #include <spn/db.h>
 #include <spn/dcp.h>
 #include <spn/spn.h>
+#include "app.h"
 #include <stdio.h>
 #include <string.h>
 
