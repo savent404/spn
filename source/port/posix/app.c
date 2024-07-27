@@ -1,3 +1,4 @@
+#include "app.h"
 #include <assert.h>
 #include <lwip/debug.h>
 #include <lwip/ip.h>
@@ -6,7 +7,6 @@
 #include <spn/db.h>
 #include <spn/dcp.h>
 #include <spn/spn.h>
-#include "app.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -25,6 +25,7 @@ struct app_instance {
 
 static void app_rta_timer_handler(void* arg) {
   struct app_instance* inst = (struct app_instance*)arg;
+  int res;
   unsigned next_time = 1000;
   printf("rta timer handler\n");
 
@@ -32,11 +33,22 @@ static void app_rta_timer_handler(void* arg) {
     case APP_STATE_INIT:
       /** Discovery DCP devices, filted by station name */
       // TODO: topology should be well defined
-      inst->ctx->dcp.mcs_ctx.station_name = "et200ecopn.dev3";
+      inst->ctx->dcp.mcs_ctx.station_name = "et200ecopn.dev5";
       inst->ctx->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION;
       {
         struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
+        struct eth_addr dst_addr = {.addr = {0x01, 0x0e, 0xcf, 00, 00, 00}};
+        unsigned i;
         dcp_srv_ident_req(&inst->ctx->dcp, &inst->ctx->dcp.mcs_ctx, p);
+
+        for (i = 0; i < ARRAY_SIZE(inst->ctx->ifaces[0]); i++) {
+          spn_iface_t* iface = &inst->ctx->ifaces[0][i];
+          if (!iface->netif.output) {
+            continue;
+          }
+          res = dcp_output(&inst->ctx->dcp, iface, &dst_addr, p);
+          assert(res == SPN_OK);
+        }
         pbuf_free(p);
       }
       next_time = 500;  // device should response in 400ms, but we need some mercy time
@@ -52,7 +64,6 @@ static void app_rta_timer_handler(void* arg) {
         struct db_interface* iface;
         struct db_object* obj;
         char* station_name;
-        int res;
 
         res = db_get_interface(&inst->ctx->db, SPN_EXTERNAL_INTERFACE_BASE + 1, &iface);
         assert(res == SPN_OK);
@@ -124,7 +135,9 @@ static void app_rta_timer_handler(void* arg) {
       break;
   }
 
+  LOCK_TCPIP_CORE();
   sys_timeout(next_time, app_rta_timer_handler, inst);
+  UNLOCK_TCPIP_CORE();
 }
 
 int app_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
@@ -136,6 +149,8 @@ int app_init(struct spn_ctx* ctx, const struct spn_cfg* cfg) {
   app_inst.state = APP_STATE_INIT;
 
   // go to timer context
+  LOCK_TCPIP_CORE();
   sys_timeout(1000, app_rta_timer_handler, &app_inst);
+  UNLOCK_TCPIP_CORE();
   return 0;
 }
