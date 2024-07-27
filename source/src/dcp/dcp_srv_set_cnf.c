@@ -60,6 +60,7 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
 
   ucs->state = DCP_STATE_IDLE;
   ucs->xid++;
+  SPN_DEBUGM_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: done, channel timeout...\n");
   sys_untimeout(_dcp_srv_set_req_timeout, ucs);
 
   return res;
