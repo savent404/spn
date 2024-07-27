@@ -151,7 +151,8 @@ static void app_rta_timer_handler(void* arg) {
         res = dcp_srv_set_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, p);
         assert(res == SPN_OK);
 
-        res = db_get_interface_object(&inst->ctx->db, 0, DB_ID_IFACE, &obj);
+        /* TODO: find the right port to send package */
+        res = db_get_port_object(&inst->ctx->db, 0, 0, DB_ID_IFACE, &obj);
         assert(res == SPN_OK);
         iface = obj->data.ptr;
 
