@@ -159,7 +159,7 @@ static void app_rta_timer_handler(void* arg) {
         assert(res == SPN_OK);
         iface = obj->data.ptr;
 
-        res = db_get_interface_object(&inst->ctx->db, 0, DB_ID_IP_MAC_ADDR, &obj);
+        res = db_get_interface_object(&inst->ctx->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_MAC_ADDR, &obj);
         assert(res == SPN_OK);
         memcpy(addr.addr, obj->data.mac, sizeof(addr.addr));
 
