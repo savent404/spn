@@ -27,7 +27,7 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
   dcp_length = SPN_NTOHS(hdr->data_length);
 
   for (; offset < dcp_length + sizeof(*hdr); offset += dcp_block_next(block)) {
-    uint16_t err;
+    uint8_t err;
     uint8_t opt, sub_opt;
     int idx;
     block = PTR_OFFSET(payload, offset, struct dcp_block_gen);
@@ -36,13 +36,13 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
       SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: invalid block, want a response block\n");
       continue;
     }
-    if (block->length != 4) {
+    if (block->length != 3) {
       SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: invalid block length\n");
       continue;
     }
     opt = *PTR_OFFSET(block->data, 0, uint8_t);
     sub_opt = *PTR_OFFSET(block->data, 1, uint8_t);
-    err = SPN_NTOHS(*PTR_OFFSET(block->data, 2, uint16_t));
+    err = SPN_NTOHS(*PTR_OFFSET(block->data, 2, uint8_t));
 
     idx = dcp_option_bitmap(opt, sub_opt);
     if (idx < 0) {
