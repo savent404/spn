@@ -31,6 +31,9 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
     struct dcp_block_gen* block = PTR_OFFSET(hdr, offset, struct dcp_block_gen);
     options &= ~(1 << idx);
 
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.req: packing type: %s(%04x)...\n", dcp_option_name(type >> 8, type & 0xFF),
+                  type);
+
     switch (type) {
       case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_PARAM):
         block->length = 14;
@@ -59,6 +62,9 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
         block->length = 2;
         qual = ucs_ctx->reset_to_factory_qualifer;
         break;
+      default:
+        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "Unhandled type: %04x\n", type);
+        continue;
     }
 
     /* first 2 bytes of payload always QualiferBlock */
