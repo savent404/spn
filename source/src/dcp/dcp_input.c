@@ -124,15 +124,19 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
         pbuf_add_header(out, SPN_PDU_HDR_SIZE);
 
       } else if (hdr->service_id == DCP_SRV_ID_SET && hdr->service_type == DCP_SRV_TYPE_RES) {
-        /* TODO: implement this */
         return -SPN_ENOSYS;
       } else if (hdr->service_id == DCP_SRV_ID_GET && hdr->service_type == DCP_SRV_TYPE_RES) {
         /* TODO: implement this */
-        return -SPN_ENOSYS;
+        res = dcp_srv_set_cnf(ctx, &ctx->ucs_ctx, hdr, rtc_pdu->tot_len - 2);
+        if (res != SPN_OK) {
+          return res;
+        }
+        /* TODO: callback or notify set.req is done */
       } else {
         return -SPN_EINVAL;
       }
 
+      /* If we need to reply */
       if (out) {
         struct db_interface* db_interface;
         struct db_port* db_port;

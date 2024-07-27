@@ -2,6 +2,7 @@
 
 #include <spn/config.h>
 #include <spn/db.h>
+#include <spn/pdu.h>
 
 #include <netif/ethernet.h>
 #include <spn/iface.h>
@@ -11,12 +12,23 @@
 #endif
 
 #ifndef SPN_DCP_MIN_SIZE
-#define SPN_DCP_MIN_SIZE 42
+#define SPN_DCP_MIN_SIZE (SPN_RTC_MINIMAL_FRAME_SIZE - SPN_PDU_HDR_SIZE)
+#endif
+
+/**
+ * @brief timeout of set/get request
+ */
+#ifndef SPN_DCP_UC_TIMEOUT
+#define SPN_DCP_UC_TIMEOUT 1000
 #endif
 
 enum dcp_service_id { DCP_SRV_ID_GET = 0x03, DCP_SRV_ID_SET = 0x04, DCP_SRV_ID_IDENT = 0x05, DCP_SRV_ID_HELLO = 0x06 };
 
 enum dcp_service_type { DCP_SRV_TYPE_REQ = 0x00, DCP_SRV_TYPE_RES = 0x01, DCP_SRV_TYPE_ERR = 0x05 };
+
+enum dcp_qualifer_type { DCP_QUALIFER_TEMP = 0x00, DCP_QUALIFER_PERSISTENT = 0x01 };
+
+enum dcp_signal_type { DCP_SIGNAL_LED_FLASH = 0x0004 };
 
 enum dcp_option {
   DCP_OPTION_IP = 0x01,
@@ -239,11 +251,14 @@ struct dcp_ucs_ctx {
   uint32_t req_options_bitmap;   /* set if option is requested */
   uint16_t req_qualifier_bitmap; /* set if persistent mode is requested */
   enum dcp_block_error resp_errors[DCP_BITMAP_NUM];
+  enum dcp_state state;
 
   /* set if option is requested */
   uint32_t ip_addr;
   uint32_t ip_mask;
   uint32_t ip_gw;
+  uint16_t factory_reset_qualifer;
+  uint16_t reset_to_factory_qualifer;
   const char* station_name;
 };
 
@@ -322,6 +337,7 @@ struct dcp_ctx {
   struct db_ctx* db;
   struct dcp_mcr_ctx mcr_ctx[SPN_CONF_DCP_MAX_IDENT_RSP_INST];
   struct dcp_mcs_ctx mcs_ctx;
+  struct dcp_ucs_ctx ucs_ctx;
 
   /** Internal physical layer attributes */
 };
@@ -341,6 +357,8 @@ int dcp_block_next(struct dcp_block_gen* block);
 const char* dcp_option_name(uint8_t option, uint8_t sub_option);
 int dcp_option_bitmap(uint8_t option, uint8_t sub_option);
 uint16_t dcp_option_bit_offset(uint32_t offset);
+void _dcp_srv_set_req_timeout(
+    void* arg); /* this function be opened cause it is used in multiple source file. do not use it in any where */
 /**
  * @}
  */
@@ -408,7 +426,11 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* pa
  * @returns 0 on success, negative value on error
  */
 int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t length);
-int dcp_srv_ident_cnf(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs_ctx, void* payload, uint16_t length, uint16_t *ex_itface_id);
+int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
+                      struct dcp_mcs_ctx* mcs_ctx,
+                      void* payload,
+                      uint16_t length,
+                      uint16_t* ex_itface_id);
 
 int dcp_srv_get_req();
 int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
@@ -418,7 +440,7 @@ int dcp_srv_get_cnf();
 int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbuf* p);
 int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
 int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
-int dcp_srv_set_cnf();
+int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t length);
 
 int dcp_srv_hello_req();
 int dcp_srv_hello_ind();
