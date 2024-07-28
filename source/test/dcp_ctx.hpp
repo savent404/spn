@@ -29,7 +29,8 @@ struct dcp_instance {
     db_add_port(interface, 0);
   }
 
-  void db_info_setup(uint32_t ip,
+  void db_info_setup(int interface_id,
+                     uint32_t ip,
                      const eth_addr& mac,
                      const char* station,
                      const char* vendor,
@@ -42,7 +43,7 @@ struct dcp_instance {
     db_value_t val;
     int res;
 
-    res = db_get_interface(&db, 0, &interface);
+    res = db_get_interface(&db, interface_id, &interface);
     assert(res == SPN_OK);
 
     res = db_get_port(interface, 0, &port);
