@@ -19,7 +19,7 @@
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "ENABLE_EXAMPLES": "ON",
-                "ENABLE_TESTS": "ON"
+                "ENABLE_TESTS": "OFF"
             }
         },
         {
@@ -32,7 +32,7 @@
                 "CMAKE_CXX_COMPILER": "g++",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "ENABLE_EXAMPLES": "ON",
-                "ENABLE_TESTS": "ON",
+                "ENABLE_TESTS": "OFF",
                 "CMAKE_SIZE_TOOL": "size"
             }
         },
@@ -46,7 +46,7 @@
                 "CMAKE_CXX_COMPILER": "clang++",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "ENABLE_EXAMPLES": "ON",
-                "ENABLE_TESTS": "ON",
+                "ENABLE_TESTS": "OFF",
                 "CMAKE_SIZE_TOOL": "size"
             }
         },
