@@ -170,4 +170,126 @@ TEST_F(DcpPatner, ident_multiple) {
   ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, 0), SPN_OK);
 }
 
+TEST_F(DcpPatner, ident_ind_failpath) {
+  static char buf[1500];
+  struct dcp_mcr_ctx mcr;
+  uint16_t buf_len;
+
+  auto fn_clean_req = [&]() {
+    tain_buffer(buf, 1500);
+    controller->dcp.mcs_ctx.req_options_bitmap = 0;
+    controller->dcp.mcs_ctx.state = DCP_STATE_IDLE;
+    controller->dcp.mcs_ctx.xid++;
+    memset(&mcr, 0, sizeof(mcr));
+  };
+
+  // pass
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), SPN_OK);
+
+  // due to payload length is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, 13), -SPN_EBADMSG);
+
+  // due to option is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  buf[12] = 0x00;
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len), -SPN_EAGAIN);
+
+  // due to option is empty
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  buf[11] = 0x00;
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), -SPN_EAGAIN);
+
+  // due to station name is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
+  controller->dcp.mcs_ctx.station_name = "devicefooooo";
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), -SPN_EAGAIN);
+
+  // due to alias name is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_ALIAS;
+  controller->dcp.mcs_ctx.alias_name = "port-001.devicE";
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), -SPN_EAGAIN);
+  // due to alias name is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_ALIAS;
+  controller->dcp.mcs_ctx.alias_name = "port-002.device";
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), -SPN_EAGAIN);
+
+  // due to vendor name is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
+  controller->dcp.mcs_ctx.station_name = "device";
+  controller->dcp.mcs_ctx.req_options_bitmap |= 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_VENDOR;
+  controller->dcp.mcs_ctx.vendor_name = "iodfooo";
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), -SPN_EAGAIN);
+
+  // due to ip parameter(gw) is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
+  controller->dcp.mcs_ctx.station_name = "device";
+  controller->dcp.mcs_ctx.req_options_bitmap |= 1 << DCP_BIT_IDX_IP_PARAMETER;
+  controller->dcp.mcs_ctx.ip_addr = 0x0a000001;
+  controller->dcp.mcs_ctx.ip_mask = 0x00FFFFFF;
+  controller->dcp.mcs_ctx.ip_gw = 0x0a000002;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), -SPN_EAGAIN);
+
+  // due to ip parameter(mask) is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
+  controller->dcp.mcs_ctx.station_name = "device";
+  controller->dcp.mcs_ctx.req_options_bitmap |= 1 << DCP_BIT_IDX_IP_PARAMETER;
+  controller->dcp.mcs_ctx.ip_addr = 0x0a000001;
+  controller->dcp.mcs_ctx.ip_mask = 0x00FFFFFE;
+  controller->dcp.mcs_ctx.ip_gw = 0;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), -SPN_EAGAIN);
+
+  // due to ip parameter(addr) is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
+  controller->dcp.mcs_ctx.station_name = "device";
+  controller->dcp.mcs_ctx.req_options_bitmap |= 1 << DCP_BIT_IDX_IP_PARAMETER;
+  controller->dcp.mcs_ctx.ip_addr = 0x0a000002;
+  controller->dcp.mcs_ctx.ip_mask = 0x00FFFFFF;
+  controller->dcp.mcs_ctx.ip_gw = 0;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), -SPN_EAGAIN);
+
+  // due to device id
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
+  controller->dcp.mcs_ctx.station_name = "device";
+  controller->dcp.mcs_ctx.req_options_bitmap |= 1 << DCP_BIT_IDX_DEV_PROP_DEVICE_ID;
+  controller->dcp.mcs_ctx.device_id = 0x1235;
+  controller->dcp.mcs_ctx.vendor_id = 0x5678;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), -SPN_EAGAIN);
+
+  // due to vendor id is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
+  controller->dcp.mcs_ctx.station_name = "device";
+  controller->dcp.mcs_ctx.req_options_bitmap |= 1 << DCP_BIT_IDX_DEV_PROP_DEVICE_ID;
+  controller->dcp.mcs_ctx.device_id = 0x1234;
+  controller->dcp.mcs_ctx.vendor_id = 0x5679;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), -SPN_EAGAIN);
+}
+
 TEST_F(DcpPatner, unspported_filter) {}

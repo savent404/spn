@@ -477,7 +477,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs_ctx, void* pa
  * @todo More filter need to be supported
  * @returns \c SPN_OK on success, negative value on error
  * @returns \c -SPN_EAGAIN if no response is expected
- * @returns \c -SPN_EMSGSIZE if the payload is too short
+ * @returns \c -SPN_EBADMSG if the payload is too short
  * @returns \c -SPN_EBUSY if no free MCR context
  */
 int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t length);

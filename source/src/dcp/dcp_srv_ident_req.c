@@ -57,14 +57,17 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
         block->length = 0;
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
+        SPN_ASSERT("station_name is NULL", mcs->station_name != NULL);
         block->length = strlen(mcs->station_name);
         memcpy(block->data, mcs->station_name, block->length);
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
+        SPN_ASSERT("alias_name is NULL", mcs->alias_name != NULL);
         block->length = strlen(mcs->alias_name);
         memcpy(block->data, mcs->alias_name, block->length);
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR):
+        SPN_ASSERT("vendor_name is NULL", mcs->vendor_name != NULL);
         block->length = strlen(mcs->vendor_name);
         memcpy(block->data, mcs->vendor_name, block->length);
         break;

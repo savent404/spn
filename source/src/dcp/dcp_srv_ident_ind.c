@@ -22,7 +22,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
 
   if (length < SPN_NTOHS(hdr->data_length) + sizeof(*hdr)) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: payload too short\n");
-    return -SPN_EMSGSIZE;
+    return -SPN_EBADMSG;
   }
   length = SPN_NTOHS(hdr->data_length) + sizeof(*hdr);
 
@@ -57,10 +57,6 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         break;
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
         data_len = SPN_NTOHS(block->length);
-        if (data_len != 12) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: invalid IP parameter length\n");
-          goto invalid_req;
-        }
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj);
         SPN_ASSERT("IP address must be set", res == SPN_OK);
         if (obj->data.u32 != *PTR_OFFSET(block->data, 0, uint32_t)) {
@@ -87,10 +83,6 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID):
         data_len = SPN_NTOHS(block->length);
-        if (data_len != 4) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: invalid device id length\n");
-          goto invalid_req;
-        }
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_VENDOR_ID, &obj);
         SPN_ASSERT("Vendor ID must be set", res == SPN_OK);
         if (SPN_HTONS(obj->data.u16) != *PTR_OFFSET(block->data, 0, uint16_t)) {
@@ -109,6 +101,15 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
         for (idx = 0; idx < SPN_CONF_MAX_PORT_PER_INTERFACE; idx++) {
+          struct db_interface* interface;
+          struct db_port* port;
+          res = db_get_interface(ctx->db, ctx->interface_id, &interface);
+          SPN_ASSERT("interface must be set", res == SPN_OK);
+          res = db_get_port(interface, idx, &port);
+          if (res != SPN_OK) {
+            /* never mind, just skip it */
+            continue;
+          }
           res = db_get_port_object(ctx->db, ctx->interface_id, idx, DB_ID_NAME_OF_PORT, &obj);
           SPN_ASSERT("port name must be set", res == SPN_OK);
           SPN_ASSERT("port name isn't static str(8)", db_object_len(obj) == 8 && db_is_static_object(obj));
