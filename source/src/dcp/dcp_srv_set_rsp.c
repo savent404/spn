@@ -69,7 +69,7 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
 
   hdr->service_id = DCP_SRV_ID_SET;
   hdr->service_type = DCP_SRV_TYPE_RES;
-  hdr->xid = SPN_HTONL(ucr_ctx->xid);
+  dcp_set_xid(hdr, ucr_ctx->xid);
   hdr->response_delay = SPN_HTONS(0);
   hdr->data_length = SPN_HTONS(offset - sizeof(*hdr));
 

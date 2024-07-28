@@ -22,8 +22,8 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
 
   hdr = PTR_OFFSET(payload, 0, struct dcp_header);
   dcp_length = SPN_NTOHS(hdr->data_length);
-  if (SPN_NTOHL(hdr->xid) != ucs->xid) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: get.cnf: xid mismatch, expect %d, got %d\n", ucs->xid, SPN_NTOHL(hdr->xid));
+  if (dcp_get_xid(hdr) != ucs->xid) {
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: get.cnf: xid mismatch, expect %d, got %d\n", ucs->xid, dcp_get_xid(hdr));
     return SPN_EINVAL;
   }
 

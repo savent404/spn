@@ -109,7 +109,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
   hdr->response_delay = SPN_HTONS(mcs->response_delay_factory);
   hdr->service_id = DCP_SRV_ID_IDENT;
   hdr->service_type = DCP_SRV_TYPE_REQ;
-  hdr->xid = SPN_HTONL(mcs->xid);
+  dcp_set_xid(hdr, mcs->xid);
 
   pbuf_add_header(p, SPN_PDU_HDR_SIZE);
   *PTR_OFFSET(p->payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_IDENT_REQ);

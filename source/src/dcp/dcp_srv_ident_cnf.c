@@ -27,7 +27,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
     return -SPN_EBADMSG;
   }
 
-  if (mcs->xid != SPN_NTOHL(hdr->xid)) {
+  if (mcs->xid != dcp_get_xid(hdr)) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: invalid xid\n");
     return -SPN_ENXIO;
   }

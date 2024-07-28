@@ -41,6 +41,6 @@ int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
     return -SPN_EINVAL;
   }
 
-  ucr->xid = SPN_NTOHL(hdr->xid);
+  ucr->xid = dcp_get_xid(hdr);
   return SPN_OK;
 }

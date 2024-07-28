@@ -135,7 +135,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
     ucr_ctx->error[bitmap_idx] = err;
   }
 
-  ucr_ctx->xid = SPN_NTOHL(hdr->xid);
+  ucr_ctx->xid = dcp_get_xid(hdr);
   ucr_ctx->req_options_bitmap = req_options;
   return SPN_OK;
 }

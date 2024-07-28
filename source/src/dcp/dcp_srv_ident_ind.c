@@ -110,7 +110,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
     mac_k = obj->data.str[5] | (obj->data.str[4] << 8);
   }
 
-  mcr->xid = SPN_NTOHL(hdr->xid);
+  mcr->xid = dcp_get_xid(hdr);
   mcr->response_delay_factory = SPN_NTOHS(hdr->response_delay);
   mcr->response_delay = 10 * (mac_k % mcr->response_delay_factory);
   mcr->state = DCP_STATE_IDENT_RES;

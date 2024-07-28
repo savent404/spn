@@ -185,7 +185,8 @@ enum dcp_bitmap_idx {
 struct dcp_header {
   uint8_t service_id;
   uint8_t service_type;
-  uint32_t xid;
+  uint16_t xid_high; /* NOTE: xid(u32) will cause alignment issue */
+  uint16_t xid_low;
   uint16_t response_delay;
   uint16_t data_length;
 };
@@ -357,6 +358,9 @@ int dcp_block_next(struct dcp_block_hdr* block);
 const char* dcp_option_name(uint8_t option, uint8_t sub_option);
 int dcp_option_bitmap(uint8_t option, uint8_t sub_option);
 uint16_t dcp_option_bit_offset(uint32_t offset);
+
+void dcp_set_xid(struct dcp_header* hdr, uint32_t xid);
+uint32_t dcp_get_xid(struct dcp_header* hdr);
 
 /* this function be opened cause it is used in multiple source file. do not use it in any where */
 void _dcp_srv_set_req_timeout(void* arg);

@@ -191,7 +191,7 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   SPN_ASSERT("So tiny!", offset <= SPN_RTC_MAXIMAL_FRAME_SIZE);
   hdr->service_id = DCP_SRV_ID_IDENT;
   hdr->service_type = DCP_SRV_TYPE_RES;
-  hdr->xid = SPN_HTONL(mcr->xid);
+  dcp_set_xid(hdr, mcr->xid);
   hdr->response_delay = 0;
   hdr->data_length = SPN_HTONS((offset - sizeof(*hdr) + 1) & ~1);
 
