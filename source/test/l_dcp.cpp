@@ -106,6 +106,9 @@ TEST_F(DcpPatner, ident_multiple) {
   controller->dcp.mcs_ctx.device_id = 0x1234;
   controller->dcp.mcs_ctx.vendor_id = 0x5678;
 
+  controller->dcp.mcs_ctx.req_options_bitmap |= 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_VENDOR;
+  controller->dcp.mcs_ctx.vendor_name = "iod";
+
   ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
 
   struct dcp_mcr_ctx mcr;

@@ -50,8 +50,8 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
     options &= ~(1 << idx);
     option = dcp_option_from_bit_idx(idx);
     block = PTR_OFFSET(payload, offset + offset_hdr, struct dcp_block_hdr);
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.req: option %s(%02d:%02d)\n",
-                  dcp_option_name(option >> 8, option & 0xFF), option >> 8, option & 0xFF);
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.req: option %s(%02d:%02d)\n", dcp_option_name(option >> 8, option & 0xFF),
+                  option >> 8, option & 0xFF);
     switch (option) {
       case BLOCK_TYPE(DCP_OPT_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR):
         block->length = 0;
@@ -63,6 +63,10 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
         block->length = strlen(mcs->alias_name);
         memcpy(block->data, mcs->alias_name, block->length);
+        break;
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR):
+        block->length = strlen(mcs->vendor_name);
+        memcpy(block->data, mcs->vendor_name, block->length);
         break;
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
         block->length = 12;
@@ -76,7 +80,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
         *PTR_OFFSET(block->data, 2, uint32_t) = SPN_HTONS(mcs->device_id);
         break;
       default:
-        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP ident.req: unknown option %02d:%02d\n", option >> 8, option & 0xFF);
+        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.req: unknown option %02d:%02d\n", option >> 8, option & 0xFF);
         goto fatal_err;
     }
 

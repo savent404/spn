@@ -39,9 +39,8 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
         data_len = SPN_NTOHS(block->length);
-        if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj) != SPN_OK) {
-          SPN_ASSERT("You must have a name ok?", 0);
-        }
+        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj);
+        SPN_ASSERT("You must have a name ok?", res == SPN_OK);
         if (data_len != db_object_len(obj) || db_cmp_str2obj(obj, &block->data[0], SPN_NTOHS(block->length)) != 0) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: name of station mismatch\n");
           goto invalid_req;
@@ -49,10 +48,8 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR):
         data_len = SPN_NTOHS(block->length);
-        if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_VENDOR, &obj) != SPN_OK) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: get name of vendor failed\n");
-          goto invalid_req;
-        }
+        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_VENDOR, &obj);
+        SPN_ASSERT("Vendor name must be set", res == SPN_OK);
         if (data_len != db_object_len(obj) || db_cmp_str2obj(obj, block->data, SPN_NTOHS(block->length)) != 0) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: name of vendor mismatch\n");
           goto invalid_req;
@@ -112,19 +109,16 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
         for (idx = 0; idx < SPN_CONF_MAX_PORT_PER_INTERFACE; idx++) {
-          if (db_get_port_object(ctx->db, ctx->interface_id, idx, DB_ID_NAME_OF_PORT, &obj) != SPN_OK) {
-            continue;
-          }
+          res = db_get_port_object(ctx->db, ctx->interface_id, idx, DB_ID_NAME_OF_PORT, &obj);
+          SPN_ASSERT("port name must be set", res == SPN_OK);
           SPN_ASSERT("port name isn't static str(8)", db_object_len(obj) == 8 && db_is_static_object(obj));
 
           if (strncmp(obj->data.str, block->data, 8)) {
             continue;
           }
 
-          if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj) != SPN_OK) {
-            SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: get name of alias failed\n");
-            goto invalid_req;
-          }
+          res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj);
+          SPN_ASSERT("interface name must be set", res == SPN_OK);
 
           if (block->data[8] != '.' || SPN_NTOHS(block->length) != db_object_len(obj) + 9 ||
               db_cmp_str2obj(obj, &block->data[9], db_object_len(obj)) != 0) {
@@ -156,12 +150,10 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
     goto invalid_req;
   }
 
-  if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MAC_ADDR, &obj) != SPN_OK) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: get mac address failed\n");
-  } else {
-    /* NOTE: According to the standard, use the last 2 bytes of MAC address as random number */
-    mac_k = obj->data.str[5] | (obj->data.str[4] << 8);
-  }
+  res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MAC_ADDR, &obj);
+  SPN_ASSERT("MAC address must be set", res == SPN_OK);
+  /* NOTE: According to the standard, use the last 2 bytes of MAC address as random number */
+  mac_k = obj->data.str[5] | (obj->data.str[4] << 8);
 
   mcr->xid = dcp_get_xid(hdr);
   mcr->response_delay_factory = SPN_NTOHS(hdr->response_delay);
