@@ -117,11 +117,8 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
         out = pbuf_alloc(PBUF_LINK, SPN_DCP_MAX_SIZE + SPN_PDU_HDR_SIZE, PBUF_RAM);
         SPN_ASSERT("pbuf_alloc failed", out != NULL);
 
-        pbuf_remove_header(out, SPN_PDU_HDR_SIZE);
         res = dcp_srv_set_rsp(ctx, &ucr, out->payload, &out->tot_len);
-        SPN_ASSERT("dcp_srv_set_rsp failed", res > 0);
-        out->tot_len = res;
-        pbuf_add_header(out, SPN_PDU_HDR_SIZE);
+        SPN_ASSERT("dcp_srv_set_rsp failed", res == SPN_OK);
 
       } else if (hdr->service_id == DCP_SRV_ID_SET && hdr->service_type == DCP_SRV_TYPE_RES) {
         res = dcp_srv_set_cnf(ctx, &ctx->ucs_ctx, hdr, rtc_pdu->tot_len - 2);
