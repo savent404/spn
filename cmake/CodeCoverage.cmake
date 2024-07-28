@@ -139,7 +139,7 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname)
 	ADD_CUSTOM_TARGET(${_targetname}
 
 		# Cleanup lcov
-		${LCOV_PATH} --directory . --zerocounters --rc lcov_branch_coverage=1
+		${LCOV_PATH} --directory . --zerocounters --rc branch_coverage=1
 
 		# Run tests
 		COMMAND ${test_command} ${ARGV3}
@@ -153,8 +153,8 @@ FUNCTION(SETUP_TARGET_FOR_COVERAGE _targetname _testrunner _outputname)
 		COMMAND find ${CMAKE_CURRENT_BINARY_DIR} -name "*.gcda" | grep "lwip" | xargs rm -f
 
 		# Capturing lcov counters and generating report
-		COMMAND ${LCOV_PATH} --directory . --capture --output-file ${coverage_info} --rc lcov_branch_coverage=1
-		COMMAND ${LCOV_PATH} --remove ${coverage_info} 'tests/*' '/usr/*' --output-file ${coverage_cleaned} --rc lcov_branch_coverage=1
+		COMMAND ${LCOV_PATH} --directory . --capture --output-file ${coverage_info} --rc branch_coverage=1
+		COMMAND ${LCOV_PATH} --remove ${coverage_info} 'tests/*' '/usr/*' --output-file ${coverage_cleaned} --rc branch_coverage=1
 		COMMAND ${GENHTML_PATH} -o ${_outputname} ${coverage_cleaned}
 		# COMMAND ${CMAKE_COMMAND} -E remove ${coverage_info} ${coverage_cleaned}
 
