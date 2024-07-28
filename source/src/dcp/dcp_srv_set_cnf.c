@@ -1,7 +1,7 @@
-#include <lwip/timeouts.h>
 #include <spn/db.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
+#include <spn/timeout.h>
 
 #define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
@@ -63,7 +63,7 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
   ucs->state = DCP_STATE_IDLE;
   ucs->xid++;
   SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: done, channel timeout...\n");
-  sys_untimeout(_dcp_srv_set_req_timeout, ucs);
+  SPN_UNTIMEOUT(_dcp_srv_set_req_timeout, ucs);
 
   return res;
 }

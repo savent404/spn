@@ -524,7 +524,7 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payl
 
 int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t *length);
 int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
-int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
+int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t *length);
 int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t length);
 
 int dcp_srv_hello_req();

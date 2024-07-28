@@ -1,7 +1,7 @@
-#include <lwip/timeouts.h>
 #include <spn/db.h>
 #include <spn/errno.h>
 #include <spn/spn.h>
+#include <spn/timeout.h>
 #include <string.h>
 
 #define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
@@ -110,7 +110,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payl
 
   *PTR_OFFSET(payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_GET_SET);
 
-  sys_timeout(SPN_DCP_UC_TIMEOUT, _dcp_srv_set_req_timeout, ucs_ctx);
+  SPN_TIMEOUT(SPN_DCP_UC_TIMEOUT, _dcp_srv_set_req_timeout, ucs_ctx);
 
   return SPN_OK;
 }

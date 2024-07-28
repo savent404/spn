@@ -118,7 +118,7 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
         SPN_ASSERT("pbuf_alloc failed", out != NULL);
 
         pbuf_remove_header(out, SPN_PDU_HDR_SIZE);
-        res = dcp_srv_set_rsp(ctx, &ucr, out->payload, out->tot_len);
+        res = dcp_srv_set_rsp(ctx, &ucr, out->payload, &out->tot_len);
         SPN_ASSERT("dcp_srv_set_rsp failed", res > 0);
         out->tot_len = res;
         pbuf_add_header(out, SPN_PDU_HDR_SIZE);
