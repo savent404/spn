@@ -8,7 +8,7 @@ namespace {
 using test::dcp_inst_ptr;
 using test::dcp_instance;
 
-struct DcpPatner : public ::testing::Test {
+struct DcpIdent : public ::testing::Test {
   dcp_inst_ptr controller;
   dcp_inst_ptr device;
 
@@ -36,7 +36,7 @@ void tain_buffer(char* buf, uint16_t len) {
 
 }  // namespace
 
-TEST_F(DcpPatner, ident_all) {
+TEST_F(DcpIdent, ident_all) {
   static char buf[1500];
   uint16_t buf_len;
   uint16_t exiface;
@@ -56,7 +56,7 @@ TEST_F(DcpPatner, ident_all) {
   EXPECT_EQ(exiface, SPN_EXTERNAL_INTERFACE_BASE);
 }
 
-TEST_F(DcpPatner, ident_all_infomation) {
+TEST_F(DcpIdent, ident_all_infomation) {
   static char buf[1500];
   uint16_t buf_len;
 
@@ -105,7 +105,7 @@ TEST_F(DcpPatner, ident_all_infomation) {
   EXPECT_TRUE(fn_check_obj(DB_ID_IP_BLOCK_INFO, {.u16 = 0x0001}));
 }
 
-TEST_F(DcpPatner, ident_station_name) {
+TEST_F(DcpIdent, ident_station_name) {
   static char buf[1500];
   uint16_t buf_len;
 
@@ -123,7 +123,7 @@ TEST_F(DcpPatner, ident_station_name) {
   ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, 0), SPN_OK);
 }
 
-TEST_F(DcpPatner, ident_alias_name) {
+TEST_F(DcpIdent, ident_alias_name) {
   static char buf[1500];
   uint16_t buf_len;
 
@@ -141,7 +141,7 @@ TEST_F(DcpPatner, ident_alias_name) {
   ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, 0), SPN_OK);
 }
 
-TEST_F(DcpPatner, ident_multiple) {
+TEST_F(DcpIdent, ident_multiple) {
   static char buf[1500];
   uint16_t buf_len;
 
@@ -172,7 +172,7 @@ TEST_F(DcpPatner, ident_multiple) {
   ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, 0), SPN_OK);
 }
 
-TEST_F(DcpPatner, ident_req_failpath) {
+TEST_F(DcpIdent, ident_req_failpath) {
   static char buf[1500];
   struct dcp_mcr_ctx mcr;
   uint16_t buf_len;
@@ -192,7 +192,7 @@ TEST_F(DcpPatner, ident_req_failpath) {
   ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), -SPN_EBUSY);
 }
 
-TEST_F(DcpPatner, ident_ind_failpath) {
+TEST_F(DcpIdent, ident_ind_failpath) {
   static char buf[1500];
   struct dcp_mcr_ctx mcr;
   uint16_t buf_len;
@@ -314,7 +314,7 @@ TEST_F(DcpPatner, ident_ind_failpath) {
   ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), -SPN_EAGAIN);
 }
 
-TEST_F(DcpPatner, ident_cnf_failpath) {
+TEST_F(DcpIdent, ident_cnf_failpath) {
   static char buf[1500];
   struct dcp_mcr_ctx mcr;
   uint16_t buf_len;
@@ -399,4 +399,4 @@ TEST_F(DcpPatner, ident_cnf_failpath) {
   ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, 0), -SPN_ENXIO);
 }
 
-TEST_F(DcpPatner, unspported_filter) {}
+TEST_F(DcpIdent, unspported_filter) {}
