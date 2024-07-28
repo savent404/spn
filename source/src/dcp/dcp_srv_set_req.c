@@ -17,13 +17,13 @@ void _dcp_srv_set_req_timeout(void* arg) {
   ucs_ctx->xid++;
 }
 
-int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbuf* p) {
+int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t* length) {
   struct dcp_header* hdr = NULL;
-  unsigned offset = 0;
+  unsigned offset;
   unsigned idx;
   unsigned options = ucs_ctx->req_options_bitmap, qualifer = ucs_ctx->req_qualifier_bitmap;
 
-  pbuf_remove_header(p, sizeof(*hdr) + SPN_PDU_HDR_SIZE);
+  offset = sizeof(*hdr) + SPN_PDU_HDR_SIZE;
 
   for (idx = 0; idx < DCP_BIT_IDX_NUM && options; idx++) {
     uint16_t type;
@@ -36,7 +36,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
 
     type = dcp_option_from_bit_idx(idx);
     qual = qualifer & (1 << idx) ? SPN_HTONS(DCP_QUALIFER_PERSISTENT) : SPN_HTONS(DCP_QUALIFER_TEMP);
-    block = PTR_OFFSET(p->payload, offset, struct dcp_block_hdr);
+    block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     options &= ~(1 << idx);
 
     SPN_UNUSED_ARG(ctx);
@@ -93,14 +93,13 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
     block->length = SPN_HTONS(block->length);
   }
 
-  pbuf_add_header(p, sizeof(*hdr));
-  hdr = PTR_OFFSET(p->payload, 0, struct dcp_header);
+  hdr = PTR_OFFSET(payload, SPN_PDU_HDR_SIZE, struct dcp_header);
 
   if ((offset + sizeof(*hdr)) < SPN_DCP_MIN_SIZE) {
     memset(PTR_OFFSET(hdr, offset + sizeof(*hdr), uint8_t), 0, SPN_DCP_MIN_SIZE - offset - sizeof(*hdr));
-    p->tot_len = SPN_DCP_MIN_SIZE;
+    *length = SPN_DCP_MIN_SIZE;
   } else {
-    p->tot_len = offset + sizeof(*hdr);
+    *length = offset + sizeof(*hdr) + SPN_PDU_HDR_SIZE;
   }
 
   hdr->service_id = DCP_SRV_ID_SET;
@@ -109,8 +108,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
   hdr->response_delay = 0; /* NOTE: this is reserved, need to be zero */
   dcp_set_xid(hdr, ucs_ctx->xid);
 
-  pbuf_add_header(p, SPN_PDU_HDR_SIZE);
-  *PTR_OFFSET(p->payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_GET_SET);
+  *PTR_OFFSET(payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_GET_SET);
 
   sys_timeout(SPN_DCP_UC_TIMEOUT, _dcp_srv_set_req_timeout, ucs_ctx);
 

@@ -155,7 +155,7 @@ static void app_rta_timer_handler(void* arg) {
         struct db_object* obj;
         struct spn_iface* iface;
         struct eth_addr addr;
-        res = dcp_srv_set_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, p);
+        res = dcp_srv_set_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, p->payload, &p->tot_len);
         assert(res == SPN_OK);
 
         /* TODO: find the right port to send package */
