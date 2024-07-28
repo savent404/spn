@@ -454,7 +454,7 @@ void _dcp_srv_get_req_timeout(void* arg);
  *
  * @param ctx DCP context
  * @param mcs_ctx Multicast sender context, used to track the state of multicast sender
- * @param payload DCP payload
+ * @param payload LINK layer payload
  * @param[out] length Length of payload
  * @return \c SPN_OK on success, negative value on error
  * @return \c -SPN_EINVAL somebody gives me a wrong parameters
@@ -495,6 +495,22 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* pa
  * @returns 0 on success, negative value on error
  */
 int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t length);
+
+/**
+ * @brief Service handler that triggered by device to identify itself
+ *
+ * @param ctx DCP context
+ * @param mcs_ctx Multicast sender context, used to track the state of multicast sender
+ * @param payload DCP layer payload
+ * @param length Length of payload
+ * @param[out] ex_itface_id external interface id that device placed in, just for make sure
+ * @note This function is called in input context
+ * @todo need a machine to notify the controller that the device is ready
+ * @todo see if remove ex_itface_id
+ * @returns \c SPN_OK on success
+ * @returns \c -SPN_EBADMSG on parsing payload error
+ * @returns \c -SPN_ENOMEM on no memory
+ */
 int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
                       struct dcp_mcs_ctx* mcs_ctx,
                       void* payload,
