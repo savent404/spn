@@ -170,6 +170,26 @@ TEST_F(DcpPatner, ident_multiple) {
   ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, 0), SPN_OK);
 }
 
+TEST_F(DcpPatner, ident_req_failpath) {
+  static char buf[1500];
+  struct dcp_mcr_ctx mcr;
+  uint16_t buf_len;
+
+  auto fn_clean_req = [&]() {
+    tain_buffer(buf, 1500);
+    controller->dcp.mcs_ctx.req_options_bitmap = 0;
+    controller->dcp.mcs_ctx.state = DCP_STATE_IDLE;
+    controller->dcp.mcs_ctx.xid++;
+    memset(&mcr, 0, sizeof(mcr));
+  };
+
+  // due to busy
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), -SPN_EBUSY);
+}
+
 TEST_F(DcpPatner, ident_ind_failpath) {
   static char buf[1500];
   struct dcp_mcr_ctx mcr;

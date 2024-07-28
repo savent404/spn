@@ -83,8 +83,8 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
         *PTR_OFFSET(block->data, 2, uint32_t) = SPN_HTONS(mcs->device_id);
         break;
       default:
-        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.req: unknown option %02d:%02d\n", option >> 8, option & 0xFF);
-        goto fatal_err;
+        SPN_ASSERT("range is covered by for loop checker, but still got here", 0);
+        return -SPN_EINVAL;
     }
 
     /* handle general block header */
@@ -132,7 +132,4 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
   SPN_TIMEOUT(mcs->response_delay, dcp_srv_ident_req_cb, mcs);
 
   return SPN_OK;
-
-fatal_err:
-  return res;
 }
