@@ -55,3 +55,5 @@ TEST_F(DcpPatner, ident_all) {
 
   EXPECT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, 0), SPN_OK);
 }
+
+TEST_F(DcpPatner, unspported_filter) {}

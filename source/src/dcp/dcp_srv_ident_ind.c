@@ -20,7 +20,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   unsigned idx;
 
   if (length < SPN_NTOHS(hdr->data_length) + sizeof(*hdr)) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: payload too short\n");
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: payload too short\n");
     return -SPN_EMSGSIZE;
   }
   length = SPN_NTOHS(hdr->data_length) + sizeof(*hdr);
@@ -31,7 +31,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   for (; offset < length; offset += dcp_block_next(block)) {
     block = PTR_OFFSET(hdr, offset, struct dcp_block_hdr);
     option = BLOCK_TYPE(block->option, block->sub_option);
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: option %s(%02x:%02x)\n",
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: option %s(%02x:%02x)\n",
                   dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
     switch (option) {
       case BLOCK_TYPE(DCP_OPT_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR):
@@ -42,18 +42,18 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
           SPN_ASSERT("You must have a name ok?", 0);
         }
         if (data_len != db_object_len(obj) || db_cmp_str2obj(obj, &block->data[0], SPN_NTOHS(block->length)) != 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of station mismatch\n");
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: name of station mismatch\n");
           goto invalid_req;
         }
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR):
         data_len = SPN_NTOHS(block->length);
         if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_VENDOR, &obj) != SPN_OK) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: get name of vendor failed\n");
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: get name of vendor failed\n");
           goto invalid_req;
         }
         if (data_len != db_object_len(obj) || db_cmp_str2obj(obj, block->data, SPN_NTOHS(block->length)) != 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of vendor mismatch\n");
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: name of vendor mismatch\n");
           goto invalid_req;
         }
         break;
@@ -69,42 +69,42 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
           }
 
           if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj) != SPN_OK) {
-            SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: get name of alias failed\n");
+            SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: get name of alias failed\n");
             goto invalid_req;
           }
 
           if (block->data[8] != '.' || SPN_NTOHS(block->length) != db_object_len(obj) + 9 ||
               db_cmp_str2obj(obj, &block->data[9], db_object_len(obj)) != 0) {
-            SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of alias mismatch\n");
+            SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: name of alias mismatch\n");
             goto invalid_req;
           }
 
           goto alias_matched;
         }
-        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: name of alias mismatch\n");
+        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: name of alias mismatch\n");
         goto invalid_req;
       alias_matched:
         break;
       default:
-        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: unknown option %d\n", block->option);
+        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: unknown option %d\n", block->option);
         goto invalid_req;
     }
     options |= 1 << dcp_option_bit_idx(block->option, block->sub_option);
   }
 
   if (offset != length) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: invalid block length\n");
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: invalid block length\n");
     goto invalid_req;
   }
 
   /* First option check */
   if (offset == sizeof(*hdr)) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: no option found\n");
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: no option found\n");
     goto invalid_req;
   }
 
   if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MAC_ADDR, &obj) != SPN_OK) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: get mac address failed\n");
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: get mac address failed\n");
   } else {
     /* NOTE: According to the standard, use the last 2 bytes of MAC address as random number */
     mac_k = obj->data.str[5] | (obj->data.str[4] << 8);
@@ -118,7 +118,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   mcr->dcp_ctx = ctx;
   return SPN_OK;
 invalid_req:
-  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: invalid request, drop it...\n");
+  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: invalid request, drop it...\n");
   mcr->state = DCP_STATE_IDLE;
   return -SPN_EAGAIN;
 }

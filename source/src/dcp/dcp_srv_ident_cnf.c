@@ -27,12 +27,12 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
   SPN_ASSERT("invalid inputs", ctx != NULL && mcs != NULL && payload != NULL && length > 0);
 
   if (length < dcp_length + sizeof(*hdr)) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: invalid length\n");
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: invalid length\n");
     return -SPN_EBADMSG;
   }
 
   if (mcs->xid != dcp_get_xid(hdr)) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: xid missmatch, expected %04x, got %04x\n", mcs->xid,
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: xid missmatch, expected %04x, got %04x\n", mcs->xid,
                   dcp_get_xid(hdr));
     return -SPN_ENXIO;
   }
@@ -42,17 +42,17 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
 
   for (offset = sizeof(*hdr); offset < sizeof(*hdr) + dcp_length; offset += dcp_block_next(block)) {
     block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: handling block %s(%02x:%02x)\n",
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: handling block %s(%02x:%02x)\n",
                   dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
     if (offset > length) {
-      SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: invalid block length\n");
+      SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: invalid block length\n");
       res = -SPN_EBADMSG;
       goto invalid_ret;
     }
     switch (BLOCK_TYPE(block->option, block->sub_option)) {
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
         if (SPN_NTOHS(block->length) != 14) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: invalid block length, line %d\n", __LINE__);
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: invalid block length, line %d\n", __LINE__);
           res = -SPN_EBADMSG;
           goto invalid_ret;
         }
@@ -81,7 +81,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
         /* get block length */
         block_length = SPN_NTOHS(block->length);
         if (block_length < 2 || block_length > 255) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: invalid block length, line %d\n", __LINE__);
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: invalid block length, line %d\n", __LINE__);
           res = -SPN_EBADMSG;
           goto invalid_ret;
         }
@@ -105,7 +105,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
       }
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID):
         if (SPN_NTOHS(block->length) != 6) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: invalid block length, line %d\n", __LINE__);
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: invalid block length, line %d\n", __LINE__);
           res = -SPN_EBADMSG;
           goto invalid_ret;
         }
@@ -119,7 +119,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ROLE):
         if (SPN_NTOHS(block->length) != 4) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: invalid block length, line %d\n", __LINE__);
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: invalid block length, line %d\n", __LINE__);
           res = -SPN_EBADMSG;
           goto invalid_ret;
         }
@@ -129,7 +129,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_INSTANCE):
         if (SPN_NTOHS(block->length) != 4) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: invalid block length, line %d\n", __LINE__);
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: invalid block length, line %d\n", __LINE__);
           res = -SPN_EBADMSG;
           goto invalid_ret;
         }
@@ -146,7 +146,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
           data.u32 |= 1 << dcp_option_bit_idx(opt, sub_opt);
         }
         if (data.u32 == 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: invalid block length, line %d\n", __LINE__);
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: invalid block length, line %d\n", __LINE__);
           res = -SPN_EBADMSG;
           goto invalid_ret;
         }
@@ -154,7 +154,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
         SPN_ASSERT("Add object failed", res == SPN_OK);
         break;
       default:
-        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: unhandled option %04x\n",
+        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: unhandled option %04x\n",
                       BLOCK_TYPE(block->option, block->sub_option));
         break;
     }
