@@ -454,11 +454,15 @@ void _dcp_srv_get_req_timeout(void* arg);
  *
  * @param ctx DCP context
  * @param mcs_ctx Multicast sender context, used to track the state of multicast sender
+ * @param payload DCP payload
+ * @param[out] length Length of payload
+ * @return \c SPN_OK on success, negative value on error
+ * @return \c -SPN_EINVAL somebody gives me a wrong parameters
  * @note Syntax: DCP-Header,[NameOfStation]^[AliasName], [OtherFilter]*
  * @note One instance is enough for controller
  * @todo Implement reset of filters
  */
-int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs_ctx, struct pbuf* p);
+int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs_ctx, void* payload, uint16_t* length);
 
 /**
  * @brief Service handler that indicated by controller that it wants to identify the device

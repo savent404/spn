@@ -23,7 +23,7 @@ static void dcp_srv_ident_req_cb(void* arg) {
   mcs->xid++;
 }
 
-int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf* p) {
+int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payload, uint16_t* length) {
   int res = SPN_OK;
   unsigned idx, option, offset = 0;
   struct dcp_header* hdr;
@@ -31,6 +31,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
   uint32_t options = mcs->req_options_bitmap;
   const uint32_t required_opt = (1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION) | (1 << DCP_BIT_IDX_ALL_SELECTOR) |
                                 (1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_ALIAS);
+  const unsigned offset_hdr = SPN_PDU_HDR_SIZE + sizeof(*hdr);
 
   /* Syntax check */
   if ((options & required_opt) == 0) {
@@ -48,16 +49,13 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
     return -SPN_EINVAL;
   }
 
-  pbuf_remove_header(p, SPN_PDU_HDR_SIZE + sizeof(*hdr));
-
   for (idx = 0; idx < DCP_BIT_IDX_NUM && options; idx++) {
     if (!(options & (1 << idx))) {
       continue;
     }
     options &= ~(1 << idx);
-
     option = dcp_option_from_bit_idx(idx);
-    block = PTR_OFFSET(p->payload, offset, struct dcp_block_hdr);
+    block = PTR_OFFSET(payload, offset + offset_hdr, struct dcp_block_hdr);
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req: option %s(%02d:%02d)\n",
                   dcp_option_name(option >> 8, option & 0xFF), option >> 8, option & 0xFF);
     switch (option) {
@@ -97,22 +95,20 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
   }
 
   if (offset < SPN_RTC_MINIMAL_FRAME_SIZE) {
-    memset(PTR_OFFSET(p->payload, offset, uint8_t), 0, SPN_RTC_MINIMAL_FRAME_SIZE - offset);
-    p->tot_len = SPN_RTC_MINIMAL_FRAME_SIZE;
+    memset(PTR_OFFSET(payload, offset + offset_hdr, uint8_t), 0, SPN_DCP_MIN_SIZE - offset - offset_hdr);
+    *length = SPN_RTC_MINIMAL_FRAME_SIZE;
   } else {
-    p->tot_len = offset;
+    *length = offset + offset_hdr;
   }
 
-  pbuf_add_header(p, sizeof(*hdr));
-  hdr = (struct dcp_header*)p->payload;
+  hdr = PTR_OFFSET(payload, SPN_PDU_HDR_SIZE, struct dcp_header);
   hdr->data_length = SPN_HTONS(offset);
   hdr->response_delay = SPN_HTONS(mcs->response_delay_factory);
   hdr->service_id = DCP_SRV_ID_IDENT;
   hdr->service_type = DCP_SRV_TYPE_REQ;
   dcp_set_xid(hdr, mcs->xid);
 
-  pbuf_add_header(p, SPN_PDU_HDR_SIZE);
-  *PTR_OFFSET(p->payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_IDENT_REQ);
+  *PTR_OFFSET(payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_IDENT_REQ);
 
   /**
    * Response delay is in 10ms units, but the minimum value is 400ms.
@@ -121,7 +117,8 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
    *
    * @note Fuck the vendors, that giving factor(0) some meanings.
    */
-  mcs->response_delay = mcs->response_delay_factory > 1 ? ((1999 + mcs->response_delay_factory * 10) / 1000 * 1000) : 400;
+  mcs->response_delay =
+      mcs->response_delay_factory > 1 ? ((1999 + mcs->response_delay_factory * 10) / 1000 * 1000) : 400;
   mcs->dcp_ctx = ctx;
   mcs->state = DCP_STATE_IDENT_REQ;
   mcs->dcp_ctx = ctx;

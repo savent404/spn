@@ -20,6 +20,7 @@ using test::Ddcp;
 TEST_F(Ddcp, ident_req_selector) {
   LwipCtx::get_instance(LwipCtx::level::timer);
   struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
+  uint16_t length;
   DataParser parser;
 
   dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
@@ -27,7 +28,8 @@ TEST_F(Ddcp, ident_req_selector) {
   dcp.mcs_ctx.response_delay_factory = 1;
   dcp.mcs_ctx.external_interface_id = SPN_EXTERNAL_INTERFACE_BASE + 0;
 
-  EXPECT_EQ(dcp_srv_ident_req(&dcp, &dcp.mcs_ctx, p), SPN_OK);
+  EXPECT_EQ(dcp_srv_ident_req(&dcp, &dcp.mcs_ctx, p->payload, &length), SPN_OK);
+  p->tot_len = length;
 
   auto f = parser(test_data::dcp::kDcpAllSelector);
   f->erase(f->begin(), f->begin() + 14);
@@ -81,14 +83,14 @@ TEST_F(Ddcp, ident_ind_syntax_filter) {
       0, 16,                               // length
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 4,                                                       // length
-      'f', 'o', 'o', 'b',                                         // data
-                                                                  // block end
+      0, 4,                                                    // length
+      'f', 'o', 'o', 'b',                                      // data
+                                                               // block end
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS,  // option
-      0, 4,                                                     // length
-      'f', 'o', 'o', 'b',                                       // data
-                                                                // block end
+      0, 4,                                                  // length
+      'f', 'o', 'o', 'b',                                    // data
+                                                             // block end
   });
   declare_name_of_station("foob");
   declare_name_of_vendor("foob");
@@ -102,14 +104,14 @@ TEST_F(Ddcp, ident_ind_syntax_filter) {
       // block begin
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS,  // option
-      0, 4,                                                     // length
-      'f', 'o', 'o', 'b',                                       // data
-                                                                // block end
+      0, 4,                                                  // length
+      'f', 'o', 'o', 'b',                                    // data
+                                                             // block end
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 4,                                                       // length
-      'f', 'o', 'o', 'b',                                         // data
-                                                                  // block end
+      0, 4,                                                    // length
+      'f', 'o', 'o', 'b',                                      // data
+                                                               // block end
   });
   EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), -SPN_EAGAIN);
 
@@ -120,14 +122,14 @@ TEST_F(Ddcp, ident_ind_syntax_filter) {
       0, 16,                               // length
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 4,                                                       // length
-      'f', 'o', 'o', 'b',                                         // data
-                                                                  // block end
+      0, 4,                                                    // length
+      'f', 'o', 'o', 'b',                                      // data
+                                                               // block end
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
-      0, 4,                                                      // length
-      'f', 'o', 'o', 'b',                                        // data
-                                                                 // block end
+      0, 4,                                                   // length
+      'f', 'o', 'o', 'b',                                     // data
+                                                              // block end
   });
   EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), SPN_OK);
 
@@ -153,13 +155,13 @@ TEST_F(Ddcp, ident_ind_name_of_vendor_but_db_not_set) {
 
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 4,                                                       // length
-      'f', 'o', 'o', 'b',                                         // data
-                                                                  // block end
+      0, 4,                                                    // length
+      'f', 'o', 'o', 'b',                                      // data
+                                                               // block end
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
-      0, 4,                                                      // length
-      'f', 'b', 'b', 'f',                                        // data
+      0, 4,                                                   // length
+      'f', 'b', 'b', 'f',                                     // data
   });
   declare_name_of_station("foob");
   EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), -SPN_EAGAIN);
@@ -178,9 +180,9 @@ TEST_F(Ddcp, ident_ind_unknow_option) {
 
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 4,                                                       // length
-      'f', 'o', 'o', 'b',                                         // data
-                                                                  // block end
+      0, 4,                                                    // length
+      'f', 'o', 'o', 'b',                                      // data
+                                                               // block end
       // block begin
       0, 0,                // option
       0, 4,                // length
@@ -203,13 +205,13 @@ TEST_F(Ddcp, ident_ind_name_of_vendor) {
 
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 4,                                                       // length
-      'f', 'o', 'o', 'b',                                         // data
-                                                                  // block end
+      0, 4,                                                    // length
+      'f', 'o', 'o', 'b',                                      // data
+                                                               // block end
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
-      0, 4,                                                      // length
-      'f', 'b', 'b', 'f',                                        // data
+      0, 4,                                                   // length
+      'f', 'b', 'b', 'f',                                     // data
   });
   declare_name_of_station("foob");
   declare_name_of_vendor("fbbf");
@@ -226,13 +228,13 @@ TEST_F(Ddcp, ident_ind_name_of_vendor) {
 
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 4,                                                       // length
-      'f', 'o', 'o', 'b',                                         // data
-                                                                  // block end
+      0, 4,                                                    // length
+      'f', 'o', 'o', 'b',                                      // data
+                                                               // block end
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
-      0, 4,                                                      // length
-      'f', 'x', 'x', 'f',                                        // data
+      0, 4,                                                   // length
+      'f', 'x', 'x', 'f',                                     // data
   });
   EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), -SPN_EAGAIN);
 }
@@ -250,9 +252,9 @@ TEST_F(Ddcp, ident_ind_name_of_station) {
 
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 4,                                                       // length
-      'f', 'o', 'o', 'b',                                         // data
-                                                                  // block end
+      0, 4,                                                    // length
+      'f', 'o', 'o', 'b',                                      // data
+                                                               // block end
   });
   declare_name_of_station("foob");
   EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), SPN_OK);
@@ -274,8 +276,8 @@ TEST_F(Ddcp, ident_ind_name_of_station_dyn) {
 
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 10,                                                      // length
-      'f', 'o', 'o', 'b',                                         // data
+      0, 10,                                                   // length
+      'f', 'o', 'o', 'b',                                      // data
       'b', 'o', 'o', 'f', 't', 't',
       // block end
   });
@@ -296,9 +298,9 @@ TEST_F(Ddcp, ident_ind_name_of_station_not_match) {
 
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 4,                                                       // length
-      'f', 'o', 'o', 'b',                                         // data
-                                                                  // block end
+      0, 4,                                                    // length
+      'f', 'o', 'o', 'b',                                      // data
+                                                               // block end
   });
   declare_name_of_station("foob-ver-long");
   EXPECT_EQ(dcp_srv_ident_ind(&dcp, &dcp.mcr_ctx[0], frame->data(), frame->size()), -SPN_EAGAIN);
@@ -314,8 +316,8 @@ TEST_F(Ddcp, ident_ind_name_of_station_dyn_name_with_invalid_length) {
 
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 10,                                                      // length
-      'f', 'o', 'o', 'b',                                         // data
+      0, 10,                                                   // length
+      'f', 'o', 'o', 'b',                                      // data
       'b', 'o', 'o', 'f', 't', 't',
       // block end
   });
@@ -336,9 +338,9 @@ TEST_F(Ddcp, ident_ind_craped_frame) {
 
       // block begin
       DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
-      0, 4,                                                       // length
-      'f', 'o', 'o', 'b',                                         // data
-                                                                  // block end
+      0, 4,                                                    // length
+      'f', 'o', 'o', 'b',                                      // data
+                                                               // block end
   });
 
   declare_name_of_station("foob");
@@ -408,11 +410,11 @@ TEST_F(Ddcp, ident_cnf_ecopn) {
     }
     return bitmap;
   };
-  EXPECT_EQ(obj->data.u32,
-            bitmap_fn({DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION, DCP_BIT_IDX_DEV_PROP_NAME_OF_ALIAS,
-                       DCP_BIT_IDX_IP_MAC_ADDRESS, DCP_BIT_IDX_IP_PARAMETER, DCP_BIT_IDX_DEV_PROP_NAME_OF_VENDOR,
-                       DCP_BIT_IDX_DEV_PROP_DEVICE_ROLE, DCP_BIT_IDX_DEV_PROP_DEVICE_ID,
-                       DCP_BIT_IDX_DEV_PROP_DEVICE_ID, DCP_BIT_IDX_DEV_PROP_DEVICE_OPTIONS}));
+  EXPECT_EQ(
+      obj->data.u32,
+      bitmap_fn({DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION, DCP_BIT_IDX_DEV_PROP_NAME_OF_ALIAS, DCP_BIT_IDX_IP_MAC_ADDRESS,
+                 DCP_BIT_IDX_IP_PARAMETER, DCP_BIT_IDX_DEV_PROP_NAME_OF_VENDOR, DCP_BIT_IDX_DEV_PROP_DEVICE_ROLE,
+                 DCP_BIT_IDX_DEV_PROP_DEVICE_ID, DCP_BIT_IDX_DEV_PROP_DEVICE_ID, DCP_BIT_IDX_DEV_PROP_DEVICE_OPTIONS}));
 }
 
 TEST_F(Ddcp, set_ind_name_of_station) {
@@ -584,11 +586,13 @@ TEST_F(Cdcp, ident_req) {
   LwipCtx::get_instance(LwipCtx::level::timer);
   // Generate ident.req from controller
   struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
+  uint16_t length;
   controller.dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
   controller.dcp.mcs_ctx.xid = 0xAABBCCDD;
   controller.dcp.mcs_ctx.response_delay_factory = 1;
   controller.dcp.mcs_ctx.external_interface_id = SPN_EXTERNAL_INTERFACE_BASE + 0;
-  EXPECT_EQ(dcp_srv_ident_req(&controller.dcp, &controller.dcp.mcs_ctx, p), 0);
+  EXPECT_EQ(dcp_srv_ident_req(&controller.dcp, &controller.dcp.mcs_ctx, p->payload, &length), 0);
+  p->tot_len = length;
   pbuf_remove_header(p, SPN_PDU_HDR_SIZE);
 
   // Parse ident.req from device, check its status can verify the ident.req
