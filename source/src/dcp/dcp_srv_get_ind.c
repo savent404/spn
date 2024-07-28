@@ -8,10 +8,10 @@
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
 
 static inline int has_read_attribute(uint16_t bitmap) {
-  const uint32_t read_forbidden = 1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_ALIAS | 1 << DCP_BITMAP_CONTROL_START |
-                                  1 << DCP_BITMAP_CONTROL_STOP | 1 << DCP_BITMAP_CONTROL_SIGNAL |
-                                  1 << DCP_BITMAP_CONTROL_RESPONSE | 1 << DCP_BITMAP_CONTROL_FACTORY_RESET |
-                                  1 << DCP_BITMAP_ALL_SELECTOR;
+  const uint32_t read_forbidden = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_ALIAS | 1 << DCP_BIT_IDX_CTRL_START |
+                                  1 << DCP_BIT_IDX_CTRL_STOP | 1 << DCP_BIT_IDX_CTRL_SIGNAL |
+                                  1 << DCP_BIT_IDX_CTRL_RESPONSE | 1 << DCP_BIT_IDX_CTRL_FACTORY_RESET |
+                                  1 << DCP_BIT_IDX_ALL_SELECTOR;
   return (bitmap & read_forbidden) == 0;
 }
 

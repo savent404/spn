@@ -29,8 +29,8 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
   struct dcp_header* hdr;
   struct dcp_block_hdr* block;
   uint32_t options = mcs->req_options_bitmap;
-  const uint32_t required_opt = (1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION) | (1 << DCP_BITMAP_ALL_SELECTOR) |
-                                (1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_ALIAS);
+  const uint32_t required_opt = (1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION) | (1 << DCP_BIT_IDX_ALL_SELECTOR) |
+                                (1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_ALIAS);
 
   /* Syntax check */
   if ((options & required_opt) == 0) {
@@ -50,7 +50,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
 
   pbuf_remove_header(p, SPN_PDU_HDR_SIZE + sizeof(*hdr));
 
-  for (idx = 0; idx < DCP_BITMAP_NUM && options; idx++) {
+  for (idx = 0; idx < DCP_BIT_IDX_NUM && options; idx++) {
     if (!(options & (1 << idx))) {
       continue;
     }

@@ -37,7 +37,7 @@ static void app_rta_timer_handler(void* arg) {
       /** Discovery DCP devices, filted by station name */
       // TODO: topology should be well defined
       inst->ctx->dcp.mcs_ctx.station_name = "et200ecopn.dev5";
-      inst->ctx->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION;
+      inst->ctx->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
       inst->ctx->dcp.mcs_ctx.response_delay_factory = 1;
       inst->ctx->dcp.mcs_ctx.xid = 0x88000000;
       {
@@ -140,7 +140,7 @@ static void app_rta_timer_handler(void* arg) {
       printf(">>> dcp set state\n");
 
       inst->ctx->dcp.ucs_ctx.xid = 0xFFAA;
-      inst->ctx->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BITMAP_IP_PARAMETER;
+      inst->ctx->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_IP_PARAMETER;
       {
         uint8_t i = inst->ctx->dcp.ucs_ctx.ip_addr >> 24;
         i = (i - 20 + 1) % 20 + 20;  // range: [20,40), incremental
@@ -175,8 +175,8 @@ static void app_rta_timer_handler(void* arg) {
       break;
     case APP_STATE_DCP_CONFIRM:
       printf(">>> dcp confirm state\n");
-      inst->ctx->dcp.ucs_ctx.req_options_bitmap = (1 << DCP_BITMAP_IP_MAC_ADDRESS) | (1 << DCP_BITMAP_IP_PARAMETER) |
-                                                  (1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION);
+      inst->ctx->dcp.ucs_ctx.req_options_bitmap = (1 << DCP_BIT_IDX_IP_MAC_ADDRESS) | (1 << DCP_BIT_IDX_IP_PARAMETER) |
+                                                  (1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION);
       inst->ctx->dcp.ucs_ctx.xid = 0xFFAA;
 
       {

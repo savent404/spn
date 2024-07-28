@@ -22,7 +22,7 @@ TEST_F(Ddcp, ident_req_selector) {
   struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
   DataParser parser;
 
-  dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BITMAP_ALL_SELECTOR;
+  dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
   dcp.mcs_ctx.xid = 0x1000001;
   dcp.mcs_ctx.response_delay_factory = 1;
   dcp.mcs_ctx.response_interface_id = SPN_EXTERNAL_INTERFACE_BASE + 0;
@@ -409,10 +409,10 @@ TEST_F(Ddcp, ident_cnf_ecopn) {
     return bitmap;
   };
   EXPECT_EQ(obj->data.u32,
-            bitmap_fn({DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION, DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_ALIAS,
-                       DCP_BITMAP_IP_MAC_ADDRESS, DCP_BITMAP_IP_PARAMETER, DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_VENDOR,
-                       DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_ROLE, DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_ID,
-                       DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_ID, DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_OPTIONS}));
+            bitmap_fn({DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION, DCP_BIT_IDX_DEV_PROP_NAME_OF_ALIAS,
+                       DCP_BIT_IDX_IP_MAC_ADDRESS, DCP_BIT_IDX_IP_PARAMETER, DCP_BIT_IDX_DEV_PROP_NAME_OF_VENDOR,
+                       DCP_BIT_IDX_DEV_PROP_DEVICE_ROLE, DCP_BIT_IDX_DEV_PROP_DEVICE_ID,
+                       DCP_BIT_IDX_DEV_PROP_DEVICE_ID, DCP_BIT_IDX_DEV_PROP_DEVICE_OPTIONS}));
 }
 
 TEST_F(Ddcp, set_ind_name_of_station) {
@@ -425,7 +425,7 @@ TEST_F(Ddcp, set_ind_name_of_station) {
 
   frame->erase(frame->begin(), frame->begin() + 16);
   EXPECT_EQ(dcp_srv_set_ind(&dcp, &ucr, frame->data(), frame->size()), SPN_OK);
-  EXPECT_EQ(ucr.req_options_bitmap, 1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION | 1 << DCP_BITMAP_CONTROL_STOP);
+  EXPECT_EQ(ucr.req_options_bitmap, 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION | 1 << DCP_BIT_IDX_CTRL_STOP);
   EXPECT_EQ(db_get_interface_object(&db, 0, db_id_t::DB_ID_NAME_OF_INTERFACE, &obj), SPN_OK);
   EXPECT_STRNE((char*)obj->data.ptr, "station_xxx");
 }
@@ -537,7 +537,7 @@ TEST_F(Ddcp, get_ind_simple) {
 
   frame->erase(frame->begin(), frame->begin() + 16);
   EXPECT_EQ(dcp_srv_get_ind(&dcp, &ucr, frame->data(), frame->size()), SPN_OK);
-  EXPECT_EQ(ucr.req_options_bitmap, 1 << DCP_BITMAP_IP_PARAMETER | 1 << DCP_BITMAP_DHCP_CLIENT_IDENT);
+  EXPECT_EQ(ucr.req_options_bitmap, 1 << DCP_BIT_IDX_IP_PARAMETER | 1 << DCP_BIT_IDX_DHCP_CLIENT_IDENT);
 }
 
 TEST_F(Ddcp, get_rsp_simple) {
@@ -555,7 +555,7 @@ TEST_F(Ddcp, get_rsp_simple) {
   f_rsp->erase(f_rsp->begin(), f_rsp->begin() + 16);
 
   EXPECT_EQ(dcp_srv_get_ind(&dcp, &ucr, f_req->data(), f_req->size()), SPN_OK);
-  EXPECT_EQ(ucr.req_options_bitmap, 1 << DCP_BITMAP_IP_PARAMETER | 1 << DCP_BITMAP_DHCP_CLIENT_IDENT);
+  EXPECT_EQ(ucr.req_options_bitmap, 1 << DCP_BIT_IDX_IP_PARAMETER | 1 << DCP_BIT_IDX_DHCP_CLIENT_IDENT);
   EXPECT_EQ(ucr.xid, 0x0f020013);
 
   /* prepare db */
@@ -584,7 +584,7 @@ TEST_F(Cdcp, ident_req) {
   LwipCtx::get_instance(LwipCtx::level::timer);
   // Generate ident.req from controller
   struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
-  controller.dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BITMAP_ALL_SELECTOR;
+  controller.dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
   controller.dcp.mcs_ctx.xid = 0xAABBCCDD;
   controller.dcp.mcs_ctx.response_delay_factory = 1;
   controller.dcp.mcs_ctx.response_interface_id = SPN_EXTERNAL_INTERFACE_BASE + 0;

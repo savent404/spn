@@ -99,35 +99,35 @@ enum dcp_block_error {
  *
  * @note This order is used to generate right sequence of req/rsp, do not change it
  */
-enum dcp_bitmap {
-  DCP_BITMAP_CONTROL_START = 0,
-  DCP_BITMAP_ALL_SELECTOR,
-  DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION,
-  DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_ALIAS,
-  DCP_BITMAP_IP_MAC_ADDRESS,
-  DCP_BITMAP_IP_PARAMETER,
-  DCP_BITMAP_IP_FULL_IP_SUITE,
-  DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_VENDOR,
-  DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_ID,
-  DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_ROLE,
-  DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_OPTIONS,
-  DCP_BITMAP_DEVICE_PROPERTIES_DEVICE_INSTANCE,
-  DCP_BITMAP_DEVICE_PROPERTIES_OEM_DEVICE_ID,
-  DCP_BITMAP_DEVICE_PROPERTIES_STANDARD_GATEWAY,
-  DCP_BITMAP_DEVICE_PROPERTIES_RSI_PROPERTIES,
-  DCP_BITMAP_DHCP_CLIENT_IDENT,
-  DCP_BITMAP_CONTROL_SIGNAL,
-  DCP_BITMAP_CONTROL_RESPONSE,
-  DCP_BITMAP_CONTROL_FACTORY_RESET,
-  DCP_BITMAP_CONTROL_RESET_TO_FACTORY,
-  DCP_BITMAP_DEVICE_INITIATIVE_DEVICE_INITIATIVE,
-  DCP_BITMAP_NME_DOMAIN_NME_DOMAIN,
-  DCP_BITMAP_NME_DOMAIN_NME_PRIO,
-  DCP_BITMAP_NME_DOMAIN_NME_PARAMETER_UUID,
-  DCP_BITMAP_NME_DOMAIN_NME_NAME,
-  DCP_BITMAP_NME_DOMAIN_CIM_INTERFACE,
-  DCP_BITMAP_CONTROL_STOP,
-  DCP_BITMAP_NUM
+enum dcp_bitmap_idx {
+  DCP_BIT_IDX_CTRL_START = 0,
+  DCP_BIT_IDX_ALL_SELECTOR,
+  DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION,
+  DCP_BIT_IDX_DEV_PROP_NAME_OF_ALIAS,
+  DCP_BIT_IDX_IP_MAC_ADDRESS,
+  DCP_BIT_IDX_IP_PARAMETER,
+  DCP_BIT_IDX_IP_FULL_IP_SUITE,
+  DCP_BIT_IDX_DEV_PROP_NAME_OF_VENDOR,
+  DCP_BIT_IDX_DEV_PROP_DEVICE_ID,
+  DCP_BIT_IDX_DEV_PROP_DEVICE_ROLE,
+  DCP_BIT_IDX_DEV_PROP_DEVICE_OPTIONS,
+  DCP_BIT_IDX_DEV_PROP_DEVICE_INSTANCE,
+  DCP_BIT_IDX_DEV_PROP_OEM_DEVICE_ID,
+  DCP_BIT_IDX_DEV_PROP_STANDARD_GATEWAY,
+  DCP_BIT_IDX_DEV_PROP_RSI_PROPERTIES,
+  DCP_BIT_IDX_DHCP_CLIENT_IDENT,
+  DCP_BIT_IDX_CTRL_SIGNAL,
+  DCP_BIT_IDX_CTRL_RESPONSE,
+  DCP_BIT_IDX_CTRL_FACTORY_RESET,
+  DCP_BIT_IDX_CTRL_RESET_TO_FACTORY,
+  DCP_BIT_IDX_DEVICE_INITIATIVE,
+  DCP_BIT_IDX_NME_DOMAIN_NME_DOMAIN,
+  DCP_BIT_IDX_NME_DOMAIN_NME_PRIO,
+  DCP_BIT_IDX_NME_DOMAIN_NME_PARAMETER_UUID,
+  DCP_BIT_IDX_NME_DOMAIN_NME_NAME,
+  DCP_BIT_IDX_NME_DOMAIN_CIM_INTERFACE,
+  DCP_BIT_IDX_CTRL_STOP,
+  DCP_BIT_IDX_NUM
 };
 
 /**
@@ -135,33 +135,33 @@ enum dcp_bitmap {
  *
  * | Sub Option                              | Read | Write | Optional | Filter |
  * |-----------------------------------------|------|-------|----------|--------|
- * | IP_MAC_ADDRESS                          | X    |       |          |        |
- * | IP_PARAMETER                            | X    | X     |          | X      |
- * | IP_FULL_IP_SUITE                        | X    | X     | X        | X      |
- * | DEVICE_PROPERTIES_NAME_OF_VENDOR        | X    |       |          | X      |
- * | DEVICE_PROPERTIES_NAME_OF_STATION       | X    | X     |          | X      |
- * | DEVICE_PROPERTIES_DEVICE_ID             | X    |       |          | X      |
- * | DEVICE_PROPERTIES_DEVICE_ROLE           | X    |       |          | X      |
- * | DEVICE_PROPERTIES_DEVICE_OPTIONS        | X    |       |          | X      |
- * | DEVICE_PROPERTIES_NAME_OF_ALIAS         |      |       |          | X      |
- * | DEVICE_PROPERTIES_DEVICE_INSTANCE       | X    |       |          | X      |
- * | DEVICE_PROPERTIES_OEM_DEVICE_ID         | X    |       |          | X      |
- * | DEVICE_PROPERTIES_STANDARD_GATEWAY      | X    |       |          | X      |
- * | DEVICE_PROPERTIES_RSI_PROPERTIES        | X    |       |          | X      |
- * | DHCP_DHCP                               | X    | X     | X        | X      |
- * | CONTROL_START                           |      | X     |          |        |
- * | CONTROL_STOP                            |      | X     |          |        |
- * | CONTROL_SIGNAL                          |      | X     |          |        |
+ * | IP_MAC_ADDRESS                          | ( )  |       |          |        |
+ * | IP_PARAMETER                            | ( )  | ( )   |          |  ( )   |
+ * | IP_FULL_IP_SUITE                        | ( )  | ( )   |   ( )    |  ( )   |
+ * | DEVICE_PROPERTIES_NAME_OF_VENDOR        | ( )  |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_NAME_OF_STATION       | ( )  | ( )   |          |  ( )   |
+ * | DEVICE_PROPERTIES_DEVICE_ID             | ( )  |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_DEVICE_ROLE           | ( )  |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_DEVICE_OPTIONS        | ( )  |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_NAME_OF_ALIAS         |      |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_DEVICE_INSTANCE       | ( )  |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_OEM_DEVICE_ID         | ( )  |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_STANDARD_GATEWAY      | ( )  |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_RSI_PROPERTIES        | ( )  |       |          |  ( )   |
+ * | DHCP_DHCP                               | ( )  | ( )   |   ( )    |  ( )   |
+ * | CONTROL_START                           |      | ( )   |          |        |
+ * | CONTROL_STOP                            |      | ( )   |          |        |
+ * | CONTROL_SIGNAL                          |      | ( )   |          |        |
  * | CONTROL_RESPONSE                        |      |       |          |        |
- * | CONTROL_FACTORY_RESET                   |      |       | X        |        |
- * | CONTROL_RESET_TO_FACTORY                |      | X     |          |        |
- * | DEVICE_INITIATIVE_DEVICE_INITIATIVE     | X    |       |          | X      |
- * | NME_DOMAIN_NME_DOMAIN                   | X    | X     |          | X      |
- * | NME_DOMAIN_NME_PRIO                     | X    |       |          | X      |
- * | NME_DOMAIN_NME_PARAMETER_UUID           | X    |       |          |        |
- * | NME_DOMAIN_NME_NAME                     | X    |       |          | X      |
- * | NME_DOMAIN_CIM_INTERFACE                | X    |       |          | X      |
- * | ALL_SELECTOR                            |      |       |          | X      |
+ * | CONTROL_FACTORY_RESET                   |      |       |   ( )    |        |
+ * | CONTROL_RESET_TO_FACTORY                |      | ( )   |          |        |
+ * | DEVICE_INITIATIVE_DEVICE_INITIATIVE     | ( )  |       |          |  ( )   |
+ * | NME_DOMAIN_NME_DOMAIN                   | ( )  | ( )   |          |  ( )   |
+ * | NME_DOMAIN_NME_PRIO                     | ( )  |       |          |  ( )   |
+ * | NME_DOMAIN_NME_PARAMETER_UUID           | ( )  |       |          |        |
+ * | NME_DOMAIN_NME_NAME                     | ( )  |       |          |  ( )   |
+ * | NME_DOMAIN_CIM_INTERFACE                | ( )  |       |          |  ( )   |
+ * | ALL_SELECTOR                            |      |       |          |  ( )   |
  * +----------------------------------------------------------------------------+
  *
  * DCP Payloads
@@ -250,7 +250,7 @@ struct dcp_ucs_ctx {
   uint32_t xid;
   uint32_t req_options_bitmap;   /* set if option is requested */
   uint16_t req_qualifier_bitmap; /* set if persistent mode is requested */
-  enum dcp_block_error resp_errors[DCP_BITMAP_NUM];
+  enum dcp_block_error resp_errors[DCP_BIT_IDX_NUM];
   enum dcp_state state;
 
   /* set if option is requested */
@@ -272,7 +272,7 @@ struct dcp_ucr_ctx {
   uint32_t xid;
   uint32_t req_options_bitmap;   /* set if option is requested */
   uint16_t req_qualifier_bitmap; /* set if persistent mode is requested */
-  enum dcp_block_error error[DCP_BITMAP_NUM];
+  enum dcp_block_error error[DCP_BIT_IDX_NUM];
 };
 
 struct dcp_ctx;

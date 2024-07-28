@@ -25,7 +25,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
 
   pbuf_remove_header(p, sizeof(*hdr) + SPN_PDU_HDR_SIZE);
 
-  for (idx = 0; idx < DCP_BITMAP_NUM && options; idx++) {
+  for (idx = 0; idx < DCP_BIT_IDX_NUM && options; idx++) {
     uint16_t type;
     uint16_t qual;
     struct dcp_block_hdr* block;

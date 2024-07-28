@@ -17,13 +17,13 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
   SPN_UNUSED_ARG(length);
 
   /* pick start/stop firstly */
-  if (ucr_ctx->req_options_bitmap & (1 << DCP_BITMAP_CONTROL_START)) {
+  if (ucr_ctx->req_options_bitmap & (1 << DCP_BIT_IDX_CTRL_START)) {
     has_ctrl_start = 1;
   }
-  if (ucr_ctx->req_options_bitmap & (1 << DCP_BITMAP_CONTROL_STOP)) {
+  if (ucr_ctx->req_options_bitmap & (1 << DCP_BIT_IDX_CTRL_STOP)) {
     has_ctrl_stop = 1;
   }
-  ucr_ctx->req_options_bitmap &= ~((1 << DCP_BITMAP_CONTROL_START) | (1 << DCP_BITMAP_CONTROL_STOP));
+  ucr_ctx->req_options_bitmap &= ~((1 << DCP_BIT_IDX_CTRL_START) | (1 << DCP_BIT_IDX_CTRL_STOP));
 
   /* Pack CONTROL::START */
   if (has_ctrl_start) {
@@ -33,12 +33,12 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
     block->length = SPN_HTONS(3);
     *PTR_OFFSET(block->data, 0, uint8_t) = DCP_OPT_CONTROL;
     *PTR_OFFSET(block->data, 1, uint8_t) = DCP_SUB_OPT_CTRL_START;
-    *PTR_OFFSET(block->data, 2, uint8_t) = (uint8_t)ucr_ctx->error[DCP_BITMAP_CONTROL_START];
+    *PTR_OFFSET(block->data, 2, uint8_t) = (uint8_t)ucr_ctx->error[DCP_BIT_IDX_CTRL_START];
     *PTR_OFFSET(block->data, 3, uint8_t) = 0; /* padding */
     offset += 8;
   }
 
-  for (idx = 0; idx < DCP_BITMAP_NUM && ucr_ctx->req_options_bitmap; idx++) {
+  for (idx = 0; idx < DCP_BIT_IDX_NUM && ucr_ctx->req_options_bitmap; idx++) {
     if (ucr_ctx->req_options_bitmap & (1 << idx)) {
       uint16_t opt = dcp_option_bit_offset(idx);
       ucr_ctx->req_options_bitmap &= ~(1 << idx);
@@ -62,7 +62,7 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
     block->length = SPN_HTONS(3);
     *PTR_OFFSET(block->data, 0, uint8_t) = DCP_OPT_CONTROL;
     *PTR_OFFSET(block->data, 1, uint8_t) = DCP_SUB_OPT_CTRL_STOP;
-    *PTR_OFFSET(block->data, 2, uint8_t) = ucr_ctx->error[DCP_BITMAP_CONTROL_STOP];
+    *PTR_OFFSET(block->data, 2, uint8_t) = ucr_ctx->error[DCP_BIT_IDX_CTRL_STOP];
     *PTR_OFFSET(block->data, 3, uint8_t) = 0;
     offset += 8;
   }

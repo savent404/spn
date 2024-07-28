@@ -30,7 +30,7 @@ int dcp_srv_get_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, struct pbuf* p
 
   offset = 0;
   options = ucs->req_options_bitmap;
-  for (idx = 0; idx < DCP_BITMAP_NUM && options; idx++) {
+  for (idx = 0; idx < DCP_BIT_IDX_NUM && options; idx++) {
     uint16_t option;
     if ((options & (1 << idx)) == 0) {
       continue;
