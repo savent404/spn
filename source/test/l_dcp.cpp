@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <spn/db_ll.h>
 #include <memory>
 #include "dcp_ctx.hpp"
 
@@ -51,6 +52,55 @@ TEST_F(DcpPatner, ident_all) {
   ASSERT_EQ(dcp_srv_ident_rsp(&device->dcp, &mcr, buf, &buf_len), SPN_OK);
 
   ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, 0), SPN_OK);
+}
+
+TEST_F(DcpPatner, ident_all_infomation) {
+  static char buf[1500];
+  uint16_t buf_len;
+
+  // ident all
+  tain_buffer(buf, 1500);
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  EXPECT_EQ(controller->dcp.mcs_ctx.state, DCP_STATE_IDENT_REQ);
+
+  struct dcp_mcr_ctx mcr;
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), SPN_OK);
+
+  tain_buffer(buf, 1500);
+  ASSERT_EQ(dcp_srv_ident_rsp(&device->dcp, &mcr, buf, &buf_len), SPN_OK);
+
+  ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, 0), SPN_OK);
+  EXPECT_EQ(controller->dcp.mcs_ctx.external_interface_id, SPN_EXTERNAL_INTERFACE_BASE + 1);
+
+  struct db_interface* interface;
+  ASSERT_EQ(db_get_interface(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, &interface), SPN_OK);
+
+  auto fn_check_obj = [&](db_id_t id, db_value_t val) -> bool {
+    struct db_object* obj;
+    int res = db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, id, &obj);
+    if (res != SPN_OK) {
+      return false;
+    }
+
+    if (!obj->attr.is_dyn) {
+      return !memcmp(&obj->data, &val, db_object_len(obj));
+    } else {
+      return !memcmp(obj->data.ptr, &val, db_object_len(obj));
+    }
+    return false;
+  };
+
+  EXPECT_TRUE(fn_check_obj(DB_ID_NAME_OF_INTERFACE, {.str = "device"}));
+  EXPECT_TRUE(fn_check_obj(DB_ID_NAME_OF_VENDOR, {.str = "iod"}));
+  EXPECT_FALSE(fn_check_obj(DB_ID_IP_MAC_ADDR, {.mac = {0x00, 0x00, 0x00, 0x00, 0x00, 0x01}})); /* rsp don't have it */
+  EXPECT_TRUE(fn_check_obj(DB_ID_IP_ADDR, {.u32 = 0x0a000001}));
+  EXPECT_TRUE(fn_check_obj(DB_ID_IP_MASK, {.u32 = 0x00FFFFFF}));
+  EXPECT_TRUE(fn_check_obj(DB_ID_IP_GATEWAY, {.u32 = 0}));
+  EXPECT_TRUE(fn_check_obj(DB_ID_VENDOR_ID, {.u16 = 0x5678}));
+  EXPECT_TRUE(fn_check_obj(DB_ID_DEVICE_ID, {.u16 = 0x1234}));
+  EXPECT_TRUE(fn_check_obj(DB_ID_DEVICE_ROLE, {.u8 = 0x01}));
+  EXPECT_TRUE(fn_check_obj(DB_ID_IP_BLOCK_INFO, {.u16 = 0x0001}));
 }
 
 TEST_F(DcpPatner, ident_station_name) {
