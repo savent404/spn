@@ -44,11 +44,6 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
     block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: handling block %s(%02x:%02x)\n",
                   dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
-    if (offset > length) {
-      SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: invalid block length\n");
-      res = -SPN_EBADMSG;
-      goto invalid_ret;
-    }
     switch (BLOCK_TYPE(block->option, block->sub_option)) {
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
         if (SPN_NTOHS(block->length) != 14) {

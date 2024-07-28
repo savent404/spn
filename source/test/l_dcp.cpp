@@ -39,6 +39,7 @@ void tain_buffer(char* buf, uint16_t len) {
 TEST_F(DcpPatner, ident_all) {
   static char buf[1500];
   uint16_t buf_len;
+  uint16_t exiface;
 
   // ident all
   tain_buffer(buf, 1500);
@@ -51,7 +52,8 @@ TEST_F(DcpPatner, ident_all) {
   tain_buffer(buf, 1500);
   ASSERT_EQ(dcp_srv_ident_rsp(&device->dcp, &mcr, buf, &buf_len), SPN_OK);
 
-  ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, 0), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, &exiface), SPN_OK);
+  EXPECT_EQ(exiface, SPN_EXTERNAL_INTERFACE_BASE);
 }
 
 TEST_F(DcpPatner, ident_all_infomation) {
@@ -310,6 +312,91 @@ TEST_F(DcpPatner, ident_ind_failpath) {
   controller->dcp.mcs_ctx.vendor_id = 0x5679;
   ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
   ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), -SPN_EAGAIN);
+}
+
+TEST_F(DcpPatner, ident_cnf_failpath) {
+  static char buf[1500];
+  struct dcp_mcr_ctx mcr;
+  uint16_t buf_len;
+
+  auto fn_clean_req = [&]() {
+    tain_buffer(buf, 1500);
+    controller->dcp.mcs_ctx.req_options_bitmap = 0;
+    controller->dcp.mcs_ctx.state = DCP_STATE_IDLE;
+    controller->dcp.mcs_ctx.xid++;
+    memset(&mcr, 0, sizeof(mcr));
+  };
+
+  // due to payload length is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_rsp(&device->dcp, &mcr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, 13, 0), -SPN_EBADMSG);
+
+  // due to string block length is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_rsp(&device->dcp, &mcr, buf, &buf_len), SPN_OK);
+  buf[2 + 10 + 4 + 14 + 2] = 0xFF;
+  ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len, 0), -SPN_EBADMSG);
+
+  // due to ip block length is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_rsp(&device->dcp, &mcr, buf, &buf_len), SPN_OK);
+  buf[2 + 10 + 2] = 0xFF;
+  ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len, 0), -SPN_EBADMSG);
+
+  // due to device id block length is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_rsp(&device->dcp, &mcr, buf, &buf_len), SPN_OK);
+  buf[0x37] = 0xFF;
+  ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len, 0), -SPN_EBADMSG);
+
+  // due to role block length is not match
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_rsp(&device->dcp, &mcr, buf, &buf_len), SPN_OK);
+  buf[0x41] = 0xFF;
+  ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len, 0), -SPN_EBADMSG);
+
+  // due to options are empty
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_rsp(&device->dcp, &mcr, buf, &buf_len), SPN_OK);
+  buf[0x49] = 0x00;
+  ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len, 0), -SPN_EBADMSG);
+
+  // due to unknow options
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_rsp(&device->dcp, &mcr, buf, &buf_len), SPN_OK);
+  buf[0x1F] = 0xff;
+  ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len, 0), SPN_OK);
+
+  // due to xid is not match  fn_clean_req();
+  fn_clean_req();
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_ind(&device->dcp, &mcr, buf + 2, buf_len - 2), SPN_OK);
+  mcr.xid++;
+  ASSERT_EQ(dcp_srv_ident_rsp(&device->dcp, &mcr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, 0), -SPN_ENXIO);
 }
 
 TEST_F(DcpPatner, unspported_filter) {}
