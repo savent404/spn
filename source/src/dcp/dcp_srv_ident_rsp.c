@@ -69,17 +69,14 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
   switch (option) {
     case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM): {
       uint32_t ip, mask, gw;
-      if ((res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj)) < 0) {
-        return 0;
-      }
+      res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj);
+      SPN_ASSERT("No ip address", res >= 0);
       ip = obj->data.u32;
-      if ((res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &obj)) < 0) {
-        return 0;
-      }
+      res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &obj);
+      SPN_ASSERT("No ip mask", res >= 0);
       mask = obj->data.u32;
-      if ((res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &obj)) < 0) {
-        return 0;
-      }
+      res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &obj);
+      SPN_ASSERT("No ip gateway", res >= 0);
       gw = obj->data.u32;
       *PTR_OFFSET(block->data, 0, uint16_t) = SPN_HTONS(block_info);
       *PTR_OFFSET(block->data, 2, uint32_t) = ip;
@@ -89,18 +86,16 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
       break;
     }
     case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR): {
-      if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_VENDOR, &obj) < 0) {
-        return 0;
-      }
+      res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_VENDOR, &obj);
+      SPN_ASSERT("No vendor name", res >= 0);
       *PTR_OFFSET(block->data, 0, uint16_t) = 0;
       db_strcpy_obj2str((char*)block->data + 2, obj);
       block->length = 2 + db_object_len(obj);
       break;
     }
     case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION): {
-      if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj) < 0) {
-        return 0;
-      }
+      res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj);
+      SPN_ASSERT("No station name", res >= 0);
       *PTR_OFFSET(block->data, 0, uint16_t) = 0;
       db_strcpy_obj2str((char*)block->data + 2, obj);
       block->length = 2 + db_object_len(obj);
@@ -108,13 +103,11 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
     }
     case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID): {
       uint16_t device_id, vendor_id;
-      if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_DEVICE_ID, &obj) < 0) {
-        return 0;
-      }
+      res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_DEVICE_ID, &obj) < 0;
+      SPN_ASSERT("No device id", res >= 0);
       device_id = obj->data.u16;
-      if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_VENDOR_ID, &obj) < 0) {
-        return 0;
-      }
+      res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_VENDOR_ID, &obj);
+      SPN_ASSERT("No vendor id", res >= 0);
       vendor_id = obj->data.u16;
 
       *PTR_OFFSET(block->data, 0, uint16_t) = 0;
@@ -124,9 +117,8 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
       break;
     }
     case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ROLE): {
-      if (db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_DEVICE_ROLE, &obj) < 0) {
-        return 0;
-      }
+      res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_DEVICE_ROLE, &obj);
+      SPN_ASSERT("No device role", res >= 0);
 
       *PTR_OFFSET(block->data, 0, uint16_t) = 0;
       *PTR_OFFSET(block->data, 2, uint8_t) = obj->data.u8;
@@ -146,6 +138,8 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
       break;
     }
     default:
+      SPN_DEBUG_MSG(SPN_DCP_DEBUG, "ident.rsp: option %s(%02d:%02d) not supported\n",
+                    dcp_option_name(option >> 8, option & 0xff), option >> 8, option & 0xFF);
       return 0;
   }
 
@@ -165,9 +159,7 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   int res, offset = sizeof(*hdr) + SPN_PDU_HDR_SIZE;
   /* get ip block info */
   res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_BLOCK_INFO, &obj);
-  if (res < 0) {
-    goto invalid_option;
-  }
+  SPN_ASSERT("No ip block info", res >= 0);
   block_info = obj->data.u16;
 
   for (idx = 0; idx < ARRAY_SIZE(mandatory_options); idx++) {
