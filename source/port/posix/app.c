@@ -44,7 +44,9 @@ static void app_rta_timer_handler(void* arg) {
         struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
         struct eth_addr dst_addr = {.addr = {0x01, 0x0e, 0xcf, 00, 00, 00}};
         unsigned i;
-        dcp_srv_ident_req(&inst->ctx->dcp, &inst->ctx->dcp.mcs_ctx, p);
+	uint16_t length;
+        dcp_srv_ident_req(&inst->ctx->dcp, &inst->ctx->dcp.mcs_ctx, p->payload, &length);
+	p->tot_len = length;
 
         for (i = 0; i < ARRAY_SIZE(inst->ctx->ifaces[0]); i++) {
           spn_iface_t* iface = &inst->ctx->ifaces[0][i];
