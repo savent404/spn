@@ -65,7 +65,7 @@ static void app_rta_timer_handler(void* arg) {
       assert(inst->ctx->dcp.mcs_ctx.req_options_bitmap == 0);
       assert(inst->ctx->dcp.mcs_ctx.state == DCP_STATE_IDLE);
       assert(inst->ctx->dcp.mcs_ctx.xid == 0x88000001);
-      assert(inst->ctx->dcp.mcs_ctx.response_interface_id == SPN_EXTERNAL_INTERFACE_BASE + 1);
+      assert(inst->ctx->dcp.mcs_ctx.external_interface_id == SPN_EXTERNAL_INTERFACE_BASE + 1);
       {
         struct db_interface* iface;
         struct db_object* obj;

@@ -222,6 +222,12 @@ struct dcp_block_hdr {
  * @defgroup dcp_internal DCP Internal
  */
 
+/**
+ * DCP state machine
+ *
+ * @note This state machine is used to track
+ *       the state of DCP serval request/response
+ */
 enum dcp_state {
   DCP_STATE_IDLE = 0,
 
@@ -246,20 +252,32 @@ enum dcp_state {
 
 /**
  * Unicast sender context
+ *
+ * @note UCS is a stateful context, it is used to track the state of unicast sender
+ * @note this context is used for handle set/get.req & set/get.cnf
+ *
+ * IDLE -> IDLE: xid missmatched/in operating mode
+ * IDLE -> SET_REQ: send set.req
+ * SET_REQ -> SET_REQ: some of device triggered set.cnf
+ * SET_REQ -> SET_REQ: xid missmatched
+ * SET_REQ -> IDLE: timeout
  */
 struct dcp_ucs_ctx {
-  uint32_t xid;
-  uint32_t req_options_bitmap;   /* set if option is requested */
-  uint16_t req_qualifier_bitmap; /* set if persistent mode is requested */
-  enum dcp_block_error resp_errors[DCP_BIT_IDX_NUM];
+  uint32_t xid;                                      /* session token, it will increase by state machine go to idle */
+  uint32_t req_options_bitmap;                       /* set bits if option is requested */
+  uint16_t req_qualifier_bitmap;                     /* set bits if persistent mode is requested
+                                                      * @note reset to factory and factory reset are special qualifier
+                                                      */
+  enum dcp_block_error resp_errors[DCP_BIT_IDX_NUM]; /* responsed erros, only the requested option be valid */
   enum dcp_state state;
 
   /* set if option is requested */
-  uint32_t ip_addr;
-  uint32_t ip_mask;
-  uint32_t ip_gw;
-  uint16_t factory_reset_qualifer;
-  uint16_t reset_to_factory_qualifer;
+  /* TODO: still filter not implemented */
+  uint32_t ip_addr;                   /* BE */
+  uint32_t ip_mask;                   /* BE */
+  uint32_t ip_gw;                     /* BE */
+  uint16_t factory_reset_qualifer;    /* special qualifier cna't be restored in bitmap */
+  uint16_t reset_to_factory_qualifer; /* special qualifier can't be restored in bitmap */
   const char* station_name;
 };
 
@@ -271,9 +289,9 @@ struct dcp_ucs_ctx {
  */
 struct dcp_ucr_ctx {
   uint32_t xid;
-  uint32_t req_options_bitmap;   /* set if option is requested */
-  uint16_t req_qualifier_bitmap; /* set if persistent mode is requested */
-  enum dcp_block_error error[DCP_BIT_IDX_NUM];
+  uint32_t req_options_bitmap;                 /* set if option is requested */
+  uint16_t req_qualifier_bitmap;               /* set if persistent mode is requested */
+  enum dcp_block_error error[DCP_BIT_IDX_NUM]; /* errors need to report to requester */
 };
 
 struct dcp_ctx;
@@ -284,30 +302,34 @@ struct dcp_ctx;
  * @note MCS is a stateful context, it is used to track the state of multicast sender
  * @note this context is used for handle ident.req & ident.cnf
  *
- * IDEL -> IDENT_REQ: send ident.req
+ * IDLE -> IDENT_REQ: send ident.req
+ * IDLE -> IDLE: xid missmatched/in operating mode
  * IDENT_REQ -> IDENT_REQ: some of device triggered ident.cnf
  * IDENT_REQ -> IDLE: timeout, no response from device should be handled
  */
 struct dcp_mcs_ctx {
+  /* inputs */
   uint32_t xid;
   uint32_t req_options_bitmap;
-  uint16_t response_delay_factory;
-  uint16_t response_delay;
-  uint16_t response_interface_id; /* tell ident_rsp should place it in which interface, should start at \c
-                                     SPN_EXTERNAL_INTERFACE_BASE */
-  struct dcp_ctx* dcp_ctx;
+  uint16_t response_delay_factory; /* set 1 if we are controller, are we? */
+  uint16_t external_interface_id;  /* tell ident_rsp should place it in which interface, should start at \c
+                                      SPN_EXTERNAL_INTERFACE_BASE */
+  struct dcp_ctx* dcp_ctx;         /* used to access db when handling timeout callback */
+  uint16_t response_delay;         /* timeout in milliseconds */
   enum dcp_state state;
+
   /** So many filter we should support, just pick essential */
-  uint8_t mac_addr[6];
-  uint32_t ip_addr;
-  uint32_t ip_mask;
-  uint32_t ip_gw;
+  uint8_t mac_addr[6]; /* BE */
+  uint32_t ip_addr;    /* BE */
+  uint32_t ip_mask;    /* BE */
+  uint32_t ip_gw;      /* BE */
   const char* station_name;
   const char* vendor_name;
   const char* alias_name;
-  uint16_t vendor_id;
-  uint16_t device_id;
+  uint16_t vendor_id; /* LE */
+  uint16_t device_id; /* LE */
 };
+
 /**
  * Multicast receiver context
  *
@@ -322,25 +344,25 @@ struct dcp_mcs_ctx {
  *
  */
 struct dcp_mcr_ctx {
-  uint32_t xid;
-  uint32_t req_options_bitmap;
-  uint16_t response_delay_factory;
-  uint16_t response_delay;
-  struct eth_addr src_addr;
+  uint32_t xid;                    /* session token */
+  uint32_t req_options_bitmap;     /* set bits if option is requested */
+  uint16_t response_delay_factory; /* set 1 if we are controller, are we? */
+  uint16_t response_delay;         /* timeout in milliseconds, set 0 if no response delay */
+  struct eth_addr src_addr;        /* requester's address of ident.req */
   enum dcp_state state;
-  struct dcp_ctx* dcp_ctx;
+  struct dcp_ctx* dcp_ctx; /* used to access db when handling timeout callback */
 };
 
 struct dcp_ctx {
   /* Internal variables used when acting controller or devices */
-  int interface_id;
-  int port_num;
   struct db_ctx* db;
   struct dcp_mcr_ctx mcr_ctx[SPN_CONF_DCP_MAX_IDENT_RSP_INST];
   struct dcp_mcs_ctx mcs_ctx;
   struct dcp_ucs_ctx ucs_ctx;
 
   /** Internal physical layer attributes */
+  int interface_id;
+  int port_num; /* TODO: not used yet */
 };
 /**
  * @} end of dcp_internal

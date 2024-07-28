@@ -155,7 +155,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
 
   /* Find empty interface and assigned new interface_id */
   /* FIXME: its not thread-safe */
-  exiface = mcs->response_interface_id++;
+  exiface = mcs->external_interface_id++;
   res = db_add_interface(ctx->db, exiface);
   if (res < 0) {
     goto invalid_ret;
@@ -178,7 +178,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
   db_del_interface(&interface);
   return SPN_OK;
 cleanup_interface:
-  mcs->response_interface_id--; /* FIXME: its not thread-safe */
+  mcs->external_interface_id--; /* FIXME: its not thread-safe */
   db_del_interface(intf);
 invalid_ret:
   db_del_interface(&interface);
