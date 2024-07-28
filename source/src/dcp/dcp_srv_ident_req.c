@@ -24,7 +24,6 @@ static void dcp_srv_ident_req_cb(void* arg) {
 }
 
 int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payload, uint16_t* length) {
-  int res = SPN_OK;
   unsigned idx, option, offset = 0;
   struct dcp_header* hdr;
   struct dcp_block_hdr* block;
