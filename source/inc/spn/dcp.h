@@ -136,13 +136,13 @@ enum dcp_bitmap_idx {
  * | Sub Option                              | Read | Write | Optional | Filter |
  * |-----------------------------------------|------|-------|----------|--------|
  * | IP_MAC_ADDRESS                          | ( )  |       |          |        |
- * | IP_PARAMETER                            | ( )  | ( )   |          |  ( )   |
+ * | IP_PARAMETER                            | (x)  | ( )   |          |  ( )   |
  * | IP_FULL_IP_SUITE                        | ( )  | ( )   |   ( )    |  ( )   |
- * | DEVICE_PROPERTIES_NAME_OF_VENDOR        | ( )  |       |          |  ( )   |
- * | DEVICE_PROPERTIES_NAME_OF_STATION       | ( )  | ( )   |          |  ( )   |
- * | DEVICE_PROPERTIES_DEVICE_ID             | ( )  |       |          |  ( )   |
- * | DEVICE_PROPERTIES_DEVICE_ROLE           | ( )  |       |          |  ( )   |
- * | DEVICE_PROPERTIES_DEVICE_OPTIONS        | ( )  |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_NAME_OF_VENDOR        | (x)  |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_NAME_OF_STATION       | (x)  | ( )   |          |  ( )   |
+ * | DEVICE_PROPERTIES_DEVICE_ID             | (x)  |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_DEVICE_ROLE           | (x)  |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_DEVICE_OPTIONS        | (x)  |       |          |  ( )   |
  * | DEVICE_PROPERTIES_NAME_OF_ALIAS         |      |       |          |  ( )   |
  * | DEVICE_PROPERTIES_DEVICE_INSTANCE       | ( )  |       |          |  ( )   |
  * | DEVICE_PROPERTIES_OEM_DEVICE_ID         | ( )  |       |          |  ( )   |
@@ -161,7 +161,7 @@ enum dcp_bitmap_idx {
  * | NME_DOMAIN_NME_PARAMETER_UUID           | ( )  |       |          |        |
  * | NME_DOMAIN_NME_NAME                     | ( )  |       |          |  ( )   |
  * | NME_DOMAIN_CIM_INTERFACE                | ( )  |       |          |  ( )   |
- * | ALL_SELECTOR                            |      |       |          |  ( )   |
+ * | ALL_SELECTOR                            |      |       |          |  (x)   |
  * +----------------------------------------------------------------------------+
  *
  * DCP Payloads
