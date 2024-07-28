@@ -9,6 +9,7 @@
 #define BLOCK_TYPE(h, l) ((h << 8) | l)
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
 
+#if !SPN_TEST
 static void dcp_srv_ident_req_cb(void* arg) {
   struct dcp_mcs_ctx* mcs = (struct dcp_mcs_ctx*)arg;
   struct dcp_ctx* ctx = mcs->dcp_ctx;
@@ -22,6 +23,7 @@ static void dcp_srv_ident_req_cb(void* arg) {
   mcs->req_options_bitmap = 0;
   mcs->xid++;
 }
+#endif
 
 int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payload, uint16_t* length) {
   unsigned idx, option, offset = 0;
