@@ -16,7 +16,7 @@ static void dcp_srv_ident_req_cb(void* arg) {
   SPN_ASSERT("dcp_srv_ident_req_cb: invalid mcs", mcs != NULL);
   SPN_ASSERT("dcp_srv_ident_req_cb: invalid ctx", ctx != NULL);
 
-  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req_cb: xid %x\n", mcs->xid);
+  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: dcp_srv_ident_req_cb: xid %x\n", mcs->xid);
   /* Devices are already added to db by dcp_srv_ident_cnf */
   mcs->state = DCP_STATE_IDLE;
   mcs->req_options_bitmap = 0;
@@ -36,16 +36,11 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
   /* Some mistackes only occurs in our stack */
   SPN_ASSERT("missing required options", (options & required_opt) != 0);
   SPN_ASSERT("invalid length", length != NULL);
+  SPN_ASSERT("Invalid interface id going to assign", mcs->external_interface_id >= SPN_EXTERNAL_INTERFACE_BASE);
 
   if (mcs->state != DCP_STATE_IDLE) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req: invalid state %d\n", mcs->state);
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.req: invalid state %d\n", mcs->state);
     return -SPN_EBUSY;
-  }
-
-  /* User gives us invalid external interface id */
-  if (mcs->external_interface_id < SPN_EXTERNAL_INTERFACE_BASE) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req: invalid response interface id %d\n", mcs->external_interface_id);
-    return -SPN_EINVAL;
   }
 
   for (idx = 0; idx < DCP_BIT_IDX_NUM && options; idx++) {
@@ -55,7 +50,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
     options &= ~(1 << idx);
     option = dcp_option_from_bit_idx(idx);
     block = PTR_OFFSET(payload, offset + offset_hdr, struct dcp_block_hdr);
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req: option %s(%02d:%02d)\n",
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.req: option %s(%02d:%02d)\n",
                   dcp_option_name(option >> 8, option & 0xFF), option >> 8, option & 0xFF);
     switch (option) {
       case BLOCK_TYPE(DCP_OPT_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR):
@@ -71,17 +66,17 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
         break;
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
         block->length = 12;
-        *PTR_OFFSET(block->data, 0, uint32_t) = SPN_HTONL(mcs->ip_addr);
-        *PTR_OFFSET(block->data, 4, uint32_t) = SPN_HTONL(mcs->ip_mask);
-        *PTR_OFFSET(block->data, 8, uint32_t) = SPN_HTONL(mcs->ip_gw);
+        *PTR_OFFSET(block->data, 0, uint32_t) = mcs->ip_addr;
+        *PTR_OFFSET(block->data, 4, uint32_t) = mcs->ip_mask;
+        *PTR_OFFSET(block->data, 8, uint32_t) = mcs->ip_gw;
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID):
         block->length = 4;
         *PTR_OFFSET(block->data, 0, uint16_t) = SPN_HTONS(mcs->vendor_id);
-        *PTR_OFFSET(block->data, 2, uint32_t) = SPN_HTONL(mcs->device_id);
+        *PTR_OFFSET(block->data, 2, uint32_t) = SPN_HTONS(mcs->device_id);
         break;
       default:
-        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req: unknown option %02d:%02d\n", option >> 8, option & 0xFF);
+        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP ident.req: unknown option %02d:%02d\n", option >> 8, option & 0xFF);
         goto fatal_err;
     }
 

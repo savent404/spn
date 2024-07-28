@@ -457,7 +457,6 @@ void _dcp_srv_get_req_timeout(void* arg);
  * @param payload LINK layer payload
  * @param[out] length Length of payload
  * @return \c SPN_OK on success, negative value on error
- * @return \c -SPN_EINVAL somebody gives me a wrong parameters
  * @return \c -SPN_EBUSY if the context is not in idle state
  * @note Syntax: DCP-Header,[NameOfStation]^[AliasName], [OtherFilter]*
  * @note One instance is enough for controller
@@ -476,10 +475,10 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs_ctx, void* pa
  * @note Cuase rsp could be delayed by controller, the instance are limited with \c SPN_CONF_DCP_MAX_IDENT_RSP_INST
  * @todo Implement syntax check (this is not nessary, but it is good to have)
  * @todo More filter need to be supported
- * @returns 0 on success, negative value on error
- * @returns -SPN_EAGAIN if no response is expected
- * @returns -SPN_EMSGSIZE if the payload is too short
- * @returns -SPN_EBUSY if no free MCR context
+ * @returns \c SPN_OK on success, negative value on error
+ * @returns \c -SPN_EAGAIN if no response is expected
+ * @returns \c -SPN_EMSGSIZE if the payload is too short
+ * @returns \c -SPN_EBUSY if no free MCR context
  */
 int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t length);
 
@@ -492,7 +491,8 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* pa
  * @param[out] length Length of payload
  * @note This function is called in input context, or timer context
  * @todo Implement the unit test by using \c dcp_srv_ident_cnf
- * @returns 0 on success, negative value on error
+ * @returns \c SPN_OK on success
+ *
  */
 int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t* length);
 

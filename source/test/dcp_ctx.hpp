@@ -37,11 +37,19 @@ struct dcp_instance {
                      uint16_t vendor_id,
                      uint8_t role) {
     struct db_interface* interface;
+    struct db_port* port;
     struct db_object* obj;
     db_value_t val;
     int res;
 
     res = db_get_interface(&db, 0, &interface);
+    assert(res == SPN_OK);
+
+    res = db_get_port(interface, 0, &port);
+    assert(res == SPN_OK);
+
+    memcpy(val.str, "port-001", 8);
+    res = db_add_object(&port->objects, DB_ID_NAME_OF_PORT, 0, 1, 8, &val);
     assert(res == SPN_OK);
 
     memcpy(val.mac, mac.addr, 6);

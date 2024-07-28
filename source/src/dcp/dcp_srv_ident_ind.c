@@ -18,6 +18,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   uint16_t data_len;
   uint16_t mac_k = 0x7843;
   unsigned idx;
+  int res;
 
   if (length < SPN_NTOHS(hdr->data_length) + sizeof(*hdr)) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: payload too short\n");
@@ -54,6 +55,58 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         }
         if (data_len != db_object_len(obj) || db_cmp_str2obj(obj, block->data, SPN_NTOHS(block->length)) != 0) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: name of vendor mismatch\n");
+          goto invalid_req;
+        }
+        break;
+      case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
+        data_len = SPN_NTOHS(block->length);
+        if (data_len != 12) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: invalid IP parameter length\n");
+          goto invalid_req;
+        }
+        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj);
+        SPN_ASSERT("IP address must be set", res == SPN_OK);
+        if (obj->data.u32 != *PTR_OFFSET(block->data, 0, uint32_t)) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: IP address mismatch, expected %08x, got %08x\n", obj->data.u32,
+                        *PTR_OFFSET(block->data, 0, uint32_t));
+          goto invalid_req;
+        }
+
+        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &obj);
+        SPN_ASSERT("IP mask must be set", res == SPN_OK);
+        if (obj->data.u32 != *PTR_OFFSET(block->data, 4, uint32_t)) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: IP mask mismatch, expected %08x, got %08x\n", obj->data.u32,
+                        *PTR_OFFSET(block->data, 4, uint32_t));
+          goto invalid_req;
+        }
+
+        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &obj);
+        SPN_ASSERT("IP gateway must be set", res == SPN_OK);
+        if (obj->data.u32 != *PTR_OFFSET(block->data, 8, uint32_t)) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: IP gateway mismatch, expected %08x, got %08x\n", obj->data.u32,
+                        *PTR_OFFSET(block->data, 8, uint32_t));
+          goto invalid_req;
+        }
+        break;
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID):
+        data_len = SPN_NTOHS(block->length);
+        if (data_len != 4) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: invalid device id length\n");
+          goto invalid_req;
+        }
+        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_VENDOR_ID, &obj);
+        SPN_ASSERT("Vendor ID must be set", res == SPN_OK);
+        if (SPN_HTONS(obj->data.u16) != *PTR_OFFSET(block->data, 0, uint16_t)) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: vendor id mismatch, expected %04x, got %04x\n", obj->data.u16,
+                        *PTR_OFFSET(block->data, 2, uint16_t));
+          goto invalid_req;
+        }
+
+        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_DEVICE_ID, &obj);
+        SPN_ASSERT("Device ID must be set", res == SPN_OK);
+        if (SPN_HTONS(obj->data.u16) != *PTR_OFFSET(block->data, 2, uint16_t)) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.ind: device id mismatch, expected %04x, got %04x\n", obj->data.u16,
+                        *PTR_OFFSET(block->data, 0, uint16_t));
           goto invalid_req;
         }
         break;
