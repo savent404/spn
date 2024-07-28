@@ -10,7 +10,7 @@
 
 static uint16_t rsp_block(void* payload, uint16_t option, uint8_t res) {
   struct dcp_block_hdr* block_hdr = (struct dcp_block_hdr*)payload;
-  block_hdr->option = DCP_OPTION_CONTROL;
+  block_hdr->option = DCP_OPT_CONTROL;
   block_hdr->sub_option = DCP_SUB_OPT_CTRL_RESPONSE;
   block_hdr->length = SPN_HTONS(3);
   *PTR_OFFSET(payload, sizeof(*block_hdr), uint8_t) = option >> 8;
@@ -43,7 +43,7 @@ int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
     block_hdr = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     block_data = PTR_OFFSET(block_hdr, sizeof(*block_hdr), uint8_t);
     switch (opt) {
-      case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_PARAM): {
+      case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM): {
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_BLOCK_INFO, &object);
         if (res < 0) {
           res = DCP_BLOCK_ERR_RESOURCE_ERR;

@@ -32,7 +32,7 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
     int idx;
     block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     block->length = SPN_NTOHS(block->length);
-    if (block->option != DCP_OPTION_CONTROL || block->sub_option != DCP_SUB_OPT_CTRL_RESPONSE) {
+    if (block->option != DCP_OPT_CONTROL || block->sub_option != DCP_SUB_OPT_CTRL_RESPONSE) {
       SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: invalid block, want a response block\n");
       continue;
     }

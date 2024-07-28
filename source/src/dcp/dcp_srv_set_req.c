@@ -45,30 +45,30 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
                   type);
 
     switch (type) {
-      case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_PARAM):
+      case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
         block->length = 14;
         *PTR_OFFSET(block->data, 2, uint32_t) = ucs_ctx->ip_addr;
         *PTR_OFFSET(block->data, 6, uint32_t) = ucs_ctx->ip_mask;
         *PTR_OFFSET(block->data, 10, uint32_t) = ucs_ctx->ip_gw;
         break;
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
         SPN_ASSERT("station name is NULL", ucs_ctx->station_name);
         block->length = 2 + strlen(ucs_ctx->station_name);
         memcpy(PTR_OFFSET(block->data, 2, char), ucs_ctx->station_name, block->length - 2);
         break;
-      case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_START):
-      case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_STOP):
+      case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_START):
+      case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_STOP):
         block->length = 2;
         break;
-      case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_SIGNAL):
+      case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_SIGNAL):
         block->length = 4;
         *PTR_OFFSET(block->data, 2, uint16_t) = SPN_PP_HTONS(DCP_SIGNAL_LED_FLASH);
         break;
-      case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_FACTORY_RESET):
+      case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_FACTORY_RESET):
         block->length = 2;
         qual = ucs_ctx->factory_reset_qualifer;
         break;
-      case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_RESET_TO_FACTORY):
+      case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_RESET_TO_FACTORY):
         block->length = 2;
         qual = ucs_ctx->reset_to_factory_qualifer;
         break;

@@ -8,7 +8,7 @@
 #include <spn/iface.h>
 
 #ifndef SPN_DCP_MAX_SIZE
-#define SPN_DCP_MAX_SIZE 1416
+#define SPN_DCP_MAX_SIZE (SPN_RTC_MAXIMAL_FRAME_SIZE - SPN_PDU_HDR_SIZE)
 #endif
 
 #ifndef SPN_DCP_MIN_SIZE
@@ -31,13 +31,13 @@ enum dcp_qualifer_type { DCP_QUALIFER_TEMP = 0x00, DCP_QUALIFER_PERSISTENT = 0x0
 enum dcp_signal_type { DCP_SIGNAL_LED_FLASH = 0x0004 };
 
 enum dcp_option {
-  DCP_OPTION_IP = 0x01,
-  DCP_OPTION_DEV_PROP = 0x02,
-  DCP_OPTION_DHCP = 0x03,
-  DCP_OPTION_CONTROL = 0x05,
-  DCP_OPTION_DEV_INITIATIVE = 0x06,
-  DCP_OPTION_NME_DOMAIN = 0x07,
-  DCP_OPTION_ALL_SELECTOR = 0xFF
+  DCP_OPT_IP = 0x01,
+  DCP_OPT_DEV_PROP = 0x02,
+  DCP_OPT_DHCP = 0x03,
+  DCP_OPT_CONTROL = 0x05,
+  DCP_OPT_DEV_INITIATIVE = 0x06,
+  DCP_OPT_NME_DOMAIN = 0x07,
+  DCP_OPT_ALL_SELECTOR = 0xFF
 };
 
 enum dcp_sub_option_ip { DCP_SUB_OPT_IP_MAC = 0x01, DCP_SUB_OPT_IP_PARAM = 0x02, DCP_SUB_OPT_IP_FULL_SUITE = 0x03 };
@@ -194,7 +194,7 @@ struct dcp_header {
  * @brief dcp block
  *
  * @note For dcp block, the length is not fixed, it is calculated by the length of data
- * @note As response block, the first word of data is block_info or reserved(if option is not \c DCP_OPTION_IP)
+ * @note As response block, the first word of data is block_info or reserved(if option is not \c DCP_OPT_IP)
  *
  * | Field          | Size | Description             |
  * |----------------|------|-------------------------|

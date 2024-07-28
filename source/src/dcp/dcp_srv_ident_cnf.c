@@ -45,7 +45,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
       goto invalid_ret;
     }
     switch (BLOCK_TYPE(block->option, block->sub_option)) {
-      case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_PARAM):
+      case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
         SPN_ASSERT("Invalid block length", SPN_NTOHS(block->length) == 14);
 
         data.u16 = SPN_NTOHS(*(PTR_OFFSET(block->data, 0, uint16_t)));
@@ -72,9 +72,9 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
           goto invalid_ret;
         }
         break;
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR):
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS): {
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR):
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS): {
         static const db_id_t ids[] = {DB_ID_NAME_OF_VENDOR, DB_ID_NAME_OF_INTERFACE, DB_ID_NAME_OF_INTERFACE};
         static const uint8_t sub_options[] = {DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,
                                               DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS};
@@ -102,7 +102,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
         SPN_ASSERT("db_dup_str2obj failed", res == SPN_OK);
         break;
       }
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID):
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID):
         SPN_ASSERT("Invalid block length", SPN_NTOHS(block->length) == 6);
         data.u16 = SPN_NTOHS(*(PTR_OFFSET(block->data, 2, uint16_t)));
         res = db_add_object(&interface.objects, DB_ID_VENDOR_ID, 0, 0, 2, &data);
@@ -116,7 +116,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
           goto invalid_ret;
         }
         break;
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ROLE):
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ROLE):
         SPN_ASSERT("Invalid block length", SPN_NTOHS(block->length) == 4);
         data.u8 = *(PTR_OFFSET(block->data, 2, uint8_t));
         res = db_add_object(&interface.objects, DB_ID_DEVICE_ROLE, 0, 0, 1, &data);
@@ -124,7 +124,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
           goto invalid_ret;
         }
         break;
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_INSTANCE):
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_INSTANCE):
         SPN_ASSERT("Invalid block length", SPN_NTOHS(block->length) == 4);
         data.u16 = SPN_NTOHS(*(PTR_OFFSET(block->data, 2, uint16_t)));
         res = db_add_object(&interface.objects, DB_ID_DEVICE_INSTANCE, 0, 0, 2, &data);
@@ -132,7 +132,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
           goto invalid_ret;
         }
         break;
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_OPTIONS):
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_OPTIONS):
         block_length = SPN_NTOHS(block->length);
         data.u32 = 0;
         for (i = 2; i < block_length; i += 2) {

@@ -61,24 +61,24 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req: option %s(%02d:%02d)\n",
                   dcp_option_name(option >> 8, option & 0xFF), option >> 8, option & 0xFF);
     switch (option) {
-      case BLOCK_TYPE(DCP_OPTION_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR):
+      case BLOCK_TYPE(DCP_OPT_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR):
         block->length = 0;
         break;
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
         block->length = strlen(mcs->station_name);
         memcpy(block->data, mcs->station_name, block->length);
         break;
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
         block->length = strlen(mcs->alias_name);
         memcpy(block->data, mcs->alias_name, block->length);
         break;
-      case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_PARAM):
+      case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
         block->length = 12;
         *PTR_OFFSET(block->data, 0, uint32_t) = SPN_HTONL(mcs->ip_addr);
         *PTR_OFFSET(block->data, 4, uint32_t) = SPN_HTONL(mcs->ip_mask);
         *PTR_OFFSET(block->data, 8, uint32_t) = SPN_HTONL(mcs->ip_gw);
         break;
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID):
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID):
         block->length = 4;
         *PTR_OFFSET(block->data, 0, uint16_t) = SPN_HTONS(mcs->vendor_id);
         *PTR_OFFSET(block->data, 2, uint32_t) = SPN_HTONL(mcs->device_id);

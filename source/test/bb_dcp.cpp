@@ -80,12 +80,12 @@ TEST_F(Ddcp, ident_ind_syntax_filter) {
       0, 1,                                // response delay factor
       0, 16,                               // length
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 4,                                                       // length
       'f', 'o', 'o', 'b',                                         // data
                                                                   // block end
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS,  // option
       0, 4,                                                     // length
       'f', 'o', 'o', 'b',                                       // data
                                                                 // block end
@@ -101,12 +101,12 @@ TEST_F(Ddcp, ident_ind_syntax_filter) {
       0, 16,                               // length
       // block begin
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS,  // option
       0, 4,                                                     // length
       'f', 'o', 'o', 'b',                                       // data
                                                                 // block end
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 4,                                                       // length
       'f', 'o', 'o', 'b',                                         // data
                                                                   // block end
@@ -119,12 +119,12 @@ TEST_F(Ddcp, ident_ind_syntax_filter) {
       0, 1,                                // response delay factor
       0, 16,                               // length
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 4,                                                       // length
       'f', 'o', 'o', 'b',                                         // data
                                                                   // block end
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
       0, 4,                                                      // length
       'f', 'o', 'o', 'b',                                        // data
                                                                  // block end
@@ -152,12 +152,12 @@ TEST_F(Ddcp, ident_ind_name_of_vendor_but_db_not_set) {
       0, 16,                               // length
 
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 4,                                                       // length
       'f', 'o', 'o', 'b',                                         // data
                                                                   // block end
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
       0, 4,                                                      // length
       'f', 'b', 'b', 'f',                                        // data
   });
@@ -177,7 +177,7 @@ TEST_F(Ddcp, ident_ind_unknow_option) {
       0, 16,                               // length
 
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 4,                                                       // length
       'f', 'o', 'o', 'b',                                         // data
                                                                   // block end
@@ -202,12 +202,12 @@ TEST_F(Ddcp, ident_ind_name_of_vendor) {
       0, 16,                               // length
 
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 4,                                                       // length
       'f', 'o', 'o', 'b',                                         // data
                                                                   // block end
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
       0, 4,                                                      // length
       'f', 'b', 'b', 'f',                                        // data
   });
@@ -225,12 +225,12 @@ TEST_F(Ddcp, ident_ind_name_of_vendor) {
       0, 16,                               // length
 
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 4,                                                       // length
       'f', 'o', 'o', 'b',                                         // data
                                                                   // block end
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR,  // option
       0, 4,                                                      // length
       'f', 'x', 'x', 'f',                                        // data
   });
@@ -249,7 +249,7 @@ TEST_F(Ddcp, ident_ind_name_of_station) {
       0, 8,                                // length
 
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 4,                                                       // length
       'f', 'o', 'o', 'b',                                         // data
                                                                   // block end
@@ -273,7 +273,7 @@ TEST_F(Ddcp, ident_ind_name_of_station_dyn) {
       0, 14,                               // length
 
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 10,                                                      // length
       'f', 'o', 'o', 'b',                                         // data
       'b', 'o', 'o', 'f', 't', 't',
@@ -295,7 +295,7 @@ TEST_F(Ddcp, ident_ind_name_of_station_not_match) {
       0, 8,                                // length
 
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 4,                                                       // length
       'f', 'o', 'o', 'b',                                         // data
                                                                   // block end
@@ -313,7 +313,7 @@ TEST_F(Ddcp, ident_ind_name_of_station_dyn_name_with_invalid_length) {
       0, 8,                                // length
 
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 10,                                                      // length
       'f', 'o', 'o', 'b',                                         // data
       'b', 'o', 'o', 'f', 't', 't',
@@ -335,7 +335,7 @@ TEST_F(Ddcp, ident_ind_craped_frame) {
       0, 8,                                // length
 
       // block begin
-      DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
+      DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION,  // option
       0, 4,                                                       // length
       'f', 'o', 'o', 'b',                                         // data
                                                                   // block end

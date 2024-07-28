@@ -56,7 +56,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
     /* TODO: Global check, if we are in operational state, reject all */
 
     switch (BLOCK_TYPE(block->option, block->sub_option)) {
-      case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_PARAM):
+      case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
         SPN_ASSERT("invalid length", SPN_NTOHS(block->length) == 14);
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj);
         if (res < 0) {
@@ -96,7 +96,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
           set_netif_address((spn_iface_t*)obj->data.ptr, ip_addr, ip_mask, ip_gw);
         }
         break;
-      case BLOCK_TYPE(DCP_OPTION_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
         block_length = SPN_NTOHS(block->length);
         if (has_upper_case(PTR_OFFSET(block->data, 2, char), block_length - 2)) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Station name contains upper case characters\n");
@@ -112,16 +112,16 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
         res = db_dup_str2obj(obj, PTR_OFFSET(block->data, 2, char), block_length - 2);
         db_object_updated_ind(ctx->db, obj, qualifier);
         break;
-      case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_START):
-      case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_STOP):
+      case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_START):
+      case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_STOP):
         /* TODO: indicate start/stop */
         break;
-      case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_SIGNAL):
-      case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_FACTORY_RESET):
-      case BLOCK_TYPE(DCP_OPTION_CONTROL, DCP_SUB_OPT_CTRL_RESET_TO_FACTORY):
-      case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_FULL_SUITE):
-      case BLOCK_TYPE(DCP_OPTION_DHCP, DCP_SUB_OPT_DHCP_CLIENT_IDENT):
-      case BLOCK_TYPE(DCP_OPTION_NME_DOMAIN, DCP_SUB_OPT_NME_DOMAIN):
+      case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_SIGNAL):
+      case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_FACTORY_RESET):
+      case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_RESET_TO_FACTORY):
+      case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_FULL_SUITE):
+      case BLOCK_TYPE(DCP_OPT_DHCP, DCP_SUB_OPT_DHCP_CLIENT_IDENT):
+      case BLOCK_TYPE(DCP_OPT_NME_DOMAIN, DCP_SUB_OPT_NME_DOMAIN):
       default:
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Unsupported block %s(%02x:%02x)\n",
                       dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
