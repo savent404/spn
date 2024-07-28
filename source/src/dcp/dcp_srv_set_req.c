@@ -104,7 +104,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payl
 
   hdr->service_id = DCP_SRV_ID_SET;
   hdr->service_type = DCP_SRV_TYPE_REQ;
-  hdr->data_length = SPN_NTOHS(offset);
+  hdr->data_length = SPN_NTOHS(offset - sizeof(*hdr) - SPN_PDU_HDR_SIZE);
   hdr->response_delay = 0; /* NOTE: this is reserved, need to be zero */
   dcp_set_xid(hdr, ucs_ctx->xid);
 
