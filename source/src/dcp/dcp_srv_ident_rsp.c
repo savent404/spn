@@ -158,11 +158,11 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
   return sizeof(*block) + ((res + 1) & ~1);
 }
 
-int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payload, uint16_t length) {
-  struct dcp_header* hdr = (struct dcp_header*)payload;
+int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payload, uint16_t* length) {
+  struct dcp_header* hdr;
   struct db_object* obj;
   uint16_t block_info, idx;
-  int res, offset = sizeof(*hdr);
+  int res, offset = sizeof(*hdr) + SPN_PDU_HDR_SIZE;
   /* get ip block info */
   res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_BLOCK_INFO, &obj);
   if (res < 0) {
@@ -182,21 +182,20 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
     }
 
     offset += res;
-
-    if (offset > length) {
-      return -SPN_EMSGSIZE;
-    }
   }
 
   SPN_ASSERT("So tiny!", offset <= SPN_RTC_MAXIMAL_FRAME_SIZE);
+  hdr = PTR_OFFSET(payload, SPN_PDU_HDR_SIZE, struct dcp_header);
   hdr->service_id = DCP_SRV_ID_IDENT;
   hdr->service_type = DCP_SRV_TYPE_RES;
   dcp_set_xid(hdr, mcr->xid);
   hdr->response_delay = 0;
-  hdr->data_length = SPN_HTONS((offset - sizeof(*hdr) + 1) & ~1);
+  *length = offset;
+  hdr->data_length = SPN_HTONS((offset - sizeof(*hdr) - SPN_PDU_HDR_SIZE));
+  *PTR_OFFSET(payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_IDENT_RES);
 
   mcr->state = DCP_STATE_IDLE;
-  return offset;
+  return SPN_OK;
 invalid_option:
 
   mcr->state = DCP_STATE_IDLE;

@@ -7,6 +7,10 @@ else ()
     set(SPN_C_FLAGS "")
 endif()
 
+if (ENABLE_TESTS)
+    set(SPN_C_FLAGS ${SPN_C_FLAGS} -DSPN_TEST=1)
+endif ()
+
 # recursive search for source files and set to SOURCES
 file(GLOB_RECURSE SOURCES source/src/*.c)
 add_library(SPN ${SOURCES})

@@ -128,3 +128,7 @@
 #define SPN_DCP_DEBUG 0
 #define SPN_PDU_DEBUG 0
 #endif
+
+#ifndef SPN_TEST
+#define SPN_TEST 0
+#endif

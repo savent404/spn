@@ -1,9 +1,9 @@
-#include <lwip/timeouts.h>
 #include <spn/db.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
 #include <spn/pdu.h>
 #include <spn/sys.h>
+#include <spn/timeout.h>
 #include <string.h>
 
 #define BLOCK_TYPE(h, l) ((h << 8) | l)
@@ -127,7 +127,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
   mcs->state = DCP_STATE_IDENT_REQ;
   mcs->dcp_ctx = ctx;
 
-  sys_timeout(mcs->response_delay, dcp_srv_ident_req_cb, mcs);
+  SPN_TIMEOUT(mcs->response_delay, dcp_srv_ident_req_cb, mcs);
 
   return SPN_OK;
 

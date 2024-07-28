@@ -488,13 +488,13 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* pa
  *
  * @param ctx DCP context
  * @param mcr_ctx Multicast receiver context, used to track the state of multicast receiver
- * @param[out] payload DCP payload
- * @param length Length of payload
+ * @param[out] payload Link layer payload
+ * @param[out] length Length of payload
  * @note This function is called in input context, or timer context
  * @todo Implement the unit test by using \c dcp_srv_ident_cnf
  * @returns 0 on success, negative value on error
  */
-int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t length);
+int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr_ctx, void* payload, uint16_t* length);
 
 /**
  * @brief Service handler that triggered by device to identify itself

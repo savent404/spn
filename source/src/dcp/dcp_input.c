@@ -17,6 +17,7 @@ static void dcp_mcr_rsp_callback(void* arg) {
   struct db_object* obj;
   struct pbuf* out;
   int res;
+  uint16_t length;
   unsigned idx;
 
   res = db_get_interface(ctx->db, ctx->interface_id, &db_interface);
@@ -25,11 +26,9 @@ static void dcp_mcr_rsp_callback(void* arg) {
   out = pbuf_alloc(PBUF_LINK, SPN_DCP_MAX_SIZE + SPN_PDU_HDR_SIZE, PBUF_RAM);
   SPN_ASSERT("pbuf_alloc failed", out != NULL);
 
-  pbuf_remove_header(out, SPN_PDU_HDR_SIZE);
-  res = dcp_srv_ident_rsp(ctx, mcr_ctx, out->payload, out->tot_len);
-  SPN_ASSERT("dcp_srv_ident_rsp failed", res > 0);
-  out->tot_len = res;
-  pbuf_add_header(out, SPN_PDU_HDR_SIZE);
+  res = dcp_srv_ident_rsp(ctx, mcr_ctx, out->payload, &length);
+  SPN_ASSERT("dcp_srv_ident_rsp failed", res == SPN_OK);
+  out->tot_len = length;
 
   *PTR_OFFSET(out->payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_IDENT_RES);
 
