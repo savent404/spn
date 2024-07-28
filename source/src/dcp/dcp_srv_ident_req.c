@@ -88,7 +88,6 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
     /* handle general block header */
     block->option = option >> 8;
     block->sub_option = option & 0xFF;
-    block->length = SPN_HTONS(block->length);
 
     /* We need to make sure that the block is 2-byte aligned, and padidng with 0 if not */
     offset += block->length + sizeof(*block);
@@ -96,6 +95,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
       *PTR_OFFSET(payload, offset + offset_hdr, uint8_t) = 0;
       offset++;
     }
+    block->length = SPN_HTONS(block->length);
   }
 
   /* The payload have to satisfy the minimal frame size */
