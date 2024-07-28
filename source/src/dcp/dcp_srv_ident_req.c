@@ -27,7 +27,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
   int res = SPN_OK;
   unsigned idx, option, offset = 0;
   struct dcp_header* hdr;
-  struct dcp_block_gen* block;
+  struct dcp_block_hdr* block;
   uint32_t options = mcs->req_options_bitmap;
   const uint32_t required_opt = (1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_STATION) | (1 << DCP_BITMAP_ALL_SELECTOR) |
                                 (1 << DCP_BITMAP_DEVICE_PROPERTIES_NAME_OF_ALIAS);
@@ -57,7 +57,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
     options &= ~(1 << idx);
 
     option = dcp_option_bit_offset(idx);
-    block = PTR_OFFSET(p->payload, offset, struct dcp_block_gen);
+    block = PTR_OFFSET(p->payload, offset, struct dcp_block_hdr);
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req: option %s(%02d:%02d)\n",
                   dcp_option_name(option >> 8, option & 0xFF), option >> 8, option & 0xFF);
     switch (option) {

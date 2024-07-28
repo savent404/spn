@@ -8,7 +8,7 @@
 
 int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload, uint16_t length) {
   struct dcp_header* hdr;
-  struct dcp_block_gen* block;
+  struct dcp_block_hdr* block;
   int res = SPN_OK;
   unsigned options = ucs->req_options_bitmap;
   uint16_t dcp_length, offset = sizeof(*hdr);
@@ -30,7 +30,7 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
     uint8_t err;
     uint8_t opt, sub_opt;
     int idx;
-    block = PTR_OFFSET(payload, offset, struct dcp_block_gen);
+    block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     block->length = SPN_NTOHS(block->length);
     if (block->option != DCP_OPTION_CONTROL || block->sub_option != DCP_SUB_OPT_CTRL_RESPONSE) {
       SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: invalid block, want a response block\n");

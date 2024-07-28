@@ -11,7 +11,7 @@
 
 int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payload, uint16_t length) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
-  struct dcp_block_gen* block = (struct dcp_block_gen*)(hdr + 1);
+  struct dcp_block_hdr* block = (struct dcp_block_hdr*)(hdr + 1);
   struct db_object* obj;
   uint32_t options = 0, offset = sizeof(*hdr);
   uint16_t option;
@@ -29,7 +29,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   mcr->state = DCP_STATE_IDENT_IND;
 
   for (; offset < length; offset += dcp_block_next(block)) {
-    block = PTR_OFFSET(hdr, offset, struct dcp_block_gen);
+    block = PTR_OFFSET(hdr, offset, struct dcp_block_hdr);
     option = BLOCK_TYPE(block->option, block->sub_option);
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: option %s(%02x:%02x)\n",
                   dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);

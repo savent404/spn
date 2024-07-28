@@ -9,7 +9,7 @@
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
 
 static uint16_t rsp_block(void* payload, uint16_t option, uint8_t res) {
-  struct dcp_block_gen* block_hdr = (struct dcp_block_gen*)payload;
+  struct dcp_block_hdr* block_hdr = (struct dcp_block_hdr*)payload;
   block_hdr->option = DCP_OPTION_CONTROL;
   block_hdr->sub_option = DCP_SUB_OPT_CTRL_RESPONSE;
   block_hdr->length = SPN_HTONS(3);
@@ -32,7 +32,7 @@ int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
   for (idx = 0; idx < DCP_BITMAP_NUM && bitmap; idx++) {
     uint16_t opt;
     unsigned offset_prev = offset;
-    struct dcp_block_gen* block_hdr;
+    struct dcp_block_hdr* block_hdr;
     void* block_data;
 
     if (!(bitmap & (1 << idx))) {
@@ -40,7 +40,7 @@ int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
     }
     bitmap &= ~(1 << idx);
     opt = dcp_option_bit_offset(idx);
-    block_hdr = PTR_OFFSET(payload, offset, struct dcp_block_gen);
+    block_hdr = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     block_data = PTR_OFFSET(block_hdr, sizeof(*block_hdr), uint8_t);
     switch (opt) {
       case BLOCK_TYPE(DCP_OPTION_IP, DCP_SUB_OPT_IP_PARAM): {

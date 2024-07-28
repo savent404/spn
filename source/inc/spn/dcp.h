@@ -204,7 +204,7 @@ struct dcp_header {
  * | data           | n    | Data                    |
  * +-------------------------------------------------+
  */
-struct dcp_block_gen {
+struct dcp_block_hdr {
   uint8_t option;
   uint8_t sub_option;
   uint16_t length;
@@ -353,7 +353,7 @@ extern "C" {
  * DCP internal functions
  * @defgroup dcp_internal DCP Internal
  */
-int dcp_block_next(struct dcp_block_gen* block);
+int dcp_block_next(struct dcp_block_hdr* block);
 const char* dcp_option_name(uint8_t option, uint8_t sub_option);
 int dcp_option_bitmap(uint8_t option, uint8_t sub_option);
 uint16_t dcp_option_bit_offset(uint32_t offset);

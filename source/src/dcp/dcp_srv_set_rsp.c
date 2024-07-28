@@ -8,7 +8,7 @@
 
 int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
-  struct dcp_block_gen* block;
+  struct dcp_block_hdr* block;
   int offset = sizeof(*hdr), idx = 0;
   int has_ctrl_start = 0;
   int has_ctrl_stop = 0;
@@ -27,7 +27,7 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
 
   /* Pack CONTROL::START */
   if (has_ctrl_start) {
-    block = PTR_OFFSET(payload, offset, struct dcp_block_gen);
+    block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     block->option = DCP_OPTION_CONTROL;
     block->sub_option = DCP_SUB_OPT_CTRL_RESPONSE;
     block->length = SPN_HTONS(3);
@@ -42,7 +42,7 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
     if (ucr_ctx->req_options_bitmap & (1 << idx)) {
       uint16_t opt = dcp_option_bit_offset(idx);
       ucr_ctx->req_options_bitmap &= ~(1 << idx);
-      block = PTR_OFFSET(payload, offset, struct dcp_block_gen);
+      block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
       block->option = DCP_OPTION_CONTROL;
       block->sub_option = DCP_SUB_OPT_CTRL_RESPONSE;
       block->length = SPN_HTONS(3);
@@ -56,7 +56,7 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
 
   /* Pack CONTROL::STOP */
   if (has_ctrl_stop) {
-    block = PTR_OFFSET(payload, offset, struct dcp_block_gen);
+    block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     block->option = DCP_OPTION_CONTROL;
     block->sub_option = DCP_SUB_OPT_CTRL_RESPONSE;
     block->length = SPN_HTONS(3);

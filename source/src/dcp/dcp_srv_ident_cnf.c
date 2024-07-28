@@ -13,7 +13,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
                       uint16_t length,
                       uint16_t* pexiface) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
-  struct dcp_block_gen* block;
+  struct dcp_block_hdr* block;
   struct db_interface interface, *intf;
   struct db_object* obj;
   uint16_t dcp_length = SPN_NTOHS(hdr->data_length), block_length, exiface;
@@ -36,7 +36,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
   memset(&interface, 0, sizeof(interface));
 
   for (offset = sizeof(*hdr); offset < sizeof(*hdr) + dcp_length; offset += dcp_block_next(block)) {
-    block = PTR_OFFSET(payload, offset, struct dcp_block_gen);
+    block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_cnf: handling block %s(%02x:%02x)\n",
                   dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
     if (offset > length) {

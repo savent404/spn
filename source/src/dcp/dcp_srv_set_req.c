@@ -28,7 +28,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
   for (idx = 0; idx < DCP_BITMAP_NUM && options; idx++) {
     uint16_t type;
     uint16_t qual;
-    struct dcp_block_gen* block;
+    struct dcp_block_hdr* block;
 
     if ((options & (1 << idx)) == 0) {
       continue;
@@ -36,7 +36,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
 
     type = dcp_option_bit_offset(idx);
     qual = qualifer & (1 << idx) ? SPN_HTONS(DCP_QUALIFER_PERSISTENT) : SPN_HTONS(DCP_QUALIFER_TEMP);
-    block = PTR_OFFSET(p->payload, offset, struct dcp_block_gen);
+    block = PTR_OFFSET(p->payload, offset, struct dcp_block_hdr);
     options &= ~(1 << idx);
 
     SPN_UNUSED_ARG(ctx);

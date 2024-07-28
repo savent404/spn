@@ -61,7 +61,7 @@ const uint16_t supported_options[] = {
     BLOCK_TYPE(DCP_OPTION_ALL_SELECTOR, DCP_SUB_OPT_ALL_SELECTOR),
 };
 
-static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_info, struct dcp_block_gen* block) {
+static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_info, struct dcp_block_hdr* block) {
   struct db_object* obj;
   int res;
   block->option = option >> 8;
@@ -172,7 +172,7 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
 
   for (idx = 0; idx < ARRAY_SIZE(mandatory_options); idx++) {
     uint16_t option = mandatory_options[idx];
-    struct dcp_block_gen* block = PTR_OFFSET(payload, offset, struct dcp_block_gen);
+    struct dcp_block_hdr* block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
 
     res = pack_ident_rsp(ctx, option, block_info, block);
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "ident.rsp: option %s(%02d:%02d) res=%d\n",

@@ -15,7 +15,7 @@ static inline void object_view_update_req(struct db_object* object) {
 
 int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload, uint16_t length) {
   struct dcp_header* hdr;
-  struct dcp_block_gen* block;
+  struct dcp_block_hdr* block;
   unsigned offset, dcp_length;
 
   SPN_UNUSED_ARG(length);
@@ -32,7 +32,7 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
     struct db_object* object;
     int res;
 
-    block = PTR_OFFSET(payload, offset, struct dcp_block_gen);
+    block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     option = BLOCK_TYPE(block->option, block->sub_option);
     block_length = SPN_NTOHS(block->length);
     ucs->req_options_bitmap &= ~(1 << dcp_option_bitmap(block->option, block->sub_option));

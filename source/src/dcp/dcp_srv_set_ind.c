@@ -34,7 +34,7 @@ static inline void set_netif_address(spn_iface_t* iface, uint32_t addr, uint32_t
 int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
   struct db_object* obj;
-  struct dcp_block_gen* block;
+  struct dcp_block_hdr* block;
   uint16_t block_length, dcp_length = SPN_NTOHS(hdr->data_length);
   uint32_t req_options = 0, qualifier, ip_addr, ip_mask, ip_gw, idx;
   unsigned offset, bitmap_idx;
@@ -44,7 +44,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
 
   for (offset = sizeof(*hdr); offset < sizeof(*hdr) + dcp_length; offset += dcp_block_next(block)) {
     enum dcp_block_error err = DCP_BLOCK_ERR_OK;
-    block = PTR_OFFSET(hdr, offset, struct dcp_block_gen);
+    block = PTR_OFFSET(hdr, offset, struct dcp_block_hdr);
     qualifier = SPN_NTOHS(*PTR_OFFSET(block->data, 0, uint16_t));
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Handling block %s(%02x:%02x)\n",
                   dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
