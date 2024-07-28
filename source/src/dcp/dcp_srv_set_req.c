@@ -85,11 +85,10 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payl
     /* set padding to zero if length is odd */
     if (block->length & 1) {
       *PTR_OFFSET(block->data, block->length, uint8_t) = 0;
-      block->length++;
     }
 
     /* Swap length after calculated offset */
-    offset += sizeof(*block) + block->length;
+    offset += sizeof(*block) + (block->length + 1) & ~1;
     block->length = SPN_HTONS(block->length);
   }
 
