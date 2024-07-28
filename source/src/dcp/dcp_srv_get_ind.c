@@ -30,7 +30,7 @@ int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
     offset = sizeof(*hdr) + idx * 2;
     option = *PTR_OFFSET(payload, offset, uint8_t);
     sub_option = *PTR_OFFSET(payload, offset + 1, uint8_t);
-    res = dcp_option_bitmap(option, sub_option);
+    res = dcp_option_bit_idx(option, sub_option);
     if (res< 0) {
       continue;
     }

@@ -39,7 +39,7 @@ int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
       continue;
     }
     bitmap &= ~(1 << idx);
-    opt = dcp_option_bit_offset(idx);
+    opt = dcp_option_from_bit_idx(idx);
     block_hdr = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     block_data = PTR_OFFSET(block_hdr, sizeof(*block_hdr), uint8_t);
     switch (opt) {

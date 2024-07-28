@@ -40,7 +40,7 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
 
   for (idx = 0; idx < DCP_BIT_IDX_NUM && ucr_ctx->req_options_bitmap; idx++) {
     if (ucr_ctx->req_options_bitmap & (1 << idx)) {
-      uint16_t opt = dcp_option_bit_offset(idx);
+      uint16_t opt = dcp_option_from_bit_idx(idx);
       ucr_ctx->req_options_bitmap &= ~(1 << idx);
       block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
       block->option = DCP_OPT_CONTROL;

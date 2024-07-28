@@ -89,7 +89,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident_ind: unknown option %d\n", block->option);
         goto invalid_req;
     }
-    options |= 1 << dcp_option_bitmap(block->option, block->sub_option);
+    options |= 1 << dcp_option_bit_idx(block->option, block->sub_option);
   }
 
   if (offset != length) {

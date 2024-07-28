@@ -35,7 +35,7 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
     block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     option = BLOCK_TYPE(block->option, block->sub_option);
     block_length = SPN_NTOHS(block->length);
-    ucs->req_options_bitmap &= ~(1 << dcp_option_bitmap(block->option, block->sub_option));
+    ucs->req_options_bitmap &= ~(1 << dcp_option_bit_idx(block->option, block->sub_option));
 
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: get.cnf: processing block %s(%04x)...\n",
                   dcp_option_name(option >> 8, option & 0xFF), option);

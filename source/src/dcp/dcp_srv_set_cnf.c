@@ -44,7 +44,7 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
     sub_opt = *PTR_OFFSET(block->data, 1, uint8_t);
     err = SPN_NTOHS(*PTR_OFFSET(block->data, 2, uint8_t));
 
-    idx = dcp_option_bitmap(opt, sub_opt);
+    idx = dcp_option_bit_idx(opt, sub_opt);
     if (idx < 0) {
       SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: invalid option %d.%d\n", opt, sub_opt);
       continue;

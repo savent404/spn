@@ -376,12 +376,48 @@ extern "C" {
  * DCP internal functions
  * @defgroup dcp_internal DCP Internal
  */
-int dcp_block_next(struct dcp_block_hdr* block);
-const char* dcp_option_name(uint8_t option, uint8_t sub_option);
-int dcp_option_bitmap(uint8_t option, uint8_t sub_option);
-uint16_t dcp_option_bit_offset(uint32_t offset);
 
+/**
+ * @brief walk to next block
+ * @param block current block
+ * @return offset from current block to next block
+ */
+int dcp_block_next(struct dcp_block_hdr* block);
+
+/**
+ * @brief get name of option/sub option
+ * @note this function is invalid if \c SPN_DEBUG is disabled
+ * @return name of option/sub option
+ */
+const char* dcp_option_name(uint8_t option, uint8_t sub_option);
+
+/**
+ * @brief get \c dcp_bitmap_idx of option/sub option
+ * @param option option
+ * @param sub_option sub option
+ * @return \c dcp_bitmap_idx
+ */
+int dcp_option_bit_idx(uint8_t option, uint8_t sub_option);
+
+/**
+ * @brief get option/sub option from \c dcp_bitmap_idx
+ * @param offset \c dcp_bitmap_idx
+ * @return BLOCK_TYPE(option, sub_option)
+ */
+uint16_t dcp_option_from_bit_idx(uint32_t offset);
+
+/**
+ * @brief set xid to dcp header
+ * @param hdr dcp header
+ * @param xid xid, LE
+ */
 void dcp_set_xid(struct dcp_header* hdr, uint32_t xid);
+
+/**
+ * @brief get xid from dcp header
+ * @param hdr dcp header
+ * @return xid, LE
+ */
 uint32_t dcp_get_xid(struct dcp_header* hdr);
 
 /* this function be opened cause it is used in multiple source file. do not use it in any where */

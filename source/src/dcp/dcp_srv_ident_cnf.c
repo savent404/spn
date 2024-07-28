@@ -138,7 +138,7 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
         for (i = 2; i < block_length; i += 2) {
           uint8_t opt = *(PTR_OFFSET(block->data, i, uint8_t));
           uint8_t sub_opt = *(PTR_OFFSET(block->data, i + 1, uint8_t));
-          data.u32 |= 1 << dcp_option_bitmap(opt, sub_opt);
+          data.u32 |= 1 << dcp_option_bit_idx(opt, sub_opt);
         }
         res = db_add_object(&interface.objects, DB_ID_DEVICE_OPTIONS, 0, 0, 4, &data);
         if (res != SPN_OK) {

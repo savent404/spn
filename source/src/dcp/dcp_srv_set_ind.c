@@ -50,7 +50,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
                   dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
 
     /* general attribute needed for all blocks */
-    bitmap_idx = dcp_option_bitmap(block->option, block->sub_option);
+    bitmap_idx = dcp_option_bit_idx(block->option, block->sub_option);
     req_options |= 1 << bitmap_idx;
 
     /* TODO: Global check, if we are in operational state, reject all */

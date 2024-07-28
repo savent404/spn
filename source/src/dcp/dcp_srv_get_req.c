@@ -38,7 +38,7 @@ int dcp_srv_get_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, struct pbuf* p
     /* clear the bit */
     options &= ~(1 << idx);
 
-    option = dcp_option_bit_offset(idx);
+    option = dcp_option_from_bit_idx(idx);
     SPN_ASSERT("invalid option", option);
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: get.req: quering type: %s(%04x)...\n",
                   dcp_option_name(option >> 8, option & 0xFF), option);

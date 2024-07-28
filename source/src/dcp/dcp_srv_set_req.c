@@ -34,7 +34,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbu
       continue;
     }
 
-    type = dcp_option_bit_offset(idx);
+    type = dcp_option_from_bit_idx(idx);
     qual = qualifer & (1 << idx) ? SPN_HTONS(DCP_QUALIFER_PERSISTENT) : SPN_HTONS(DCP_QUALIFER_TEMP);
     block = PTR_OFFSET(p->payload, offset, struct dcp_block_hdr);
     options &= ~(1 << idx);

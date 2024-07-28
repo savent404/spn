@@ -56,7 +56,7 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, struct pbuf*
     }
     options &= ~(1 << idx);
 
-    option = dcp_option_bit_offset(idx);
+    option = dcp_option_from_bit_idx(idx);
     block = PTR_OFFSET(p->payload, offset, struct dcp_block_hdr);
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req: option %s(%02d:%02d)\n",
                   dcp_option_name(option >> 8, option & 0xFF), option >> 8, option & 0xFF);
