@@ -458,6 +458,7 @@ void _dcp_srv_get_req_timeout(void* arg);
  * @param[out] length Length of payload
  * @return \c SPN_OK on success, negative value on error
  * @return \c -SPN_EINVAL somebody gives me a wrong parameters
+ * @return \c -SPN_EBUSY if the context is not in idle state
  * @note Syntax: DCP-Header,[NameOfStation]^[AliasName], [OtherFilter]*
  * @note One instance is enough for controller
  * @todo Implement reset of filters

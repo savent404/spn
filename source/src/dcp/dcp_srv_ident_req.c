@@ -33,17 +33,16 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
                                 (1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_ALIAS);
   const unsigned offset_hdr = SPN_PDU_HDR_SIZE + sizeof(*hdr);
 
-  /* Syntax check */
-  if ((options & required_opt) == 0) {
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req: missing required options\n");
-    return -SPN_EINVAL;
-  }
+  /* Some mistackes only occurs in our stack */
+  SPN_ASSERT("missing required options", (options & required_opt) != 0);
+  SPN_ASSERT("invalid length", length != NULL);
 
   if (mcs->state != DCP_STATE_IDLE) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req: invalid state %d\n", mcs->state);
-    return -SPN_EINVAL;
+    return -SPN_EBUSY;
   }
 
+  /* User gives us invalid external interface id */
   if (mcs->external_interface_id < SPN_EXTERNAL_INTERFACE_BASE) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "dcp_srv_ident_req: invalid response interface id %d\n", mcs->external_interface_id);
     return -SPN_EINVAL;
@@ -89,18 +88,25 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
     /* handle general block header */
     block->option = option >> 8;
     block->sub_option = option & 0xFF;
-    offset += block->length + sizeof(*block);
     block->length = SPN_HTONS(block->length);
-    offset = (offset + 1) & ~1; /* align to words */
+
+    /* We need to make sure that the block is 2-byte aligned, and padidng with 0 if not */
+    offset += block->length + sizeof(*block);
+    if (offset & 1) {
+      *PTR_OFFSET(payload, offset + offset_hdr, uint8_t) = 0;
+      offset++;
+    }
   }
 
-  if (offset < SPN_RTC_MINIMAL_FRAME_SIZE) {
-    memset(PTR_OFFSET(payload, offset + offset_hdr, uint8_t), 0, SPN_DCP_MIN_SIZE - offset - offset_hdr);
+  /* The payload have to satisfy the minimal frame size */
+  if ((offset + offset_hdr) < SPN_RTC_MINIMAL_FRAME_SIZE) {
+    memset(PTR_OFFSET(payload, offset + offset_hdr, uint8_t), 0, SPN_RTC_MINIMAL_FRAME_SIZE - offset - offset_hdr);
     *length = SPN_RTC_MINIMAL_FRAME_SIZE;
   } else {
     *length = offset + offset_hdr;
   }
 
+  /* handle general header */
   hdr = PTR_OFFSET(payload, SPN_PDU_HDR_SIZE, struct dcp_header);
   hdr->data_length = SPN_HTONS(offset);
   hdr->response_delay = SPN_HTONS(mcs->response_delay_factory);
@@ -114,8 +120,6 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
    * Response delay is in 10ms units, but the minimum value is 400ms.
    * 400ms if factor < 2
    * round(1s + 10ms * factor) if response_delay_factory >= 2
-   *
-   * @note Fuck the vendors, that giving factor(0) some meanings.
    */
   mcs->response_delay =
       mcs->response_delay_factory > 1 ? ((1999 + mcs->response_delay_factory * 10) / 1000 * 1000) : 400;
