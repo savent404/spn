@@ -49,7 +49,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
     enum dcp_block_error err = DCP_BLOCK_ERR_OK;
     block = PTR_OFFSET(hdr, offset, struct dcp_block_hdr);
     qualifier = SPN_NTOHS(*PTR_OFFSET(block->data, 0, uint16_t));
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: Set ind: Handling block %s(%02x:%02x)\n",
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Handling block %s(%02x:%02x)\n",
                   dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
 
     /* general attribute needed for all blocks */
@@ -63,7 +63,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
         SPN_ASSERT("invalid length", SPN_NTOHS(block->length) == 14);
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj);
         if (res < 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Failed to get IP object\n");
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Failed to get IP object\n");
           err = DCP_BLOCK_ERR_LOCAL_ERR;
           goto internal_err;
         }
@@ -73,7 +73,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
 
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &obj);
         if (res < 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Failed to get subnet mask object\n");
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Failed to get subnet mask object\n");
           err = DCP_BLOCK_ERR_LOCAL_ERR;
           goto internal_err;
         }
@@ -83,7 +83,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
 
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &obj);
         if (res < 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Failed to get gateway object\n");
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Failed to get gateway object\n");
           goto internal_err;
         }
         ip_gw = *PTR_OFFSET(block->data, 10, uint32_t);
@@ -102,13 +102,13 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
         block_length = SPN_NTOHS(block->length);
         if (has_upper_case(PTR_OFFSET(block->data, 2, char), block_length - 2)) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Station name contains upper case characters\n");
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Station name contains upper case characters\n");
           err = DCP_BLOCK_ERR_RESOURCE_ERR;
           break;
         }
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj);
         if (res < 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Failed to get station name object\n");
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Failed to get station name object\n");
           goto internal_err;
         }
         db_free_objstr(obj);
@@ -126,7 +126,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
       case BLOCK_TYPE(DCP_OPT_DHCP, DCP_SUB_OPT_DHCP_CLIENT_IDENT):
       case BLOCK_TYPE(DCP_OPT_NME_DOMAIN, DCP_SUB_OPT_NME_DOMAIN):
       default:
-        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Unsupported block %s(%02x:%02x)\n",
+        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Unsupported block %s(%02x:%02x)\n",
                       dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
         err = DCP_BLOCK_ERR_OPTION_NOT_SUPPORTED;
         break;
