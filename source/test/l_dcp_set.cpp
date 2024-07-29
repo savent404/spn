@@ -21,6 +21,14 @@ struct DcpSet : public ::testing::Test {
     device->db_info_setup(0, 0x0a000001, {0x00, 0x00, 0x00, 0x00, 0x00, 0x01}, "device", "iod", 0x1234, 0x5678, 0x01);
     controller->db_info_setup(0, 0x0a000002, {0x00, 0x00, 0x00, 0x00, 0x00, 0x02}, "controller", "ioc", 0x1234, 0x5678,
                               0x02);
+    // assume that controller find device by DCP.ident
+    char buf[1500];
+    uint16_t buf_len;
+    controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+    dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len);
+    dcp_srv_ident_ind(&device->dcp, &device->dcp.mcr_ctx[0], buf + 2, buf_len - 2);
+    dcp_srv_ident_rsp(&device->dcp, &device->dcp.mcr_ctx[0], buf, &buf_len);
+    dcp_srv_ident_cnf(&controller->dcp, &controller->dcp.mcs_ctx, buf + 2, buf_len - 2, NULL);
   }
 
   void TearDown() override {
@@ -96,7 +104,6 @@ TEST_F(DcpSet, SetNameOfStation_timeout) {
   _dcp_srv_set_req_timeout(&controller->dcp.ucs_ctx);
   ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), -SPN_EAGAIN);
 }
-
 
 TEST_F(DcpSet, SetNameOfStation_uppercase) {
   static char buf[1500];

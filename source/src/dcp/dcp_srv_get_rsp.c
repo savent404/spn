@@ -1,4 +1,5 @@
 #include <spn/db.h>
+#include <spn/db_ll.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
 #include <spn/pdu.h>
@@ -20,7 +21,7 @@ static uint16_t rsp_block(void* payload, uint16_t option, uint8_t res) {
   return sizeof(*block_hdr) + 4;
 }
 
-int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload, uint16_t *length) {
+int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload, uint16_t* length) {
   struct dcp_header* hdr;
   struct db_object* object;
   unsigned idx = 0, offset;
@@ -71,6 +72,12 @@ int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
         *PTR_OFFSET(block_hdr->data, 10, uint32_t) = object->data.u32;
         block_hdr->length = 14;
       } break;
+      case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
+        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &object);
+        SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
+        *PTR_OFFSET(block_hdr->data, 2, uint16_t) = 0;
+        block_hdr->length = 2 + db_strcpy_obj2str(&block_hdr->data[2], object);
+        break;
 
       default:
         res = DCP_BLOCK_ERR_OPTION_NOT_SUPPORTED;

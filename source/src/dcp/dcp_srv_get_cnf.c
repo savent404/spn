@@ -20,11 +20,13 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
 
   SPN_UNUSED_ARG(length);
 
+  SPN_ASSERT("Invalid external interface id", ucs->ex_ifr >= SPN_EXTERNAL_INTERFACE_BASE);
+
   hdr = PTR_OFFSET(payload, 0, struct dcp_header);
   dcp_length = SPN_NTOHS(hdr->data_length);
   if (dcp_get_xid(hdr) != ucs->xid) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: get.cnf: xid mismatch, expect %d, got %d\n", ucs->xid, dcp_get_xid(hdr));
-    return SPN_EINVAL;
+    return -SPN_EAGAIN;
   }
 
   for (offset = sizeof(*hdr); offset < sizeof(*hdr) + dcp_length; offset += dcp_block_next(block)) {
@@ -48,29 +50,29 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
         uint32_t ip_gateway = SPN_NTOHL(*PTR_OFFSET(block->data, 10, uint32_t));
         SPN_ASSERT("invalid block length", block_length == 14);
 
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_BLOCK_INFO, &object);
+        res = db_get_interface_object(ctx->db, ucs->ex_ifr, DB_ID_IP_BLOCK_INFO, &object);
         SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         object->data.u16 = block_info;
         object_view_update_req(object);
 
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &object);
+        res = db_get_interface_object(ctx->db, ucs->ex_ifr, DB_ID_IP_ADDR, &object);
         SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         object->data.u32 = ip_addr;
         object_view_update_req(object);
 
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &object);
+        res = db_get_interface_object(ctx->db, ucs->ex_ifr, DB_ID_IP_MASK, &object);
         SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         object->data.u32 = ip_mask;
         object_view_update_req(object);
 
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &object);
+        res = db_get_interface_object(ctx->db, ucs->ex_ifr, DB_ID_IP_GATEWAY, &object);
         SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         object->data.u32 = ip_gateway;
         object_view_update_req(object);
         break;
       }
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION): {
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &object);
+        res = db_get_interface_object(ctx->db, ucs->ex_ifr, DB_ID_NAME_OF_INTERFACE, &object);
         SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         SPN_ASSERT("invalid block length", block_length >= 2);
         /* NOTE: more condition could save some cost of dynamic memory allocation
@@ -81,12 +83,12 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
       }
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ID): {
         SPN_ASSERT("invalid block length", block_length == 6);
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_DEVICE_ID, &object);
+        res = db_get_interface_object(ctx->db, ucs->ex_ifr, DB_ID_DEVICE_ID, &object);
         SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         object->data.u16 = SPN_NTOHS(*PTR_OFFSET(block->data, 4, uint16_t));
         object_view_update_req(object);
 
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_VENDOR_ID, &object);
+        res = db_get_interface_object(ctx->db, ucs->ex_ifr, DB_ID_VENDOR_ID, &object);
         SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         object->data.u16 = SPN_NTOHS(*PTR_OFFSET(block->data, 2, uint16_t));
         object_view_update_req(object);
@@ -94,7 +96,7 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
       }
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_ROLE): {
         SPN_ASSERT("invalid block length", block_length == 4);
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_DEVICE_ROLE, &object);
+        res = db_get_interface_object(ctx->db, ucs->ex_ifr, DB_ID_DEVICE_ROLE, &object);
         SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         object->data.u16 = SPN_NTOHS(*PTR_OFFSET(block->data, 2, uint16_t));
         object_view_update_req(object);
@@ -106,14 +108,14 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
       }
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR): {
         SPN_ASSERT("invalid block length", block_length >= 2);
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_VENDOR, &object);
+        res = db_get_interface_object(ctx->db, ucs->ex_ifr, DB_ID_NAME_OF_VENDOR, &object);
         SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         db_free_objstr(object);
         db_dup_str2obj(object, PTR_OFFSET(block->data, 2, char), block_length - 2);
         break;
       }
       default:
-        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "Unhandled option:%04x\n", option);
+        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: get.cnf: Unhandled option:%04x\n", option);
         break;
     }
   }

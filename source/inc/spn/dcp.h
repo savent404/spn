@@ -269,6 +269,7 @@ struct dcp_ucs_ctx {
                                                       * @note reset to factory and factory reset are special qualifier
                                                       */
   enum dcp_block_error resp_errors[DCP_BIT_IDX_NUM]; /* responsed erros, only the requested option be valid */
+  uint16_t ex_ifr;                                   /* Indicate the external interface id */
   enum dcp_state state;
 
   /* set if option is requested */
@@ -396,7 +397,7 @@ void dcp_block_padding(struct dcp_block_hdr* block);
  * @param length Link layer payload length
  * @return Link layer payload length (with padding)
  */
-uint16_t dcp_padding(void *payload, uint16_t length);
+uint16_t dcp_padding(void* payload, uint16_t length);
 
 /**
  * @brief get name of option/sub option
@@ -531,14 +532,14 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
                       uint16_t length,
                       uint16_t* ex_itface_id);
 
-int dcp_srv_get_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t *length);
+int dcp_srv_get_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t* length);
 int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
-int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t *length);
+int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t* length);
 int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t length);
 
-int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t *length);
+int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t* length);
 int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
-int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t *length);
+int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t* length);
 int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t length);
 
 int dcp_srv_hello_req();
