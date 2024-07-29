@@ -45,9 +45,9 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
     switch (option) {
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM): {
         uint16_t block_info = SPN_NTOHS(*PTR_OFFSET(block->data, 0, uint16_t));
-        uint32_t ip_addr = SPN_NTOHL(*PTR_OFFSET(block->data, 2, uint32_t));
-        uint32_t ip_mask = SPN_NTOHL(*PTR_OFFSET(block->data, 6, uint32_t));
-        uint32_t ip_gateway = SPN_NTOHL(*PTR_OFFSET(block->data, 10, uint32_t));
+        uint32_t ip_addr = *PTR_OFFSET(block->data, 2, uint32_t);
+        uint32_t ip_mask = *PTR_OFFSET(block->data, 6, uint32_t);
+        uint32_t ip_gateway = *PTR_OFFSET(block->data, 10, uint32_t);
         SPN_ASSERT("invalid block length", block_length == 14);
 
         res = db_get_interface_object(ctx->db, ucs->ex_ifr, DB_ID_IP_BLOCK_INFO, &object);

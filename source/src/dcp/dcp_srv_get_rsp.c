@@ -44,31 +44,19 @@ int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
     switch (opt) {
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM): {
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_BLOCK_INFO, &object);
-        if (res < 0) {
-          res = DCP_BLOCK_ERR_RESOURCE_ERR;
-          goto rsp_err;
-        }
+        SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         *PTR_OFFSET(block_hdr->data, 0, uint16_t) = object->data.u16;
 
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &object);
-        if (res < 0) {
-          res = DCP_BLOCK_ERR_RESOURCE_ERR;
-          goto rsp_err;
-        }
+        SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         *PTR_OFFSET(block_hdr->data, 2, uint32_t) = object->data.u32;
 
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &object);
-        if (res < 0) {
-          res = DCP_BLOCK_ERR_RESOURCE_ERR;
-          goto rsp_err;
-        }
+        SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         *PTR_OFFSET(block_hdr->data, 6, uint32_t) = object->data.u32;
 
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &object);
-        if (res < 0) {
-          res = DCP_BLOCK_ERR_RESOURCE_ERR;
-          goto rsp_err;
-        }
+        SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
         *PTR_OFFSET(block_hdr->data, 10, uint32_t) = object->data.u32;
         block_hdr->length = 14;
       } break;

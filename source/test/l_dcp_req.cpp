@@ -50,7 +50,6 @@ TEST_F(DcpGet, GetNameOfStation) {
             SPN_OK);
   db_dup_str2obj(obj, "dummy", 5);
 
-
   controller->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
   controller->dcp.ucs_ctx.ex_ifr = SPN_EXTERNAL_INTERFACE_BASE;
   ASSERT_EQ(dcp_srv_get_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
@@ -84,4 +83,37 @@ TEST_F(DcpGet, GetNameOfStation_timeout) {
   EXPECT_EQ(db_object_len(obj), 6);
   EXPECT_EQ(db_is_static_string_object(obj), true);
   EXPECT_EQ(strncmp(obj->data.str, "device", 6), 0);
+}
+
+TEST_F(DcpGet, GetIpParam) {
+  static char buf[1500];
+  uint16_t buf_len;
+  struct dcp_ucr_ctx ucr;
+  struct db_object* obj;
+
+  // overwrite the ip address and mask, so we can check if it is changed to the correct value
+  ASSERT_EQ(db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_ADDR, &obj), SPN_OK);
+  obj->data.u32 = 0;
+  ASSERT_EQ(db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_MASK, &obj), SPN_OK);
+  obj->data.u32 = 0;
+  ASSERT_EQ(db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_GATEWAY, &obj), SPN_OK);
+  obj->data.u32 = 0;
+
+  controller->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_IP_PARAMETER;
+  controller->dcp.ucs_ctx.ex_ifr = SPN_EXTERNAL_INTERFACE_BASE;
+  ASSERT_EQ(dcp_srv_get_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_get_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_get_rsp(&device->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_get_cnf(&controller->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
+
+  // check the result
+  ASSERT_EQ(db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_ADDR, &obj), SPN_OK);
+  EXPECT_EQ(db_object_len(obj), 4);
+  EXPECT_EQ(db_is_static_object(obj), true);
+  EXPECT_EQ(obj->data.u32, 0x0a000001);
+
+  ASSERT_EQ(db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_MASK, &obj), SPN_OK);
+  EXPECT_EQ(db_object_len(obj), 4);
+  EXPECT_EQ(db_is_static_object(obj), true);
+  EXPECT_EQ(obj->data.u32, 0x00FFFFFF);
 }
