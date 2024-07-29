@@ -88,7 +88,7 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payl
     }
 
     /* Swap length after calculated offset */
-    offset += sizeof(*block) + (block->length + 1) & ~1;
+    offset += sizeof(*block) + ((block->length + 1) & ~1);
     block->length = SPN_HTONS(block->length);
   }
 
