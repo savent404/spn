@@ -49,7 +49,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
     enum dcp_block_error err = DCP_BLOCK_ERR_OK;
     block = PTR_OFFSET(hdr, offset, struct dcp_block_hdr);
     qualifier = SPN_NTOHS(*PTR_OFFSET(block->data, 0, uint16_t));
-    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP Set ind: Handling block %s(%02x:%02x)\n",
+    SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: Set ind: Handling block %s(%02x:%02x)\n",
                   dcp_option_name(block->option, block->sub_option), block->option, block->sub_option);
 
     /* general attribute needed for all blocks */
