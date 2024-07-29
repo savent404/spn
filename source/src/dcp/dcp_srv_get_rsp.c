@@ -20,14 +20,12 @@ static uint16_t rsp_block(void* payload, uint16_t option, uint8_t res) {
   return sizeof(*block_hdr) + 4;
 }
 
-int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload, uint16_t length) {
-  struct dcp_header* hdr = (struct dcp_header*)payload;
+int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload, uint16_t *length) {
+  struct dcp_header* hdr;
   struct db_object* object;
-  unsigned idx = 0, offset = sizeof(*hdr);
+  unsigned idx = 0, offset = sizeof(*hdr) + SPN_PDU_HDR_SIZE;
   unsigned bitmap = ucr->req_options_bitmap;
   int res;
-
-  SPN_UNUSED_ARG(length);
 
   for (idx = 0; idx < DCP_BIT_IDX_NUM && bitmap; idx++) {
     uint16_t opt;
@@ -88,17 +86,22 @@ int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
     offset += rsp_block(block_hdr, opt, res);
   }
 
+  hdr = PTR_OFFSET(payload, SPN_PDU_HDR_SIZE, struct dcp_header);
   hdr->service_id = DCP_SRV_ID_GET;
   hdr->service_type = DCP_SRV_TYPE_RES;
   dcp_set_xid(hdr, ucr->xid);
   hdr->data_length = SPN_HTONS(offset - sizeof(*hdr));
   hdr->response_delay = 0;
 
+  *PTR_OFFSET(payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_GET_SET);
+
   /* fill zero for padding */
   if (offset < SPN_RTC_MINIMAL_FRAME_SIZE) {
     memset(PTR_OFFSET(payload, offset, uint8_t), 0, SPN_RTC_MINIMAL_FRAME_SIZE - offset);
-    offset = SPN_RTC_MINIMAL_FRAME_SIZE;
+    *length = SPN_RTC_MINIMAL_FRAME_SIZE;
+  } else {
+    *length = offset;
   }
 
-  return offset;
+  return SPN_OK;
 }

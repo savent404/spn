@@ -517,9 +517,9 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
                       uint16_t length,
                       uint16_t* ex_itface_id);
 
-int dcp_srv_get_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, struct pbuf* p);
+int dcp_srv_get_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t *length);
 int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
-int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
+int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t *length);
 int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t length);
 
 int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t *length);
