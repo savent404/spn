@@ -43,7 +43,7 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
     }
     opt = *PTR_OFFSET(block->data, 0, uint8_t);
     sub_opt = *PTR_OFFSET(block->data, 1, uint8_t);
-    err = SPN_NTOHS(*PTR_OFFSET(block->data, 2, uint8_t));
+    err = *PTR_OFFSET(block->data, 2, uint8_t);
 
     idx = dcp_option_bit_idx(opt, sub_opt);
     if (idx < 0) {

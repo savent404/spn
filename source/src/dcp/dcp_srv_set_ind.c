@@ -60,36 +60,27 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
 
     switch (BLOCK_TYPE(block->option, block->sub_option)) {
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
-        SPN_ASSERT("invalid length", SPN_NTOHS(block->length) == 14);
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj);
-        if (res < 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Failed to get IP object\n");
-          err = DCP_BLOCK_ERR_LOCAL_ERR;
-          goto internal_err;
+        if (SPN_NTOHS(block->length) != 14) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Invalid length for IP_PARAM block, expected 14, got %d\n",
+                        SPN_NTOHS(block->length));
+          err = DCP_BLOCK_ERR_RESOURCE_ERR;
+          break;
         }
+        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj);
+        SPN_ASSERT("Get IP object failed", res == SPN_OK);
         ip_addr = *PTR_OFFSET(block->data, 2, uint32_t);
         obj->data.u32 = ip_addr;
         db_object_updated_ind(ctx->db, obj, qualifier);
-
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &obj);
-        if (res < 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Failed to get subnet mask object\n");
-          err = DCP_BLOCK_ERR_LOCAL_ERR;
-          goto internal_err;
-        }
+        SPN_ASSERT("Get subnet mask object failed", res == SPN_OK);
         ip_mask = *PTR_OFFSET(block->data, 6, uint32_t);
         obj->data.u32 = ip_mask;
         db_object_updated_ind(ctx->db, obj, qualifier);
-
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &obj);
-        if (res < 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Failed to get gateway object\n");
-          goto internal_err;
-        }
+        SPN_ASSERT("Get gateway object failed", res == SPN_OK);
         ip_gw = *PTR_OFFSET(block->data, 10, uint32_t);
         obj->data.u32 = ip_gw;
         db_object_updated_ind(ctx->db, obj, qualifier);
-
         for (idx = 0; idx < ARRAY_SIZE(ctx->db->interfaces[0].ports); idx++) {
           res = db_get_port_object(ctx->db, ctx->interface_id, (int)idx, DB_ID_IFACE, &obj);
           if (res == -SPN_ENOENT) {
@@ -107,10 +98,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
           break;
         }
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj);
-        if (res < 0) {
-          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Failed to get station name object\n");
-          goto internal_err;
-        }
+        SPN_ASSERT("Get station name object failed", res == SPN_OK);
         db_free_objstr(obj);
         res = db_dup_str2obj(obj, PTR_OFFSET(block->data, 2, char), block_length - 2);
         db_object_updated_ind(ctx->db, obj, qualifier);
@@ -133,9 +121,6 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
     }
     ucr_ctx->error[bitmap_idx] = err;
     continue;
-  internal_err: /* NOTE: for page saving, set error code in public section */
-    err = DCP_BLOCK_ERR_LOCAL_ERR;
-    ucr_ctx->error[bitmap_idx] = err;
   }
 
   ucr_ctx->xid = dcp_get_xid(hdr);

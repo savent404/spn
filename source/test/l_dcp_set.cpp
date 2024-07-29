@@ -82,6 +82,25 @@ TEST_F(DcpSet, SetNameOfStation_odd) {
   EXPECT_EQ(strncmp(obj->data.str, "fooboo1", 7), 0);
 }
 
+TEST_F(DcpSet, SetNameOfStation_uppercase) {
+  static char buf[1500];
+  uint16_t buf_len;
+  struct dcp_ucr_ctx ucr;
+
+  /* NOTE: Use odd number of string to test 2-bytes align padding also */
+  tain_buffer(buf, sizeof(buf));
+  controller->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
+  controller->dcp.ucs_ctx.station_name = "Fooboo1";
+  ASSERT_EQ(dcp_srv_set_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
+  tain_buffer(buf, sizeof(buf));
+  ASSERT_EQ(dcp_srv_set_rsp(&controller->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
+
+  // check the result
+  EXPECT_EQ(controller->dcp.ucs_ctx.resp_errors[DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION], DCP_BLOCK_ERR_RESOURCE_ERR);
+}
+
 TEST_F(DcpSet, SetIpParam) {
   static char buf[1500];
   uint16_t buf_len;
@@ -106,6 +125,27 @@ TEST_F(DcpSet, SetIpParam) {
   EXPECT_EQ(obj->data.u32, 0x0a000004);
   ASSERT_EQ(db_get_interface_object(&device->db, 0, DB_ID_IP_GATEWAY, &obj), SPN_OK);
   EXPECT_EQ(obj->data.u32, 0x0a000005);
+}
+
+TEST_F(DcpSet, SetIpParam_invalid_length) {
+  static char buf[1500];
+  uint16_t buf_len;
+  struct dcp_ucr_ctx ucr;
+
+  tain_buffer(buf, sizeof(buf));
+  controller->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_IP_PARAMETER;
+  controller->dcp.ucs_ctx.ip_addr = 0x0a000003;
+  controller->dcp.ucs_ctx.ip_mask = 0x0a000004;
+  controller->dcp.ucs_ctx.ip_gw = 0x0a000005;
+  ASSERT_EQ(dcp_srv_set_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
+  buf[12 + 3] = 0xFF;
+  ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
+  tain_buffer(buf, sizeof(buf));
+  ASSERT_EQ(dcp_srv_set_rsp(&controller->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
+
+  // check the result
+  EXPECT_EQ(controller->dcp.ucs_ctx.resp_errors[DCP_BIT_IDX_IP_PARAMETER], DCP_BLOCK_ERR_RESOURCE_ERR);
 }
 
 TEST_F(DcpSet, SetCtrl) {
