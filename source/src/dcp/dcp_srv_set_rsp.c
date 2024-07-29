@@ -12,10 +12,11 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
   int offset, idx = 0;
   int has_ctrl_start = 0;
   int has_ctrl_stop = 0;
+  const unsigned offset_hdr = sizeof(*hdr) + SPN_PDU_HDR_SIZE;
 
   SPN_UNUSED_ARG(ctx);
 
-  offset = sizeof(*hdr) + SPN_PDU_HDR_SIZE;
+  offset = offset_hdr;
 
   /* pick start/stop firstly */
   if (ucr_ctx->req_options_bitmap & (1 << DCP_BIT_IDX_CTRL_START)) {
@@ -73,17 +74,11 @@ int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
   hdr->service_type = DCP_SRV_TYPE_RES;
   dcp_set_xid(hdr, ucr_ctx->xid);
   hdr->response_delay = SPN_HTONS(0);
-  hdr->data_length = SPN_HTONS(offset - sizeof(*hdr));
+  hdr->data_length = SPN_HTONS(offset - offset_hdr);
 
   *PTR_OFFSET(payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_GET_SET);
 
   /* fill zero to the rest of buffer (minimal length is SPN_RTC_MINIMAL_FRAME_SIZE) */
-  SPN_ASSERT("payload is too big", offset < SPN_RTC_MINIMAL_FRAME_SIZE);
-  if (offset < SPN_RTC_MINIMAL_FRAME_SIZE) {
-    memset(PTR_OFFSET(payload, offset, uint8_t), 0, SPN_RTC_MINIMAL_FRAME_SIZE - offset);
-    *length = SPN_RTC_MINIMAL_FRAME_SIZE;
-  } else {
-    *length = offset;
-  }
+  *length = dcp_padding(payload, offset);
   return SPN_OK;
 }

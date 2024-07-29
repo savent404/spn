@@ -21,11 +21,12 @@ void _dcp_srv_get_req_timeout(void* arg) {
 int dcp_srv_get_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload, uint16_t *length) {
   struct dcp_header* hdr = NULL;
   unsigned offset, idx, options;
+  const unsigned offset_hdr = SPN_PDU_HDR_SIZE + sizeof(*hdr);
 
   SPN_UNUSED_ARG(ctx);
 
   /* TODO: check option is valid */
-  offset = SPN_PDU_HDR_SIZE + sizeof(*hdr);
+  offset = offset_hdr;
   options = ucs->req_options_bitmap;
   for (idx = 0; idx < DCP_BIT_IDX_NUM && options; idx++) {
     uint16_t option;
@@ -48,17 +49,12 @@ int dcp_srv_get_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
   hdr->service_type = DCP_SRV_TYPE_REQ;
   dcp_set_xid(hdr, ucs->xid);
   hdr->response_delay = 0;
-  hdr->data_length = SPN_HTONS(offset);
+  hdr->data_length = SPN_HTONS(offset - offset_hdr);
 
   *PTR_OFFSET(payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_GET_SET);
 
   /* update output length */
-  if (offset < SPN_RTC_MINIMAL_FRAME_SIZE) {
-    memset(PTR_OFFSET(payload, offset + sizeof(*hdr), uint8_t), 0, SPN_RTC_MINIMAL_FRAME_SIZE - offset);
-    *length = SPN_RTC_MINIMAL_FRAME_SIZE;
-  } else {
-    *length = offset;
-  }
+  *length = dcp_padding(payload, offset);
 
   ucs->state = DCP_STATE_GET_REQ;
 

@@ -143,12 +143,10 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
       return 0;
   }
 
-  /* Padding must be zero */
   res = block->length;
-  if (res & 1) {
-    block->data[res] = 0;
-  }
   block->length = SPN_HTONS((block->length));
+  /* Padding must be zero */
+  dcp_block_padding(block);
   return sizeof(*block) + ((res + 1) & ~1);
 }
 
@@ -156,7 +154,8 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   struct dcp_header* hdr;
   struct db_object* obj;
   uint16_t block_info, idx;
-  int res, offset = sizeof(*hdr) + SPN_PDU_HDR_SIZE;
+  const int offset_hdr = sizeof(*hdr) + SPN_PDU_HDR_SIZE;
+  int res, offset = offset_hdr;
   /* get ip block info */
   res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_BLOCK_INFO, &obj);
   SPN_ASSERT("No ip block info", res >= 0);
@@ -176,15 +175,15 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
     offset += res;
   }
 
-  SPN_ASSERT("So tiny!", offset <= SPN_RTC_MAXIMAL_FRAME_SIZE);
   hdr = PTR_OFFSET(payload, SPN_PDU_HDR_SIZE, struct dcp_header);
   hdr->service_id = DCP_SRV_ID_IDENT;
   hdr->service_type = DCP_SRV_TYPE_RES;
   dcp_set_xid(hdr, mcr->xid);
   hdr->response_delay = 0;
-  *length = offset;
-  hdr->data_length = SPN_HTONS((offset - sizeof(*hdr) - SPN_PDU_HDR_SIZE));
+  hdr->data_length = SPN_HTONS(offset - offset_hdr);
   *PTR_OFFSET(payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_IDENT_RES);
+
+  *length = dcp_padding(payload, offset);
 
   mcr->state = DCP_STATE_IDLE;
   return SPN_OK;

@@ -22,8 +22,9 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payl
   unsigned offset;
   unsigned idx;
   unsigned options = ucs_ctx->req_options_bitmap, qualifer = ucs_ctx->req_qualifier_bitmap;
+  const unsigned offset_hdr = sizeof(*hdr) + SPN_PDU_HDR_SIZE;
 
-  offset = sizeof(*hdr) + SPN_PDU_HDR_SIZE;
+  offset = offset_hdr;
 
   for (idx = 0; idx < DCP_BIT_IDX_NUM && options; idx++) {
     uint16_t type;
@@ -82,33 +83,24 @@ int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payl
     block->sub_option = type & 0xff;
     *PTR_OFFSET(block->data, 0, uint16_t) = qual;
 
-    /* set padding to zero if length is odd */
-    if (block->length & 1) {
-      *PTR_OFFSET(block->data, block->length, uint8_t) = 0;
-    }
-
     /* Swap length after calculated offset */
     offset += sizeof(*block) + ((block->length + 1) & ~1);
     block->length = SPN_HTONS(block->length);
+    dcp_block_padding(block);
   }
 
   hdr = PTR_OFFSET(payload, SPN_PDU_HDR_SIZE, struct dcp_header);
 
-  if (offset < SPN_DCP_MIN_SIZE) {
-    memset(PTR_OFFSET(payload, offset, uint8_t), 0, SPN_DCP_MIN_SIZE - offset);
-    *length = SPN_DCP_MIN_SIZE;
-  } else {
-    *length = offset + sizeof(*hdr) + SPN_PDU_HDR_SIZE;
-  }
-
   hdr->service_id = DCP_SRV_ID_SET;
   hdr->service_type = DCP_SRV_TYPE_REQ;
-  hdr->data_length = SPN_NTOHS(offset - sizeof(*hdr) - SPN_PDU_HDR_SIZE);
+  hdr->data_length = SPN_NTOHS(offset - offset_hdr);
   dcp_set_xid(hdr, ucs_ctx->xid);
 
   *PTR_OFFSET(payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_GET_SET);
 
   SPN_TIMEOUT(SPN_DCP_UC_TIMEOUT, _dcp_srv_set_req_timeout, ucs_ctx);
+
+  *length = dcp_padding(payload, offset);
 
   return SPN_OK;
 }

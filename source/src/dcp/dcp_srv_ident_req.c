@@ -26,7 +26,7 @@ static void dcp_srv_ident_req_cb(void* arg) {
 #endif
 
 int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payload, uint16_t* length) {
-  unsigned idx, option, offset = 0;
+  unsigned idx, option, offset;
   struct dcp_header* hdr;
   struct dcp_block_hdr* block;
   uint32_t options = mcs->req_options_bitmap;
@@ -44,13 +44,15 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
     return -SPN_EBUSY;
   }
 
+  offset = offset_hdr;
+
   for (idx = 0; idx < DCP_BIT_IDX_NUM && options; idx++) {
     if (!(options & (1 << idx))) {
       continue;
     }
     options &= ~(1 << idx);
     option = dcp_option_from_bit_idx(idx);
-    block = PTR_OFFSET(payload, offset + offset_hdr, struct dcp_block_hdr);
+    block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.req: option %s(%02d:%02d)\n", dcp_option_name(option >> 8, option & 0xFF),
                   option >> 8, option & 0xFF);
     switch (option) {
@@ -93,25 +95,16 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
     block->sub_option = option & 0xFF;
 
     /* We need to make sure that the block is 2-byte aligned, and padidng with 0 if not */
-    offset += block->length + sizeof(*block);
-    if (offset & 1) {
-      *PTR_OFFSET(payload, offset + offset_hdr, uint8_t) = 0;
-      offset++;
-    }
+    offset += sizeof(*block) + ((block->length + 1) & ~1);
     block->length = SPN_HTONS(block->length);
+    dcp_block_padding(block);
   }
 
-  /* The payload have to satisfy the minimal frame size */
-  if ((offset + offset_hdr) < SPN_RTC_MINIMAL_FRAME_SIZE) {
-    memset(PTR_OFFSET(payload, offset + offset_hdr, uint8_t), 0, SPN_RTC_MINIMAL_FRAME_SIZE - offset - offset_hdr);
-    *length = SPN_RTC_MINIMAL_FRAME_SIZE;
-  } else {
-    *length = offset + offset_hdr;
-  }
+  *length = dcp_padding(payload, offset);
 
   /* handle general header */
   hdr = PTR_OFFSET(payload, SPN_PDU_HDR_SIZE, struct dcp_header);
-  hdr->data_length = SPN_HTONS(offset);
+  hdr->data_length = SPN_HTONS(offset - offset_hdr);
   hdr->response_delay = SPN_HTONS(mcs->response_delay_factory);
   hdr->service_id = DCP_SRV_ID_IDENT;
   hdr->service_type = DCP_SRV_TYPE_REQ;

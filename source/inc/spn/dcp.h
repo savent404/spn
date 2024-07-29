@@ -385,6 +385,20 @@ extern "C" {
 int dcp_block_next(struct dcp_block_hdr* block);
 
 /**
+ * @brief padding dcp block based on its length(BE)
+ * @param block current block
+ */
+void dcp_block_padding(struct dcp_block_hdr* block);
+
+/**
+ * @brief padding dcp payload
+ * @param payload Link layer payload
+ * @param length Link layer payload length
+ * @return Link layer payload length (with padding)
+ */
+uint16_t dcp_padding(void *payload, uint16_t length);
+
+/**
  * @brief get name of option/sub option
  * @note this function is invalid if \c SPN_DEBUG is disabled
  * @return name of option/sub option
