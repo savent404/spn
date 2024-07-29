@@ -1,4 +1,6 @@
 #include <gtest/gtest.h>
+#include <spn/db.h>
+#include <spn/db_ll.h>
 #include <spn/dcp.h>
 #include "dcp_ctx.hpp"
 
@@ -43,6 +45,78 @@ TEST_F(DcpSet, SetNameOfStation) {
   tain_buffer(buf, sizeof(buf));
   controller->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
   controller->dcp.ucs_ctx.station_name = "fooboo";
+  ASSERT_EQ(dcp_srv_set_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
+  tain_buffer(buf, sizeof(buf));
+  ASSERT_EQ(dcp_srv_set_rsp(&controller->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
+
+  // check the result
+  struct db_object* obj;
+  ASSERT_EQ(db_get_interface_object(&device->db, 0, DB_ID_NAME_OF_INTERFACE, &obj), SPN_OK);
+  EXPECT_EQ(db_object_len(obj), 6);
+  EXPECT_EQ(db_is_static_string_object(obj), true);
+  EXPECT_EQ(strncmp(obj->data.str, "fooboo", 6), 0);
+}
+
+TEST_F(DcpSet, SetNameOfStation_odd) {
+  static char buf[1500];
+  uint16_t buf_len;
+  struct dcp_ucr_ctx ucr;
+
+  /* NOTE: Use odd number of string to test 2-bytes align padding also */
+  tain_buffer(buf, sizeof(buf));
+  controller->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
+  controller->dcp.ucs_ctx.station_name = "fooboo1";
+  ASSERT_EQ(dcp_srv_set_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
+  tain_buffer(buf, sizeof(buf));
+  ASSERT_EQ(dcp_srv_set_rsp(&controller->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
+
+  // check the result
+  struct db_object* obj;
+  ASSERT_EQ(db_get_interface_object(&device->db, 0, DB_ID_NAME_OF_INTERFACE, &obj), SPN_OK);
+  EXPECT_EQ(db_object_len(obj), 7);
+  EXPECT_EQ(db_is_static_string_object(obj), true);
+  EXPECT_EQ(strncmp(obj->data.str, "fooboo1", 7), 0);
+}
+
+TEST_F(DcpSet, SetIpParam) {
+  static char buf[1500];
+  uint16_t buf_len;
+  struct dcp_ucr_ctx ucr;
+
+  tain_buffer(buf, sizeof(buf));
+  controller->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_IP_PARAMETER;
+  controller->dcp.ucs_ctx.ip_addr = 0x0a000003;
+  controller->dcp.ucs_ctx.ip_mask = 0x0a000004;
+  controller->dcp.ucs_ctx.ip_gw = 0x0a000005;
+  ASSERT_EQ(dcp_srv_set_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
+  tain_buffer(buf, sizeof(buf));
+  ASSERT_EQ(dcp_srv_set_rsp(&controller->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
+
+  // check the result
+  struct db_object* obj;
+  ASSERT_EQ(db_get_interface_object(&device->db, 0, DB_ID_IP_ADDR, &obj), SPN_OK);
+  EXPECT_EQ(obj->data.u32, 0x0a000003);
+  ASSERT_EQ(db_get_interface_object(&device->db, 0, DB_ID_IP_MASK, &obj), SPN_OK);
+  EXPECT_EQ(obj->data.u32, 0x0a000004);
+  ASSERT_EQ(db_get_interface_object(&device->db, 0, DB_ID_IP_GATEWAY, &obj), SPN_OK);
+  EXPECT_EQ(obj->data.u32, 0x0a000005);
+}
+
+TEST_F(DcpSet, SetCtrl) {
+  static char buf[1500];
+  uint16_t buf_len;
+  struct dcp_ucr_ctx ucr;
+
+  tain_buffer(buf, sizeof(buf));
+  controller->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_CTRL_START | 1 << DCP_BIT_IDX_CTRL_STOP |
+                                               1 << DCP_BIT_IDX_CTRL_SIGNAL | 1 << DCP_BIT_IDX_CTRL_FACTORY_RESET |
+                                               1 << DCP_BIT_IDX_CTRL_RESET_TO_FACTORY;
   ASSERT_EQ(dcp_srv_set_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
   ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
   tain_buffer(buf, sizeof(buf));

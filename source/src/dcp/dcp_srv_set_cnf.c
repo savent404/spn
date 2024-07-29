@@ -29,14 +29,15 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
   for (; offset < dcp_length + sizeof(*hdr); offset += dcp_block_next(block)) {
     uint8_t err;
     uint8_t opt, sub_opt;
+    uint16_t block_length;
     int idx;
     block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
-    block->length = SPN_NTOHS(block->length);
+    block_length = SPN_NTOHS(block->length);
     if (block->option != DCP_OPT_CONTROL || block->sub_option != DCP_SUB_OPT_CTRL_RESPONSE) {
       SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: invalid block, want a response block\n");
       continue;
     }
-    if (block->length != 3) {
+    if (block_length != 3) {
       SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: invalid block length\n");
       continue;
     }
