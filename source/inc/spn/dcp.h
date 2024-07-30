@@ -22,6 +22,11 @@
 #define SPN_DCP_UC_TIMEOUT 1000
 #endif
 
+#define MCS_MAC_ADDR \
+  { 0x01, 0x0E, 0xCF, 0x00, 0x00, 0x00 }
+#define MCS_MAC_FILTER_BEGIN (0x000020)
+#define MCS_MAC_FILTER_END (0x00003F)
+
 enum dcp_service_id { DCP_SRV_ID_GET = 0x03, DCP_SRV_ID_SET = 0x04, DCP_SRV_ID_IDENT = 0x05, DCP_SRV_ID_HELLO = 0x06 };
 
 enum dcp_service_type { DCP_SRV_TYPE_REQ = 0x00, DCP_SRV_TYPE_RES = 0x01, DCP_SRV_TYPE_ERR = 0x05 };
