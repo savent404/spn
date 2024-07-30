@@ -32,7 +32,7 @@ spn_frame_t spn_alloc_frame(spn_ftype_t type) {
   SPN_ASSERT("No free frame", priv != NULL);
 
   // TODO: RTC need fast path
-  priv->pbuf = pbuf_alloc(PBUF_RAW, 1516, PBUF_RAM);
+  priv->pbuf = pbuf_alloc(PBUF_LINK, 1516, PBUF_RAM);
   priv->type = type;
 
   return priv;
