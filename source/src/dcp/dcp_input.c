@@ -57,12 +57,13 @@ int dcp_input(struct dcp_ctx* ctx,
               uint16_t length) {
   uint16_t frame_id;
   struct dcp_header* dcp_hdr;
-  struct pbuf* out = NULL;
+  spn_frame_t out;
   uint16_t ex_iface;
   struct db_interface* db_iface;
   struct db_object* db_obj;
   int res;
   unsigned idx, dcp_length;
+  uint16_t out_len;
 
   SPN_UNUSED_ARG(iface);
   SPN_UNUSED_ARG(dst);
@@ -103,12 +104,12 @@ int dcp_input(struct dcp_ctx* ctx,
         res = dcp_srv_get_ind(ctx, &ucr, dcp_hdr, dcp_length);
         SPN_ASSERT("dcp_srv_get_ind failed", res == SPN_OK);
 
-        out = pbuf_alloc(PBUF_LINK, SPN_DCP_MAX_SIZE + SPN_PDU_HDR_SIZE, PBUF_RAM);
-        SPN_ASSERT("pbuf_alloc failed", out != NULL);
+        out = spn_alloc_frame(FRAME_TYPE_DCP);
+        SPN_ASSERT("spn_alloc_frame failed", out != NULL);
 
-        res = dcp_srv_get_rsp(ctx, &ucr, out->payload, &out->tot_len);
+        res = dcp_srv_get_rsp(ctx, &ucr, spn_frame_data(out), &out_len);
         SPN_ASSERT("dcp_srv_set_rsp failed", res == SPN_OK);
-        pbuf_add_header(out, -SPN_PDU_HDR_SIZE);
+        spn_frame_set_size(out, out_len);
 
       } else if (dcp_hdr->service_id == DCP_SRV_ID_SET && dcp_hdr->service_type == DCP_SRV_TYPE_REQ) {
         struct dcp_ucr_ctx ucr;
@@ -116,11 +117,12 @@ int dcp_input(struct dcp_ctx* ctx,
         res = dcp_srv_set_ind(ctx, &ucr, dcp_hdr, dcp_length);
         SPN_ASSERT("dcp_srv_set_ind failed", res == SPN_OK);
 
-        out = pbuf_alloc(PBUF_LINK, SPN_DCP_MAX_SIZE + SPN_PDU_HDR_SIZE, PBUF_RAM);
-        SPN_ASSERT("pbuf_alloc failed", out != NULL);
+        out = spn_alloc_frame(FRAME_TYPE_DCP);
+        SPN_ASSERT("spn_alloc_frame failed", out != NULL);
 
-        res = dcp_srv_set_rsp(ctx, &ucr, out->payload, &out->tot_len);
+        res = dcp_srv_set_rsp(ctx, &ucr, spn_frame_data(out), &out_len);
         SPN_ASSERT("dcp_srv_set_rsp failed", res == SPN_OK);
+        spn_frame_set_size(out, out_len);
 
       } else if (dcp_hdr->service_id == DCP_SRV_ID_SET && dcp_hdr->service_type == DCP_SRV_TYPE_RES) {
         res = dcp_srv_set_cnf(ctx, &ctx->ucs_ctx, dcp_hdr, dcp_length);
@@ -148,7 +150,7 @@ int dcp_input(struct dcp_ctx* ctx,
         res = db_get_interface(ctx->db, ctx->interface_id, &db_interface);
         SPN_ASSERT("db_get_interface failed", res == SPN_OK);
 
-        *PTR_OFFSET(out->payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_GET_SET);
+        *PTR_OFFSET(spn_frame_data(out), 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_GET_SET);
         /* TODO: chose iface by LLDP if is unicast frame */
         if (1 /*is_multicast_addr(&mcr_ctx->src_addr) */) {
           for (idx = 0; idx < ARRAY_SIZE(db_interface->ports); idx++) {
@@ -164,7 +166,7 @@ int dcp_input(struct dcp_ctx* ctx,
             SPN_ASSERT("dcp_output failed", res == SPN_OK);
           }
         }
-        pbuf_free(out);
+        spn_free_frame(out);
       }
       break;
     case FRAME_ID_DCP_IDENT_REQ:
