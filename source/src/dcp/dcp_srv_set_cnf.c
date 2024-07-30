@@ -1,10 +1,49 @@
 #include <spn/db.h>
+#include <spn/db_ll.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
 #include <spn/timeout.h>
 
 #define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
+
+static void set_cnf_db_update(struct db_ctx* db, struct dcp_ucs_ctx* ucs, uint16_t options) {
+  int res;
+  struct db_object* obj;
+  switch (options) {
+    case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
+      res = db_get_interface_object(db, ucs->ex_ifr, DB_ID_NAME_OF_INTERFACE, &obj);
+      SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
+      db_free_objstr(obj);
+      db_dup_str2obj(obj, ucs->station_name, strlen(ucs->station_name));
+      db_object_updated_ind(db, obj, 0);
+      break;
+    case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
+      res = db_get_interface_object(db, ucs->ex_ifr, DB_ID_IP_ADDR, &obj);
+      SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
+      obj->data.u32 = ucs->ip_addr;
+      db_object_updated_ind(db, obj, 0);
+
+      res = db_get_interface_object(db, ucs->ex_ifr, DB_ID_IP_MASK, &obj);
+      SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
+      obj->data.u32 = ucs->ip_mask;
+      db_object_updated_ind(db, obj, 0);
+
+      res = db_get_interface_object(db, ucs->ex_ifr, DB_ID_IP_GATEWAY, &obj);
+      SPN_ASSERT("db_get_interface_object failed", res == SPN_OK);
+      obj->data.u32 = ucs->ip_gw;
+      db_object_updated_ind(db, obj, 0);
+      break;
+    case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_START):
+    case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_STOP):
+    case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_SIGNAL):
+    case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_FACTORY_RESET):
+    case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_RESET_TO_FACTORY):
+      break;
+    default:
+      SPN_ASSERT("unknown option, how to update?", 0);
+  }
+}
 
 int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload, uint16_t length) {
   struct dcp_header* hdr;
@@ -15,6 +54,8 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
 
   SPN_UNUSED_ARG(ctx);
   SPN_UNUSED_ARG(length);
+
+  SPN_ASSERT("Invalid external interface id", ucs->ex_ifr >= SPN_DB_MAX_INTERFACE);
 
   hdr = (struct dcp_header*)payload;
 
@@ -55,6 +96,10 @@ int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
     options &= ~(1 << idx);
 
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: response block %d.%d, err %d\n", opt, sub_opt, err);
+
+    if (err == DCP_BLOCK_ERR_OK) {
+      set_cnf_db_update(ctx->db, ucs, BLOCK_TYPE(opt, sub_opt));
+    }
   }
   if (options != 0) {
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.cnf: missing response blocks\n");

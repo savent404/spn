@@ -22,10 +22,10 @@
 #define SPN_DCP_UC_TIMEOUT 1000
 #endif
 
-#define MCS_MAC_ADDR \
+#define DCP_MCS_MAC_ADDR \
   { 0x01, 0x0E, 0xCF, 0x00, 0x00, 0x00 }
-#define MCS_MAC_FILTER_BEGIN (0x000020)
-#define MCS_MAC_FILTER_END (0x00003F)
+#define DCP_MCS_MAC_FILTER_BEGIN (0x000020)
+#define DCP_MCS_MAC_FILTER_END (0x00003F)
 
 enum dcp_service_id { DCP_SRV_ID_GET = 0x03, DCP_SRV_ID_SET = 0x04, DCP_SRV_ID_IDENT = 0x05, DCP_SRV_ID_HELLO = 0x06 };
 
@@ -545,6 +545,18 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payl
 int dcp_srv_set_req(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t* length);
 int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length);
 int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t* length);
+
+/**
+ * @brief Service handler that indicated by device that it wants to set itself
+ * @param ctx DCP context
+ * @param ucs_ctx Unicast sender context, used to track the state of unicast sender
+ * @param payload DCP layer payload
+ * @param length Length of payload
+ * @note This function will update external interfaces' db if device says it is done
+ * @returns \c SPN_OK on success
+ * @returns \c -SPN_EINVAL on invalid payload(required option not found)
+ * @returns \c -SPN_ENIO on invalid payload
+ */
 int dcp_srv_set_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs_ctx, void* payload, uint16_t length);
 
 int dcp_srv_hello_req();

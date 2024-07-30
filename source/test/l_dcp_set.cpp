@@ -25,6 +25,7 @@ struct DcpSet : public ::testing::Test {
     char buf[1500];
     uint16_t buf_len;
     controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+    controller->dcp.ucs_ctx.ex_ifr = SPN_EXTERNAL_INTERFACE_BASE;
     dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, buf, &buf_len);
     dcp_srv_ident_ind(&device->dcp, &device->dcp.mcr_ctx[0], buf + 2, buf_len - 2);
     dcp_srv_ident_rsp(&device->dcp, &device->dcp.mcr_ctx[0], buf, &buf_len);
@@ -56,14 +57,19 @@ TEST_F(DcpSet, SetNameOfStation) {
   ASSERT_EQ(dcp_srv_set_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
   ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
   tain_buffer(buf, sizeof(buf));
-  ASSERT_EQ(dcp_srv_set_rsp(&controller->dcp, &ucr, buf, &buf_len), SPN_OK);
-  ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_rsp(&device->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_cnf(&controller->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
 
   // check the result
   struct db_object* obj;
   ASSERT_EQ(db_get_interface_object(&device->db, 0, DB_ID_NAME_OF_INTERFACE, &obj), SPN_OK);
   EXPECT_EQ(db_object_len(obj), 6);
   EXPECT_EQ(db_is_static_string_object(obj), true);
+  EXPECT_EQ(strncmp(obj->data.str, "fooboo", 6), 0);
+
+  ASSERT_EQ(db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_NAME_OF_INTERFACE, &obj),
+            SPN_OK);
+  EXPECT_EQ(db_object_len(obj), 6);
   EXPECT_EQ(strncmp(obj->data.str, "fooboo", 6), 0);
 }
 
@@ -79,8 +85,8 @@ TEST_F(DcpSet, SetNameOfStation_odd) {
   ASSERT_EQ(dcp_srv_set_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
   ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
   tain_buffer(buf, sizeof(buf));
-  ASSERT_EQ(dcp_srv_set_rsp(&controller->dcp, &ucr, buf, &buf_len), SPN_OK);
-  ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_rsp(&device->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_cnf(&controller->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
 
   // check the result
   struct db_object* obj;
@@ -100,9 +106,9 @@ TEST_F(DcpSet, SetNameOfStation_timeout) {
   ASSERT_EQ(dcp_srv_set_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
   ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
   tain_buffer(buf, sizeof(buf));
-  ASSERT_EQ(dcp_srv_set_rsp(&controller->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_rsp(&device->dcp, &ucr, buf, &buf_len), SPN_OK);
   _dcp_srv_set_req_timeout(&controller->dcp.ucs_ctx);
-  ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), -SPN_EAGAIN);
+  ASSERT_EQ(dcp_srv_set_cnf(&controller->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), -SPN_EAGAIN);
 }
 
 TEST_F(DcpSet, SetNameOfStation_uppercase) {
@@ -117,8 +123,8 @@ TEST_F(DcpSet, SetNameOfStation_uppercase) {
   ASSERT_EQ(dcp_srv_set_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
   ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
   tain_buffer(buf, sizeof(buf));
-  ASSERT_EQ(dcp_srv_set_rsp(&controller->dcp, &ucr, buf, &buf_len), SPN_OK);
-  ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_rsp(&device->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_cnf(&controller->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
 
   // check the result
   EXPECT_EQ(controller->dcp.ucs_ctx.resp_errors[DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION], DCP_BLOCK_ERR_RESOURCE_ERR);
@@ -137,8 +143,8 @@ TEST_F(DcpSet, SetIpParam) {
   ASSERT_EQ(dcp_srv_set_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
   ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
   tain_buffer(buf, sizeof(buf));
-  ASSERT_EQ(dcp_srv_set_rsp(&controller->dcp, &ucr, buf, &buf_len), SPN_OK);
-  ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_rsp(&device->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_cnf(&controller->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
 
   // check the result
   struct db_object* obj;
@@ -147,6 +153,13 @@ TEST_F(DcpSet, SetIpParam) {
   ASSERT_EQ(db_get_interface_object(&device->db, 0, DB_ID_IP_MASK, &obj), SPN_OK);
   EXPECT_EQ(obj->data.u32, 0x0a000004);
   ASSERT_EQ(db_get_interface_object(&device->db, 0, DB_ID_IP_GATEWAY, &obj), SPN_OK);
+  EXPECT_EQ(obj->data.u32, 0x0a000005);
+
+  ASSERT_EQ(db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_ADDR, &obj), SPN_OK);
+  EXPECT_EQ(obj->data.u32, 0x0a000003);
+  ASSERT_EQ(db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_MASK, &obj), SPN_OK);
+  EXPECT_EQ(obj->data.u32, 0x0a000004);
+  ASSERT_EQ(db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_GATEWAY, &obj), SPN_OK);
   EXPECT_EQ(obj->data.u32, 0x0a000005);
 }
 
@@ -164,8 +177,8 @@ TEST_F(DcpSet, SetIpParam_invalid_length) {
   buf[12 + 3] = 0xFF;
   ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
   tain_buffer(buf, sizeof(buf));
-  ASSERT_EQ(dcp_srv_set_rsp(&controller->dcp, &ucr, buf, &buf_len), SPN_OK);
-  ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_rsp(&device->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_cnf(&controller->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
 
   // check the result
   EXPECT_EQ(controller->dcp.ucs_ctx.resp_errors[DCP_BIT_IDX_IP_PARAMETER], DCP_BLOCK_ERR_RESOURCE_ERR);
@@ -183,6 +196,6 @@ TEST_F(DcpSet, SetCtrl) {
   ASSERT_EQ(dcp_srv_set_req(&controller->dcp, &controller->dcp.ucs_ctx, buf, &buf_len), SPN_OK);
   ASSERT_EQ(dcp_srv_set_ind(&device->dcp, &ucr, buf + 2, buf_len - 2), SPN_OK);
   tain_buffer(buf, sizeof(buf));
-  ASSERT_EQ(dcp_srv_set_rsp(&controller->dcp, &ucr, buf, &buf_len), SPN_OK);
-  ASSERT_EQ(dcp_srv_set_cnf(&device->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_rsp(&device->dcp, &ucr, buf, &buf_len), SPN_OK);
+  ASSERT_EQ(dcp_srv_set_cnf(&controller->dcp, &controller->dcp.ucs_ctx, buf + 2, buf_len - 2), SPN_OK);
 }

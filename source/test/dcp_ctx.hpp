@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <spn/db.h>
 #include <spn/dcp.h>
+#include <spn/iface.h>
 #include <spn/spn.h>
 #include <memory>
 
@@ -36,7 +37,8 @@ struct dcp_instance {
                      const char* vendor,
                      uint16_t device_id,
                      uint16_t vendor_id,
-                     uint8_t role) {
+                     uint8_t role,
+                     spn_iface_t* iface_1 = nullptr) {
     struct db_interface* interface;
     struct db_port* port;
     struct db_object* obj;
@@ -52,6 +54,12 @@ struct dcp_instance {
     memcpy(val.str, "port-001", 8);
     res = db_add_object(&port->objects, DB_ID_NAME_OF_PORT, 0, 1, 8, &val);
     assert(res == SPN_OK);
+
+    if (iface_1) {
+      val.ptr = iface_1;
+      res = db_add_object(&port->objects, DB_ID_IFACE, 0, 0, sizeof(spn_iface_t*), &val);
+      assert(res == SPN_OK);
+    }
 
     memcpy(val.mac, mac.addr, 6);
     res = db_add_object(&interface->objects, DB_ID_IP_MAC_ADDR, 0, 0, 6, &val);
