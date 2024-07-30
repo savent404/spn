@@ -87,7 +87,7 @@ int dcp_input(struct dcp_ctx* ctx,
       if (db_get_interface_object(ctx->db, ex_iface, DB_ID_IP_MAC_ADDR, &db_obj) == -SPN_ENOENT) {
         db_value_t val;
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "device didn't response mac address, fill it based on ethframe\n");
-        memcpy(val.mac, dst->addr, sizeof(val.mac));
+        memcpy(val.mac, src->addr, sizeof(val.mac));
 
         res = db_get_interface(ctx->db, ex_iface, &db_iface);
         SPN_ASSERT("db_get_interface failed", res == SPN_OK);
