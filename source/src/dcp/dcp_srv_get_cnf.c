@@ -31,17 +31,19 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
 
   for (offset = sizeof(*hdr); offset < sizeof(*hdr) + dcp_length; offset += dcp_block_next(block)) {
     uint16_t option, block_length;
+    int idx;
     struct db_object* object;
     int res;
 
     block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     option = BLOCK_TYPE(block->option, block->sub_option);
     block_length = SPN_NTOHS(block->length);
-    ucs->req_options_bitmap &= ~(1 << dcp_option_bit_idx(block->option, block->sub_option));
+    idx = dcp_option_bit_idx(block->option, block->sub_option);
+    ucs->req_options_bitmap &= ~(1 << idx);
+    ucs->resp_errors[idx] = DCP_BLOCK_ERR_OK; /* assume no error */
 
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: get.cnf: processing block %s(%04x)...\n",
                   dcp_option_name(option >> 8, option & 0xFF), option);
-
     switch (option) {
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM): {
         uint16_t block_info = SPN_NTOHS(*PTR_OFFSET(block->data, 0, uint16_t));
@@ -114,8 +116,25 @@ int dcp_srv_get_cnf(struct dcp_ctx* ctx, struct dcp_ucs_ctx* ucs, void* payload,
         db_dup_str2obj(object, PTR_OFFSET(block->data, 2, char), block_length - 2);
         break;
       }
+      case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_RESPONSE): {
+        uint8_t opt, sub_opt;
+        SPN_ASSERT("invalid block length", block_length == 3);
+        opt = *PTR_OFFSET(block->data, 0, uint8_t);
+        sub_opt = *PTR_OFFSET(block->data, 1, uint8_t);
+        idx = dcp_option_bit_idx(opt, sub_opt);
+        if (idx < 0) {
+          SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: get.cnf: Response unknow option(%04x)...skip\n", BLOCK_TYPE(opt, sub_opt));
+          break;
+        }
+        ucs->resp_errors[idx] = (enum dcp_block_error)(*PTR_OFFSET(block->data, 2, uint8_t));
+        ucs->req_options_bitmap &= ~(1 << idx);
+        SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: get.cnf: find resp error: %s(%04x): %d\n", dcp_option_name(opt, sub_opt),
+                      BLOCK_TYPE(opt, sub_opt), ucs->resp_errors[idx]);
+        break;
+      }
       default:
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: get.cnf: Unhandled option:%04x\n", option);
+        ucs->resp_errors[idx] = DCP_BLOCK_ERR_SUB_OPTION_NOT_SUPPORTED;
         break;
     }
   }

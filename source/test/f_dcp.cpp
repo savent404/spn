@@ -164,3 +164,93 @@ TEST_F(Dcp, set) {
             SPN_OK);
   EXPECT_STREQ(obj->data.str, "fooboo");
 }
+
+TEST_F(Dcp, get) {
+  char buf[1500];
+  char* pdu_buf = buf + 14;
+  uint16_t buf_len;
+  struct db_object* obj;
+
+  // Use Ident to setup the device
+  //
+  //
+
+  // generate DCP.ident.req
+  tain_buffer(buf, sizeof(buf));
+  controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
+  ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, pdu_buf, &buf_len), SPN_OK);
+
+  // device receive DCP.ident.req
+  EXPECT_EQ(dcp_input(&device->dcp, NULL, (const struct eth_addr*)mcs_ident_addr,
+                      (const struct eth_addr*)controller_mac, pdu_buf, buf_len),
+            SPN_OK);
+
+  // -> device send DCP.ident.rsp to controller, controller accept it by ident.cnf
+  auto frame = iface_instace::get_instance()->fifo.front();
+  ASSERT_NE(frame, nullptr);
+  iface_instace::get_instance()->fifo.pop_front();
+  EXPECT_EQ(dcp_input(&controller->dcp, NULL, (const struct eth_addr*)frame->dst, (const struct eth_addr*)device_mac,
+                      frame->buff, frame->len),
+            SPN_OK);
+  delete frame;
+
+  // generate DCP.get.req
+  controller->dcp.ucs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION;
+  controller->dcp.ucs_ctx.req_options_bitmap |= 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_VENDOR;
+  controller->dcp.ucs_ctx.req_options_bitmap |= 1 << DCP_BIT_IDX_IP_PARAMETER;
+  controller->dcp.ucs_ctx.ex_ifr = SPN_EXTERNAL_INTERFACE_BASE;
+  tain_buffer(buf, sizeof(buf));
+  ASSERT_EQ(dcp_srv_get_req(&controller->dcp, &controller->dcp.ucs_ctx, pdu_buf, &buf_len), SPN_OK);
+
+  // populate the data
+  controller->dcp.ucs_ctx.resp_errors[DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION] = DCP_BLOCK_ERR_RESOURCE_ERR;
+  controller->dcp.ucs_ctx.resp_errors[DCP_BIT_IDX_DEV_PROP_NAME_OF_VENDOR] = DCP_BLOCK_ERR_RESOURCE_ERR;
+  controller->dcp.ucs_ctx.resp_errors[DCP_BIT_IDX_IP_PARAMETER] = DCP_BLOCK_ERR_RESOURCE_ERR;
+  db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_NAME_OF_INTERFACE, &obj);
+  db_free_objstr(obj);
+  db_dup_str2obj(obj, "xxxxxx", 6);
+  db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_NAME_OF_VENDOR, &obj);
+  db_free_objstr(obj);
+  db_dup_str2obj(obj, "xxxxxx", 6);
+  db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_MAC_ADDR, &obj);
+  obj->data.u32 = 0;
+  db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_ADDR, &obj);
+  obj->data.u32 = 0;
+  db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_MASK, &obj);
+  obj->data.u32 = 0;
+
+  // device receive DCP.get.req
+  EXPECT_EQ(dcp_input(&device->dcp, NULL, (const struct eth_addr*)device_mac, (const struct eth_addr*)controller_mac,
+                      pdu_buf, buf_len),
+            SPN_OK);
+
+  // -> device send DCP.get.rsp to controller, controller accept it by get.cnf
+  frame = iface_instace::get_instance()->fifo.front();
+  ASSERT_NE(frame, nullptr);
+  iface_instace::get_instance()->fifo.pop_front();
+  EXPECT_EQ(dcp_input(&controller->dcp, NULL, (const struct eth_addr*)frame->dst, (const struct eth_addr*)device_mac,
+                      frame->buff, frame->len),
+            SPN_OK);
+  delete frame;
+
+  // Check result
+  EXPECT_EQ(controller->dcp.ucs_ctx.resp_errors[DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION], DCP_BLOCK_ERR_OK);
+  EXPECT_EQ(controller->dcp.ucs_ctx.resp_errors[DCP_BIT_IDX_DEV_PROP_NAME_OF_VENDOR], DCP_BLOCK_ERR_OPTION_NOT_SUPPORTED); /* FIXME: not supported in get.rsp */
+  EXPECT_EQ(controller->dcp.ucs_ctx.resp_errors[DCP_BIT_IDX_IP_PARAMETER], DCP_BLOCK_ERR_OK);
+  db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_NAME_OF_INTERFACE, &obj);
+  EXPECT_EQ(db_object_len(obj), 6);
+  EXPECT_EQ(db_is_static_string_object(obj), true);
+  EXPECT_EQ(strncmp(obj->data.str, "device", 6), 0);
+#if 0
+  db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_NAME_OF_VENDOR, &obj);
+  EXPECT_EQ(db_object_len(obj), 3);
+  EXPECT_EQ(db_is_static_string_object(obj), true);
+  EXPECT_EQ(strncmp(obj->data.str, "iod", 3), 0);
+#endif
+  db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_MAC_ADDR, &obj);
+  EXPECT_EQ(obj->data.u32, 0);
+  db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_ADDR, &obj);
+  EXPECT_EQ(obj->data.u32, 0x0a000001);
+  db_get_interface_object(&controller->db, SPN_EXTERNAL_INTERFACE_BASE, DB_ID_IP_MASK, &obj);
+  EXPECT_EQ(obj->data.u32, 0x00FFFFFF);
+}

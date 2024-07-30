@@ -14,10 +14,13 @@ static uint16_t rsp_block(void* payload, uint16_t option, uint8_t res) {
   block_hdr->option = DCP_OPT_CONTROL;
   block_hdr->sub_option = DCP_SUB_OPT_CTRL_RESPONSE;
   block_hdr->length = SPN_HTONS(3);
-  *PTR_OFFSET(payload, sizeof(*block_hdr), uint8_t) = option >> 8;
-  *PTR_OFFSET(payload, sizeof(*block_hdr) + 1, uint8_t) = option & 0xFF;
-  *PTR_OFFSET(payload, sizeof(*block_hdr) + 2, uint8_t) = res;
-  *PTR_OFFSET(payload, sizeof(*block_hdr) + 3, uint8_t) = 0; /* Padding */
+  *PTR_OFFSET(block_hdr->data, 0, uint8_t) = (option >> 8) & 0xFF;
+  *PTR_OFFSET(block_hdr->data, 1, uint8_t) = option & 0xFF;
+  *PTR_OFFSET(block_hdr->data, 2, uint8_t) = (uint8_t)res;
+  *PTR_OFFSET(block_hdr->data, 3, uint8_t) = 0; /* Padding */
+
+  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: get.cnf: block %s(%04x) error %d\n", dcp_option_name(option >> 8, option & 0xFF),
+                option, res);
   return sizeof(*block_hdr) + 4;
 }
 
