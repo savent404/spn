@@ -1,6 +1,6 @@
-#include <netif/ethernet.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
+#include <spn/iface.h>
 #include <spn/pdu.h>
 #include <spn/sys.h>
 #include <spn/timeout.h>
@@ -15,7 +15,7 @@ static void dcp_mcr_rsp_callback(void* arg) {
   struct db_interface* db_interface;
   struct db_port* db_port;
   struct db_object* obj;
-  struct pbuf* out;
+  spn_frame_t out;
   int res;
   uint16_t length;
   unsigned idx;
@@ -23,14 +23,12 @@ static void dcp_mcr_rsp_callback(void* arg) {
   res = db_get_interface(ctx->db, ctx->interface_id, &db_interface);
   SPN_ASSERT("db_get_interface failed", res == SPN_OK);
 
-  out = pbuf_alloc(PBUF_LINK, SPN_DCP_MAX_SIZE + SPN_PDU_HDR_SIZE, PBUF_RAM);
-  SPN_ASSERT("pbuf_alloc failed", out != NULL);
+  out = spn_alloc_frame(FRAME_TYPE_DCP);
+  SPN_ASSERT("spn_alloc_frame failed", out);
 
-  res = dcp_srv_ident_rsp(ctx, mcr_ctx, out->payload, &length);
+  res = dcp_srv_ident_rsp(ctx, mcr_ctx, spn_frame_data(out), &length);
   SPN_ASSERT("dcp_srv_ident_rsp failed", res == SPN_OK);
-  out->tot_len = length;
-
-  *PTR_OFFSET(out->payload, 0, uint16_t) = SPN_HTONS(FRAME_ID_DCP_IDENT_RES);
+  spn_frame_set_size(out, length);
 
   /* TODO: chose iface by LLDP if is unicast frame */
   if (1 /*is_multicast_addr(&mcr_ctx->src_addr) */) {

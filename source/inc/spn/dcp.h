@@ -567,7 +567,7 @@ int dcp_input(struct dcp_ctx* ctx,
               const struct eth_addr* src,
               void* pdu,
               uint16_t length);
-int dcp_output(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_addr* dst, struct pbuf* p);
+int dcp_output(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_addr* dst, spn_frame_t frame);
 
 /**
  * @} end of dcp_api
