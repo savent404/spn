@@ -181,6 +181,7 @@ static void app_rta_timer_handler(void* arg) {
       inst->ctx->dcp.ucs_ctx.req_options_bitmap = (1 << DCP_BIT_IDX_IP_MAC_ADDRESS) | (1 << DCP_BIT_IDX_IP_PARAMETER) |
                                                   (1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_STATION);
       inst->ctx->dcp.ucs_ctx.xid = 0xFFAA;
+      inst->ctx->dcp.ucs_ctx.ex_ifr = SPN_EXTERNAL_INTERFACE_BASE;
 
       {
         struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
