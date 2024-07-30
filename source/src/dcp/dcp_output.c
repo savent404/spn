@@ -9,6 +9,6 @@ __attribute__((weak)) int dcp_output(struct dcp_ctx* ctx,
   SPN_UNUSED_ARG(ctx);
   /* TODO: should call generic ethernet_output of spn */
   const struct eth_addr* src = (const struct eth_addr*)&iface->netif.hwaddr;
-  spn_send_frame(iface, f, (uint8_t*)dst);
+  spn_send_frame(iface, f, (const uint8_t*)dst);
   return 0;
 }

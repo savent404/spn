@@ -19,7 +19,7 @@ void spn_free_frame(spn_frame_t frame) {
   delete (iface_instace::spn_priv_frame*)frame;
 }
 
-int spn_send_frame(spn_iface_t* iface, spn_frame_t frame, uint8_t* mac) {
+int spn_send_frame(spn_iface_t* iface, spn_frame_t frame, const uint8_t* mac) {
   auto instance = iface_instace::get_instance();
   auto new_priv = new iface_instace::spn_priv_frame;
   auto priv = (iface_instace::spn_priv_frame*)frame;

@@ -47,7 +47,7 @@ void spn_free_frame(spn_frame_t frame) {
   priv->busy = 0;
 }
 
-int spn_send_frame(spn_iface_t* iface, spn_frame_t frame, uint8_t* mac) {
+int spn_send_frame(spn_iface_t* iface, spn_frame_t frame, const uint8_t* mac) {
   spn_priv_frame_t* priv = (spn_priv_frame_t*)frame;
   int res;
 
