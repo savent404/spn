@@ -67,6 +67,7 @@ int dcp_input(struct dcp_ctx* ctx,
   unsigned idx, dcp_length;
 
   SPN_UNUSED_ARG(iface);
+  SPN_UNUSED_ARG(dst);
 
   frame_id = SPN_NTOHS(*PTR_OFFSET(pdu, 0, uint16_t));
   dcp_hdr = PTR_OFFSET(pdu, 2, struct dcp_header);
