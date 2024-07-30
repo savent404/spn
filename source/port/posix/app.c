@@ -194,6 +194,7 @@ static void app_rta_timer_handler(void* arg) {
         uint16_t length;
 
         res = dcp_srv_get_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, spn_frame_data(p), &length);
+        spn_frame_set_size(p, length);
         assert(res == SPN_OK);
 
         /* TODO: find the right port to send package */
