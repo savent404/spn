@@ -199,10 +199,12 @@ int spn_input_hook(void* frame, void* iface) {
 }
 
 int _spn_input_hook(struct spn_ctx* ctx, struct pbuf* p, struct spn_iface* iface) {
-  struct eth_addr src;
+  struct eth_addr src, dst;
   uint16_t eth_type, frame_id;
   int res = -1;
 
+  /* FIXME: This is not compatable for VLAN */
+  memcpy(&dst, ((const char*)p->payload), sizeof(dst));
   memcpy(&src, ((const char*)p->payload) + 6, sizeof(src));
   eth_type = (*PTR_OFFSET(p->payload, 12, uint16_t));
 
@@ -214,7 +216,7 @@ int _spn_input_hook(struct spn_ctx* ctx, struct pbuf* p, struct spn_iface* iface
       case FRAME_ID_DCP_IDENT_RES:
       case FRAME_ID_DCP_GET_SET:
       case FRAME_ID_DCP_HELLO_REQ:
-        res = dcp_input(&ctx->dcp, iface, &src, p);
+        res = dcp_input(&ctx->dcp, iface, &dst, &src, p->payload, p->tot_len);
         break;
       default:
         res = 0;

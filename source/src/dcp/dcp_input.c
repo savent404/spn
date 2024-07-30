@@ -51,39 +51,43 @@ static void dcp_mcr_rsp_callback(void* arg) {
   pbuf_free(out);
 }
 
-int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_addr* src, struct pbuf* rtc_pdu) {
+int dcp_input(struct dcp_ctx* ctx,
+              struct spn_iface* iface,
+              const struct eth_addr* dst,
+              const struct eth_addr* src,
+              void* pdu,
+              uint16_t length) {
   uint16_t frame_id;
-  struct dcp_header* hdr;
+  struct dcp_header* dcp_hdr;
   struct pbuf* out = NULL;
   uint16_t ex_iface;
   struct db_interface* db_iface;
   struct db_object* db_obj;
   int res;
-  unsigned idx;
+  unsigned idx, dcp_length;
 
   SPN_UNUSED_ARG(iface);
 
-  frame_id = SPN_NTOHS(*PTR_OFFSET(rtc_pdu->payload, 0, uint16_t));
-  hdr = PTR_OFFSET(rtc_pdu->payload, 2, struct dcp_header);
+  frame_id = SPN_NTOHS(*PTR_OFFSET(pdu, 0, uint16_t));
+  dcp_hdr = PTR_OFFSET(pdu, 2, struct dcp_header);
+  dcp_length = length - SPN_PDU_HDR_SIZE;
 
   switch (frame_id) {
     case FRAME_ID_DCP_HELLO_REQ:
     case FRAME_ID_DCP_IDENT_RES:
-      if (hdr->service_id != DCP_SRV_ID_IDENT && hdr->service_type != DCP_SRV_TYPE_RES) {
+      if (dcp_hdr->service_id != DCP_SRV_ID_IDENT && dcp_hdr->service_type != DCP_SRV_TYPE_RES) {
         return -SPN_EINVAL;
       }
       /**
        * @brief call ident.cnf and fill the mac address info if device did not response it
        */
-      res = dcp_srv_ident_cnf(ctx, &ctx->mcs_ctx, hdr, rtc_pdu->tot_len - 2, &ex_iface);
+      res = dcp_srv_ident_cnf(ctx, &ctx->mcs_ctx, dcp_hdr, dcp_length, &ex_iface);
       SPN_ASSERT("dcp_srv_ident_cnf failed", res == SPN_OK);
 
       if (db_get_interface_object(ctx->db, ex_iface, DB_ID_IP_MAC_ADDR, &db_obj) == -SPN_ENOENT) {
         db_value_t val;
         SPN_DEBUG_MSG(SPN_DCP_DEBUG, "device didn't response mac address, fill it based on ethframe\n");
-        pbuf_add_header(rtc_pdu, SIZEOF_ETH_HDR);
-        memcpy(val.mac, PTR_OFFSET(rtc_pdu->payload, 6, uint8_t), sizeof(val.mac));
-        pbuf_remove_header(rtc_pdu, SIZEOF_ETH_HDR);
+        memcpy(val.mac, dst->addr, sizeof(val.mac));
 
         res = db_get_interface(ctx->db, ex_iface, &db_iface);
         SPN_ASSERT("db_get_interface failed", res == SPN_OK);
@@ -93,10 +97,11 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
       break;
     case FRAME_ID_DCP_GET_SET:
       /* TODO: if in operating mode, should ignore this request */
-      SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: dcp_input: get/set srv: %02d:%02d\n", hdr->service_id, hdr->service_type);
-      if (hdr->service_id == DCP_SRV_ID_GET && hdr->service_type == DCP_SRV_TYPE_REQ) {
+      SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: dcp_input: get/set srv: %02d:%02d\n", dcp_hdr->service_id,
+                    dcp_hdr->service_type);
+      if (dcp_hdr->service_id == DCP_SRV_ID_GET && dcp_hdr->service_type == DCP_SRV_TYPE_REQ) {
         struct dcp_ucr_ctx ucr;
-        res = dcp_srv_get_ind(ctx, &ucr, hdr, rtc_pdu->tot_len - 2);
+        res = dcp_srv_get_ind(ctx, &ucr, dcp_hdr, dcp_length);
         SPN_ASSERT("dcp_srv_get_ind failed", res == SPN_OK);
 
         out = pbuf_alloc(PBUF_LINK, SPN_DCP_MAX_SIZE + SPN_PDU_HDR_SIZE, PBUF_RAM);
@@ -106,10 +111,10 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
         SPN_ASSERT("dcp_srv_set_rsp failed", res == SPN_OK);
         pbuf_add_header(out, -SPN_PDU_HDR_SIZE);
 
-      } else if (hdr->service_id == DCP_SRV_ID_SET && hdr->service_type == DCP_SRV_TYPE_REQ) {
+      } else if (dcp_hdr->service_id == DCP_SRV_ID_SET && dcp_hdr->service_type == DCP_SRV_TYPE_REQ) {
         struct dcp_ucr_ctx ucr;
 
-        res = dcp_srv_set_ind(ctx, &ucr, hdr, rtc_pdu->tot_len - 2);
+        res = dcp_srv_set_ind(ctx, &ucr, dcp_hdr, dcp_length);
         SPN_ASSERT("dcp_srv_set_ind failed", res == SPN_OK);
 
         out = pbuf_alloc(PBUF_LINK, SPN_DCP_MAX_SIZE + SPN_PDU_HDR_SIZE, PBUF_RAM);
@@ -118,15 +123,15 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
         res = dcp_srv_set_rsp(ctx, &ucr, out->payload, &out->tot_len);
         SPN_ASSERT("dcp_srv_set_rsp failed", res == SPN_OK);
 
-      } else if (hdr->service_id == DCP_SRV_ID_SET && hdr->service_type == DCP_SRV_TYPE_RES) {
-        res = dcp_srv_set_cnf(ctx, &ctx->ucs_ctx, hdr, rtc_pdu->tot_len - 2);
+      } else if (dcp_hdr->service_id == DCP_SRV_ID_SET && dcp_hdr->service_type == DCP_SRV_TYPE_RES) {
+        res = dcp_srv_set_cnf(ctx, &ctx->ucs_ctx, dcp_hdr, dcp_length);
         if (res != SPN_OK) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: dcp_input: set.cnf failed: %d\n", res);
           return res;
         }
         /* TODO: callback or notify set.req is done */
-      } else if (hdr->service_id == DCP_SRV_ID_GET && hdr->service_type == DCP_SRV_TYPE_RES) {
-        res = dcp_srv_get_cnf(ctx, &ctx->ucs_ctx, hdr, rtc_pdu->tot_len - 2);
+      } else if (dcp_hdr->service_id == DCP_SRV_ID_GET && dcp_hdr->service_type == DCP_SRV_TYPE_RES) {
+        res = dcp_srv_get_cnf(ctx, &ctx->ucs_ctx, dcp_hdr, dcp_length);
         if (res != SPN_OK) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: dcp_input: get.cnf failed: %d\n", res);
           return res;
@@ -167,7 +172,7 @@ int dcp_input(struct dcp_ctx* ctx, struct spn_iface* iface, const struct eth_add
       res = SPN_ENOBUFS;
       for (idx = 0; idx < ARRAY_SIZE(ctx->mcr_ctx); idx++) {
         if (ctx->mcr_ctx[idx].state == DCP_STATE_IDLE) {
-          res = dcp_srv_ident_ind(ctx, &ctx->mcr_ctx[idx], hdr, rtc_pdu->tot_len - 2);
+          res = dcp_srv_ident_ind(ctx, &ctx->mcr_ctx[idx], dcp_hdr, dcp_length);
           break;
         }
       }

@@ -26,6 +26,10 @@
 #define SPN_CONF_DCP_MAX_IDENT_RSP_INST 1
 #endif
 
+#ifndef SPN_CONF_MAXIUM_FRAME_NUM
+#define SPN_CONF_MAXIUM_FRAME_NUM 16
+#endif
+
 /**
  * @brief SPN_CONFIG_MAX_DEVICE maximum number of devices that supported
  *
