@@ -437,6 +437,10 @@ extern int spn_input_hook(void* frame, void* netif);
 }
 #endif
 
+#ifndef SPN_TEST
+#define SPN_TEST 0
+#endif
+
 #if !SPN_TEST
 #define LWIP_HOOK_UNKNOWN_ETH_PROTOCOL(p, netif) spn_input_hook(p, netif)
 #endif

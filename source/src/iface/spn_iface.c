@@ -9,16 +9,16 @@
 typedef struct spn_priv_frame {
   struct pbuf* pbuf;
   spn_ftype_t type;
-  uint8_t using;
+  uint8_t busy;
 } spn_priv_frame_t;
 
 static spn_priv_frame_t spn_frames[SPN_CONF_MAXIUM_FRAME_NUM] = {};
 
-static inline spn_priv_frame_t* find_free_frame() {
+static inline spn_priv_frame_t* find_free_frame(void) {
   unsigned i;
   for (i = 0; i < SPN_CONF_MAXIUM_FRAME_NUM; i++) {
-    if (!spn_frames[i].using) {
-      spn_frames[i].using = 1;
+    if (!spn_frames[i].busy) {
+      spn_frames[i].busy = 1;
       return &spn_frames[i];
     }
   }
@@ -48,7 +48,7 @@ void spn_free_frame(spn_iface_t* iface, spn_frame_t frame) {
   SPN_ASSERT("Invalid frame", priv != NULL);
 
   pbuf_free(priv->pbuf);
-  priv->using = 0;
+  priv->busy = 0;
 }
 
 int spn_send_frame(spn_iface_t* iface, spn_frame_t frame, uint8_t* mac) {
