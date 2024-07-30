@@ -46,7 +46,7 @@ static void dcp_mcr_rsp_callback(void* arg) {
     }
   }
 
-  pbuf_free(out);
+  spn_free_frame(out);
 }
 
 int dcp_input(struct dcp_ctx* ctx,
