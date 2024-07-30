@@ -6,6 +6,7 @@
 #include <lwip/timeouts.h>
 #include <spn/db.h>
 #include <spn/dcp.h>
+#include <spn/iface.h>
 #include <spn/spn.h>
 #include <stdio.h>
 #include <string.h>
@@ -41,13 +42,13 @@ static void app_rta_timer_handler(void* arg) {
       inst->ctx->dcp.mcs_ctx.response_delay_factory = 1;
       inst->ctx->dcp.mcs_ctx.xid = 0x88000000;
       {
-        struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
+        spn_frame_t p = spn_alloc_frame(SPN_FTYPE_DCP);
         struct eth_addr dst_addr = {.addr = {0x01, 0x0e, 0xcf, 00, 00, 00}};
         unsigned i;
         uint16_t length;
 
-        dcp_srv_ident_req(&inst->ctx->dcp, &inst->ctx->dcp.mcs_ctx, p->payload, &length);
-        p->tot_len = length;
+        dcp_srv_ident_req(&inst->ctx->dcp, &inst->ctx->dcp.mcs_ctx, spn_frame_data(p), &length);
+        spn_frame_set_size(p, length);
 
         for (i = 0; i < ARRAY_SIZE(inst->ctx->ifaces[0]); i++) {
           spn_iface_t* iface = &inst->ctx->ifaces[0][i];
@@ -57,7 +58,7 @@ static void app_rta_timer_handler(void* arg) {
           res = dcp_output(&inst->ctx->dcp, iface, &dst_addr, p);
           assert(res == SPN_OK);
         }
-        pbuf_free(p);
+        spn_free_frame(p);
       }
       inst->state = APP_STATE_DCP_IDENT;
       next_time = inst->ctx->dcp.mcs_ctx.response_delay + 100;  // we need some mercy time
@@ -151,11 +152,13 @@ static void app_rta_timer_handler(void* arg) {
         inst->ctx->dcp.ucs_ctx.ip_addr |= i << 24;
       }
       {
-        struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
+        spn_frame_t p = spn_alloc_frame(SPN_FTYPE_DCP);
         struct db_object* obj;
         struct spn_iface* iface;
         struct eth_addr addr;
-        res = dcp_srv_set_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, p->payload, &p->tot_len);
+        uint16_t length;
+        res = dcp_srv_set_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, spn_frame_data(p), &length);
+        spn_frame_set_size(p, length);
         assert(res == SPN_OK);
 
         /* TODO: find the right port to send package */
@@ -170,7 +173,7 @@ static void app_rta_timer_handler(void* arg) {
         res = dcp_output(&inst->ctx->dcp, iface, &addr, p);
         assert(res == SPN_OK);
 
-        pbuf_free(p);
+        spn_free_frame(p);
       }
 
       next_time = SPN_DCP_UC_TIMEOUT;
@@ -184,12 +187,13 @@ static void app_rta_timer_handler(void* arg) {
       inst->ctx->dcp.ucs_ctx.ex_ifr = SPN_EXTERNAL_INTERFACE_BASE;
 
       {
-        struct pbuf* p = pbuf_alloc(PBUF_LINK, 1500, PBUF_RAM);
+        spn_frame_t p = spn_alloc_frame(SPN_FTYPE_DCP);
         struct db_object* obj;
         struct spn_iface* iface;
         struct eth_addr addr;
+        uint16_t length;
 
-        res = dcp_srv_get_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, p->payload, &p->tot_len);
+        res = dcp_srv_get_req(&inst->ctx->dcp, &inst->ctx->dcp.ucs_ctx, spn_frame_data(p), &length);
         assert(res == SPN_OK);
 
         /* TODO: find the right port to send package */
@@ -204,7 +208,7 @@ static void app_rta_timer_handler(void* arg) {
         res = dcp_output(&inst->ctx->dcp, iface, &addr, p);
         assert(res == SPN_OK);
 
-        pbuf_free(p);
+        spn_free_frame(p);
       }
       next_time = SPN_DCP_UC_TIMEOUT;
       inst->state = APP_STATE_PRM;
