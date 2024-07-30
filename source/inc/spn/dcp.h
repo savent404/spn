@@ -141,14 +141,14 @@ enum dcp_bitmap_idx {
  * | Sub Option                              | Read | Write | Optional | Filter |
  * |-----------------------------------------|------|-------|----------|--------|
  * | IP_MAC_ADDRESS                          | ( )  |       |          |        |
- * | IP_PARAMETER                            | (x)  | ( )   |          |  ( )   |
+ * | IP_PARAMETER                            | (x)  | (x)   |          |  ( )   |
  * | IP_FULL_IP_SUITE                        | ( )  | ( )   |   ( )    |  ( )   |
- * | DEVICE_PROPERTIES_NAME_OF_VENDOR        | (x)  |       |          |  ( )   |
- * | DEVICE_PROPERTIES_NAME_OF_STATION       | (x)  | ( )   |          |  ( )   |
- * | DEVICE_PROPERTIES_DEVICE_ID             | (x)  |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_NAME_OF_VENDOR        | (x)  |       |          |  (x)   |
+ * | DEVICE_PROPERTIES_NAME_OF_STATION       | (x)  | (x)   |          |  (x)   |
+ * | DEVICE_PROPERTIES_DEVICE_ID             | (x)  |       |          |  (x)   |
  * | DEVICE_PROPERTIES_DEVICE_ROLE           | (x)  |       |          |  ( )   |
  * | DEVICE_PROPERTIES_DEVICE_OPTIONS        | (x)  |       |          |  ( )   |
- * | DEVICE_PROPERTIES_NAME_OF_ALIAS         |      |       |          |  ( )   |
+ * | DEVICE_PROPERTIES_NAME_OF_ALIAS         |      |       |          |  (x)   |
  * | DEVICE_PROPERTIES_DEVICE_INSTANCE       | ( )  |       |          |  ( )   |
  * | DEVICE_PROPERTIES_OEM_DEVICE_ID         | ( )  |       |          |  ( )   |
  * | DEVICE_PROPERTIES_STANDARD_GATEWAY      | ( )  |       |          |  ( )   |
