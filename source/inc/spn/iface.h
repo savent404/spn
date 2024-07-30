@@ -20,8 +20,8 @@ typedef void* spn_frame_t;
 extern "C" {
 #endif
 
-spn_frame_t spn_alloc_frame(spn_iface_t* iface, spn_ftype_t type);
-void spn_free_frame(spn_iface_t* iface, spn_frame_t frame);
+spn_frame_t spn_alloc_frame(spn_ftype_t type);
+void spn_free_frame(spn_frame_t frame);
 
 int spn_send_frame(spn_iface_t* iface, spn_frame_t frame, uint8_t *mac);
 

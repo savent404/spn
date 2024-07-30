@@ -25,10 +25,8 @@ static inline spn_priv_frame_t* find_free_frame(void) {
   return NULL;
 }
 
-spn_frame_t spn_alloc_frame(spn_iface_t* iface, spn_ftype_t type) {
+spn_frame_t spn_alloc_frame(spn_ftype_t type) {
   spn_priv_frame_t* priv;
-
-  SPN_UNUSED_ARG(iface);
 
   priv = find_free_frame();
   SPN_ASSERT("No free frame", priv != NULL);
@@ -40,10 +38,8 @@ spn_frame_t spn_alloc_frame(spn_iface_t* iface, spn_ftype_t type) {
   return priv;
 }
 
-void spn_free_frame(spn_iface_t* iface, spn_frame_t frame) {
+void spn_free_frame(spn_frame_t frame) {
   spn_priv_frame_t* priv = (spn_priv_frame_t*)frame;
-
-  SPN_UNUSED_ARG(iface);
 
   SPN_ASSERT("Invalid frame", priv != NULL);
 
