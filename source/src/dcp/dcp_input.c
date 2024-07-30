@@ -57,7 +57,7 @@ int dcp_input(struct dcp_ctx* ctx,
               uint16_t length) {
   uint16_t frame_id;
   struct dcp_header* dcp_hdr;
-  spn_frame_t out;
+  spn_frame_t out = NULL;
   uint16_t ex_iface;
   struct db_interface* db_iface;
   struct db_object* db_obj;
