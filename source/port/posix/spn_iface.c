@@ -57,7 +57,7 @@ int spn_send_frame(spn_iface_t* iface, spn_frame_t frame, const uint8_t* mac) {
 
   // TODO: Reserve time slot for RTC frame
   res = ethernet_output(&iface->netif, priv->pbuf, (const struct eth_addr*)&iface->netif.hwaddr,
-                        (const struct eth_addr*)mac, SPN_NTOHS(ETHTYPE_PROFINET));
+                        (const struct eth_addr*)mac, (ETHTYPE_PROFINET));
 
   return res;
 }
