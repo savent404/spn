@@ -1,9 +1,9 @@
-#include <lwip/timeouts.h>
 #include <netif/ethernet.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
 #include <spn/pdu.h>
 #include <spn/sys.h>
+#include <spn/timeout.h>
 #include <string.h>
 
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
@@ -186,7 +186,7 @@ int dcp_input(struct dcp_ctx* ctx,
       if (ctx->mcr_ctx[idx].response_delay == 0) {
         dcp_mcr_rsp_callback(&ctx->mcr_ctx[idx]);
       } else {
-        sys_timeout(ctx->mcr_ctx[idx].response_delay, dcp_mcr_rsp_callback, &ctx->mcr_ctx[idx]);
+        SPN_TIMEOUT(ctx->mcr_ctx[idx].response_delay, dcp_mcr_rsp_callback, &ctx->mcr_ctx[idx]);
       }
       break;
     default:
