@@ -42,7 +42,7 @@ static void app_rta_timer_handler(void* arg) {
       inst->ctx->dcp.mcs_ctx.response_delay_factory = 1;
       inst->ctx->dcp.mcs_ctx.xid = 0x88000000;
       {
-        spn_frame_t p = spn_alloc_frame(SPN_FTYPE_DCP);
+        spn_frame_t p = spn_alloc_frame(FRAME_TYPE_DCP);
         struct eth_addr dst_addr = {.addr = {0x01, 0x0e, 0xcf, 00, 00, 00}};
         unsigned i;
         uint16_t length;
@@ -152,7 +152,7 @@ static void app_rta_timer_handler(void* arg) {
         inst->ctx->dcp.ucs_ctx.ip_addr |= i << 24;
       }
       {
-        spn_frame_t p = spn_alloc_frame(SPN_FTYPE_DCP);
+        spn_frame_t p = spn_alloc_frame(FRAME_TYPE_DCP);
         struct db_object* obj;
         struct spn_iface* iface;
         struct eth_addr addr;
@@ -187,7 +187,7 @@ static void app_rta_timer_handler(void* arg) {
       inst->ctx->dcp.ucs_ctx.ex_ifr = SPN_EXTERNAL_INTERFACE_BASE;
 
       {
-        spn_frame_t p = spn_alloc_frame(SPN_FTYPE_DCP);
+        spn_frame_t p = spn_alloc_frame(FRAME_TYPE_DCP);
         struct db_object* obj;
         struct spn_iface* iface;
         struct eth_addr addr;
