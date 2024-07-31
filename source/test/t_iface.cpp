@@ -7,6 +7,7 @@
 #include <spn/sys.h>
 #include <list>
 #include <memory>
+#include <cstring>
 #include "t_iface.hpp"
 
 spn_frame_t spn_alloc_frame(spn_ftype_t type) {

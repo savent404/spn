@@ -4,9 +4,9 @@
 #include <spn/db_ll.h>
 #include <spn/dcp.h>
 #include <spn/errno.h>
+#include <spn/led.h>
 #include <spn/sys.h>
 #include <string.h>
-#include <spn/led.h>
 
 #define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
@@ -30,6 +30,12 @@ static inline void set_netif_address(spn_iface_t* iface, uint32_t addr, uint32_t
   SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set IP address: %s\n", ipaddr_ntoa(&iface->netif.ip_addr));
   SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set netmask: %s\n", ipaddr_ntoa(&iface->netif.netmask));
   SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set gateway: %s\n", ipaddr_ntoa(&iface->netif.gw));
+}
+
+static inline enum dcp_block_error factory_reset(uint16_t mode)
+{
+  SPN_UNUSED_ARG(mode);
+  return DCP_BLOCK_ERR_OK;
 }
 
 int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t length) {
@@ -112,6 +118,8 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
         spn_port_led_flash();
         break;
       case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_FACTORY_RESET):
+        err = factory_reset(qualifier);
+        break;
       case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_RESET_TO_FACTORY):
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_FULL_SUITE):
       case BLOCK_TYPE(DCP_OPT_DHCP, DCP_SUB_OPT_DHCP_CLIENT_IDENT):
