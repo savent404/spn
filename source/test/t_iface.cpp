@@ -1,14 +1,29 @@
 #include <spn/config.h>
 
+#include <lwip/ip_addr.h>
+#include <lwip/netif.h>
 #include <lwip/netif.h>
 #include <lwip/pbuf.h>
 #include <netif/ethernet.h>
 #include <spn/iface.h>
 #include <spn/sys.h>
+#include <cstring>
 #include <list>
 #include <memory>
-#include <cstring>
 #include "t_iface.hpp"
+
+int spn_iface_set_addr(spn_iface_t* iface, uint32_t ip, uint32_t mask, uint32_t gw) {
+  ip4_addr_t i, m, g;
+  i.addr = ip;
+  m.addr = mask;
+  g.addr = gw;
+  netif_set_addr(&iface->netif, &i, &m, &g);
+  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set IP address: %s\n", ipaddr_ntoa(&iface->netif.ip_addr));
+  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set netmask: %s\n", ipaddr_ntoa(&iface->netif.netmask));
+  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set gateway: %s\n", ipaddr_ntoa(&iface->netif.gw));
+
+  return 0;
+}
 
 spn_frame_t spn_alloc_frame(spn_ftype_t type) {
   auto frame = new iface_instace::spn_priv_frame;

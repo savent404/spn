@@ -1,5 +1,3 @@
-#include <lwip/ip_addr.h>
-#include <lwip/netif.h>
 #include <spn/db.h>
 #include <spn/db_ll.h>
 #include <spn/dcp.h>
@@ -22,14 +20,7 @@ static inline int has_upper_case(const char* str, int len) {
 }
 
 static inline void set_netif_address(spn_iface_t* iface, uint32_t addr, uint32_t mask, uint32_t gw) {
-  ip4_addr_t i, m, g;
-  i.addr = addr;
-  m.addr = mask;
-  g.addr = gw;
-  netif_set_addr(&iface->netif, &i, &m, &g);
-  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set IP address: %s\n", ipaddr_ntoa(&iface->netif.ip_addr));
-  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set netmask: %s\n", ipaddr_ntoa(&iface->netif.netmask));
-  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set gateway: %s\n", ipaddr_ntoa(&iface->netif.gw));
+  spn_iface_set_addr(iface, addr, mask, gw);
 }
 
 static inline enum dcp_block_error factory_reset(uint16_t mode)

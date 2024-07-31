@@ -20,11 +20,12 @@ typedef void* spn_frame_t;
 extern "C" {
 #endif
 
+int spn_iface_set_addr(spn_iface_t* iface, uint32_t ip, uint32_t mask, uint32_t gw);
+
+int spn_send_frame(spn_iface_t* iface, spn_frame_t frame, const uint8_t* mac);
+
 spn_frame_t spn_alloc_frame(spn_ftype_t type);
 void spn_free_frame(spn_frame_t frame);
-
-int spn_send_frame(spn_iface_t* iface, spn_frame_t frame, const uint8_t *mac);
-
 void* spn_frame_data(spn_frame_t frame);
 uint16_t spn_frame_size(spn_frame_t frame);
 void spn_frame_set_size(spn_frame_t frame, uint16_t size);
