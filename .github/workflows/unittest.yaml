@@ -3,6 +3,9 @@ name: Daily Unit Tests
 on:
   schedule: 
     - cron: '0 5,17 * * *'
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build-and-test:
