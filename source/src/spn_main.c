@@ -195,6 +195,9 @@ int spn_input_hook(void* frame, void* iface) {
 
   res = _spn_input_hook(ctx, p, (struct spn_iface*)netif);
   _spn_input_indication(res);
+  if (res == SPN_OK) {
+    pbuf_free(p);
+  }
   return res;
 }
 
