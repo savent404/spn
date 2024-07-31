@@ -156,7 +156,7 @@ enum dcp_bitmap_idx {
  * | DHCP_DHCP                               | ( )  | ( )   |   ( )    |  ( )   |
  * | CONTROL_START                           |      | ( )   |          |        |
  * | CONTROL_STOP                            |      | ( )   |          |        |
- * | CONTROL_SIGNAL                          |      | ( )   |          |        |
+ * | CONTROL_SIGNAL                          |      | (x)   |          |        |
  * | CONTROL_RESPONSE                        |      |       |          |        |
  * | CONTROL_FACTORY_RESET                   |      |       |   ( )    |        |
  * | CONTROL_RESET_TO_FACTORY                |      | ( )   |          |        |
