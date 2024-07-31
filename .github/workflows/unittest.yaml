@@ -3,7 +3,9 @@ name: Daily Unit Tests
 on:
   schedule: 
     - cron: '0 5,17 * * *'
-
+  merge:
+    branches:
+      - main
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
