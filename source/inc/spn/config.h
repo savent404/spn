@@ -133,6 +133,6 @@
 #define SPN_PDU_DEBUG 0
 #endif
 
-#ifndef SPN_TEST
-#define SPN_TEST 0
+#ifndef SPN_DUMMY
+#define SPN_DUMMY 0
 #endif

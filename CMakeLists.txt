@@ -9,6 +9,10 @@ include(cmake/spn.cmake)
 option(ENABLE_TESTS "Enable test" OFF)
 option(ENABLE_EXAMPLES "Enable example" OFF)
 
+if (ENABLE_DUMMY)
+    add_definitions(-DSPN_DUMMY=1)
+endif ()
+
 # SPN library in cmake/spn.cmake
 
 # EXAMPLE MAIN

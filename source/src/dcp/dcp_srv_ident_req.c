@@ -9,7 +9,7 @@
 #define BLOCK_TYPE(h, l) ((h << 8) | l)
 #define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
 
-#if !SPN_TEST
+#if !SPN_DUMMY
 static void dcp_srv_ident_req_cb(void* arg) {
   struct dcp_mcs_ctx* mcs = (struct dcp_mcs_ctx*)arg;
   struct dcp_ctx* ctx = mcs->dcp_ctx;

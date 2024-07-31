@@ -9,7 +9,8 @@
                 "CMAKE_BUILD_TYPE": "Coverage",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "ENABLE_EXAMPLES": "OFF",
-                "ENABLE_TESTS": "ON"
+                "ENABLE_TESTS": "ON",
+                "ENABLE_DUMMY": "ON"
             }
         },
         {

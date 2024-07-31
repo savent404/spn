@@ -6,7 +6,7 @@
 
 typedef void (*spn_timeout_handler)(void* arg);
 
-#if SPN_TEST
+#if SPN_DUMMY
 
 #define SPN_TIMEOUT(msecs, handler, arg)
 #define SPN_UNTIMEOUT(handler, arg)

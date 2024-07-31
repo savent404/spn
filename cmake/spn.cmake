@@ -7,14 +7,10 @@ else ()
     set(SPN_C_FLAGS "")
 endif()
 
-if (ENABLE_TESTS)
-    set(SPN_C_FLAGS ${SPN_C_FLAGS} -DSPN_TEST=1)
-endif ()
-
 # recursive search for source files and set to SOURCES
 file(GLOB_RECURSE SOURCES source/src/*.c)
 add_library(SPN ${SOURCES})
-target_compile_options(SPN PRIVATE ${SPN_C_FLAGS})
+target_compile_options(SPN PUBLIC ${SPN_C_FLAGS})
 target_include_directories(SPN PUBLIC source/inc)
 target_link_libraries(SPN PUBLIC lwip)
 
