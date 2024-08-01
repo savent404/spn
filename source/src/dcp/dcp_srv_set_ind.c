@@ -1,5 +1,3 @@
-#include <lwip/ip_addr.h>
-#include <lwip/netif.h>
 #include <spn/db.h>
 #include <spn/db_ll.h>
 #include <spn/dcp.h>
@@ -21,20 +19,40 @@ static inline int has_upper_case(const char* str, int len) {
   return 0;
 }
 
-static inline void set_netif_address(spn_iface_t* iface, uint32_t addr, uint32_t mask, uint32_t gw) {
-  ip4_addr_t i, m, g;
-  i.addr = addr;
-  m.addr = mask;
-  g.addr = gw;
-  netif_set_addr(&iface->netif, &i, &m, &g);
-  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set IP address: %s\n", ipaddr_ntoa(&iface->netif.ip_addr));
-  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set netmask: %s\n", ipaddr_ntoa(&iface->netif.netmask));
-  SPN_DEBUG_MSG(SPN_DCP_DEBUG, "set_ind: set gateway: %s\n", ipaddr_ntoa(&iface->netif.gw));
+static inline void set_ip_param(struct dcp_ctx* ctx, uint32_t addr, uint32_t mask, uint32_t gw) {
+  struct db_object* obj;
+  unsigned idx;
+  int res;
+
+  res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj);
+  obj->data.u32 = addr;
+  db_object_updated_ind(ctx->db, obj, 0);
+
+  res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &obj);
+  obj->data.u32 = mask;
+  db_object_updated_ind(ctx->db, obj, 0);
+
+  res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &obj);
+  obj->data.u32 = gw;
+  db_object_updated_ind(ctx->db, obj, 0);
+
+  res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj);
+  db_free_objstr(obj);
+  db_object_updated_ind(ctx->db, obj, 0);
+
+  for (idx = 0; idx < ARRAY_SIZE(ctx->db->interfaces[0].ports); idx++) {
+    res = db_get_port_object(ctx->db, ctx->interface_id, (int)idx, DB_ID_IFACE, &obj);
+    if (res == -SPN_ENOENT) {
+      continue;
+    }
+    SPN_ASSERT("Get port's iface failed", res == SPN_OK);
+    spn_iface_set_addr((struct spn_iface*)obj->data.ptr, addr, mask, gw);
+  }
 }
 
-static inline enum dcp_block_error factory_reset(uint16_t mode)
-{
+static inline enum dcp_block_error factory_reset(struct dcp_ctx* ctx, uint16_t mode) {
   SPN_UNUSED_ARG(mode);
+  set_ip_param(ctx, 0, 0, 0);
   return DCP_BLOCK_ERR_OK;
 }
 
@@ -43,7 +61,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
   struct db_object* obj;
   struct dcp_block_hdr* block;
   uint16_t block_length, dcp_length;
-  uint32_t req_options = 0, qualifier, ip_addr, ip_mask, ip_gw, idx;
+  uint32_t req_options = 0, qualifier;
   unsigned offset, bitmap_idx;
   int res;
 
@@ -66,37 +84,20 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
     /* TODO: Global check, if we are in operational state, reject all */
 
     switch (BLOCK_TYPE(block->option, block->sub_option)) {
-      case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM):
+      case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM): {
+        uint32_t ip, mask, gw;
         if (SPN_NTOHS(block->length) != 14) {
           SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.ind: Invalid length for IP_PARAM block, expected 14, got %d\n",
                         SPN_NTOHS(block->length));
           err = DCP_BLOCK_ERR_RESOURCE_ERR;
           break;
         }
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj);
-        SPN_ASSERT("Get IP object failed", res == SPN_OK);
-        ip_addr = *PTR_OFFSET(block->data, 2, uint32_t);
-        obj->data.u32 = ip_addr;
-        db_object_updated_ind(ctx->db, obj, qualifier);
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &obj);
-        SPN_ASSERT("Get subnet mask object failed", res == SPN_OK);
-        ip_mask = *PTR_OFFSET(block->data, 6, uint32_t);
-        obj->data.u32 = ip_mask;
-        db_object_updated_ind(ctx->db, obj, qualifier);
-        res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &obj);
-        SPN_ASSERT("Get gateway object failed", res == SPN_OK);
-        ip_gw = *PTR_OFFSET(block->data, 10, uint32_t);
-        obj->data.u32 = ip_gw;
-        db_object_updated_ind(ctx->db, obj, qualifier);
-        for (idx = 0; idx < ARRAY_SIZE(ctx->db->interfaces[0].ports); idx++) {
-          res = db_get_port_object(ctx->db, ctx->interface_id, (int)idx, DB_ID_IFACE, &obj);
-          if (res == -SPN_ENOENT) {
-            continue;
-          }
-          SPN_ASSERT("Get port's iface failed", res == SPN_OK);
-          set_netif_address((spn_iface_t*)obj->data.ptr, ip_addr, ip_mask, ip_gw);
-        }
+        ip = *PTR_OFFSET(block->data, 2, uint32_t);
+        mask = *PTR_OFFSET(block->data, 6, uint32_t);
+        gw = *PTR_OFFSET(block->data, 10, uint32_t);
+        set_ip_param(ctx, ip, mask, gw);
         break;
+      }
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_STATION):
         block_length = SPN_NTOHS(block->length);
         if (has_upper_case(PTR_OFFSET(block->data, 2, char), block_length - 2)) {
@@ -118,7 +119,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
         spn_port_led_flash();
         break;
       case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_FACTORY_RESET):
-        err = factory_reset(qualifier);
+        err = factory_reset(ctx, qualifier);
         break;
       case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_RESET_TO_FACTORY):
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_FULL_SUITE):
