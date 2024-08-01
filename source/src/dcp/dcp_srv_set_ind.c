@@ -23,9 +23,39 @@ static inline void set_netif_address(spn_iface_t* iface, uint32_t addr, uint32_t
   spn_iface_set_addr(iface, addr, mask, gw);
 }
 
-static inline enum dcp_block_error factory_reset(uint16_t mode)
+static inline enum dcp_block_error factory_reset(struct dcp_ctx* ctx, uint16_t mode)
 {
+  struct db_object* obj;
+  unsigned idx;
+  int res;
+
   SPN_UNUSED_ARG(mode);
+
+  res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_ADDR, &obj);
+  obj->data.u32 = 0;
+  db_object_updated_ind(ctx->db, obj, 0);
+
+  res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_MASK, &obj);
+  obj->data.u32 = 0;
+  db_object_updated_ind(ctx->db, obj, 0);
+
+  res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_GATEWAY, &obj);
+  obj->data.u32 = 0;
+  db_object_updated_ind(ctx->db, obj, 0);
+
+  res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_NAME_OF_INTERFACE, &obj);
+  db_free_objstr(obj);
+  db_object_updated_ind(ctx->db, obj, 0);
+
+  for (idx = 0; idx < ARRAY_SIZE(ctx->db->interfaces[0].ports); idx++) {
+    res = db_get_port_object(ctx->db, ctx->interface_id, (int)idx, DB_ID_IFACE, &obj);
+    if (res == -SPN_ENOENT) {
+      continue;
+    }
+    SPN_ASSERT("Get port's iface failed", res == SPN_OK);
+    set_netif_address((spn_iface_t*)obj->data.ptr, 0, 0, 0);
+  }
+
   return DCP_BLOCK_ERR_OK;
 }
 
@@ -109,7 +139,7 @@ int dcp_srv_set_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payl
         spn_port_led_flash();
         break;
       case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_FACTORY_RESET):
-        err = factory_reset(qualifier);
+        err = factory_reset(ctx, qualifier);
         break;
       case BLOCK_TYPE(DCP_OPT_CONTROL, DCP_SUB_OPT_CTRL_RESET_TO_FACTORY):
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_FULL_SUITE):

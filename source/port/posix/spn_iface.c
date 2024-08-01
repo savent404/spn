@@ -93,3 +93,9 @@ spn_ftype_t spn_frame_type(spn_frame_t frame) {
 
   return priv->type;
 }
+
+int spn_iface_set_addr(spn_iface_t* iface, uint32_t ip, uint32_t mask, uint32_t gw) {
+  ip_addr_t i = {ip}, m = {mask}, g = {gw};
+  netif_set_addr(&iface->netif, &i, &m, &g);
+  return 0;
+}
