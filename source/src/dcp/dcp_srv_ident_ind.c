@@ -16,7 +16,7 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   uint32_t options = 0, offset = sizeof(*hdr);
   uint16_t option;
   uint16_t data_len;
-  uint16_t mac_k = 0x7843;
+  uint16_t mac_k = 0x7843; /* NOTE: initialized value, just in case that device doesn't have its mac address */
   unsigned idx;
   int res;
 

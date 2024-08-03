@@ -36,7 +36,7 @@ extern "C" {
  * @brief SPN initialization
  *
  * @param ctx working context
- * @param cfg configurations
+ * @param[in] cfg configurations (dynamic allocated), static parameter should located in \c spn_config.h
  *
  * @note This function not handle fatal error, it might cause memleak if failed to init
  * @return

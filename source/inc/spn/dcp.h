@@ -158,8 +158,8 @@ enum dcp_bitmap_idx {
  * | CONTROL_STOP                            |      | ( )   |          |        |
  * | CONTROL_SIGNAL                          |      | (x)   |          |        |
  * | CONTROL_RESPONSE                        |      |       |          |        |
- * | CONTROL_FACTORY_RESET                   |      |       |   ( )    |        |
- * | CONTROL_RESET_TO_FACTORY                |      | ( )   |          |        |
+ * | CONTROL_FACTORY_RESET                   |      | ( )   |   ( )    |        |
+ * | CONTROL_RESET_TO_FACTORY                |      | (x)   |          |        |
  * | DEVICE_INITIATIVE_DEVICE_INITIATIVE     | ( )  |       |          |  ( )   |
  * | NME_DOMAIN_NME_DOMAIN                   | ( )  | ( )   |          |  ( )   |
  * | NME_DOMAIN_NME_PRIO                     | ( )  |       |          |  ( )   |

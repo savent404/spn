@@ -60,7 +60,7 @@ TEST_F(Dcp, ident) {
   controller->dcp.mcs_ctx.req_options_bitmap = 1 << DCP_BIT_IDX_ALL_SELECTOR;
   ASSERT_EQ(dcp_srv_ident_req(&controller->dcp, &controller->dcp.mcs_ctx, pdu_buf, &buf_len), SPN_OK);
 
-  // device receive DCP.ident.req
+  // device receive DCP.ident.req (ident_ind -> ident_rsp -> ethernet_output(ident_rsp))
   EXPECT_EQ(dcp_input(&device->dcp, NULL, (const struct eth_addr*)mcs_ident_addr,
                       (const struct eth_addr*)controller_mac, pdu_buf, buf_len),
             SPN_OK);
