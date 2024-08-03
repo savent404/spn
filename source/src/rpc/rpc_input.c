@@ -135,6 +135,7 @@ int rpc_input(struct rpc_ctx* ctx, void* payload, int length) {
 
   rpc_hdr_hton(hdr);
 
+  /** TODO: Remove this */
   hdr->boot_time = 0;
 
   return 0;
