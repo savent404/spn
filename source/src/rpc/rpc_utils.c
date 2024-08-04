@@ -43,11 +43,11 @@ void rpc_ndr_ntoh(void* ndr_data, rpc_pkt_type_t type) {
   switch (type) {
     case RPC_PKT_TYPE_REQ: {
       struct rpc_ndr_data_req* hdr = (struct rpc_ndr_data_req*)ndr_data;
-      hdr->args_maxium = SPN_NTOHS(hdr->args_maxium);
-      hdr->args_length = SPN_NTOHS(hdr->args_length);
-      hdr->maxium_count = SPN_NTOHS(hdr->maxium_count);
-      hdr->offset = SPN_NTOHS(hdr->offset);
-      hdr->actual_count = SPN_NTOHS(hdr->actual_count);
+      hdr->args_maxium = SPN_NTOHL(hdr->args_maxium);
+      hdr->args_length = SPN_NTOHL(hdr->args_length);
+      hdr->maxium_count = SPN_NTOHL(hdr->maxium_count);
+      hdr->offset = SPN_NTOHL(hdr->offset);
+      hdr->actual_count = SPN_NTOHL(hdr->actual_count);
       break;
     }
     default:

@@ -95,6 +95,9 @@ int rpc_input(struct rpc_ctx* ctx, void* payload, int length) {
       SPN_ASSERT("Stupid RPC, offset always be zero", req_hdr->offset == 0);
       /* TODO handle pn_pdu in rta */
     } break;
+    default:
+        SPN_ASSERT("Unknow pkt type", 0);
+        break;
   }
 
   /** TODO: Remove this */
