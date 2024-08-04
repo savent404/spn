@@ -86,7 +86,7 @@ struct rpc_hdr {
   uint16_t interface_version_major;
   uint16_t interface_version_minor;
   uint32_t seq_numb;
-  uint32_t operation_numb; /* provided by PNIO interfaces */
+  uint16_t operation_numb; /* provided by PNIO interfaces */
   uint16_t interface_hint; /* 0xFFFF: no hink
                             * the client shall start with 'no hint' for the first call.
                             * and should use the server response for the following calls to allow a server optimization
@@ -96,6 +96,17 @@ struct rpc_hdr {
   uint16_t frag_numb;      /* number of the current gragment */
   uint8_t auth_protocol;
   uint8_t serial_low;
+
+  char ndr_data[0];
+};
+
+struct rpc_ndr_data_req {
+  uint32_t args_maxium;
+  uint32_t args_length;
+  uint32_t maxium_count;
+  uint32_t offset; /* Always be zero */
+  uint32_t actual_count;
+  char pn_pdu[0];
 };
 
 #pragma pack(pop)
@@ -110,6 +121,12 @@ extern "C" {
 
 int rpc_init(struct rpc_ctx* ctx);
 int rpc_input(struct rpc_ctx* ctx, void* payload, int length);
+
+int rpc_is_big_endian(struct rpc_hdr* hdr);
+void rpc_ntoh(struct rpc_hdr* hdr);
+void rpc_hton(struct rpc_hdr* hdr);
+void rpc_ndr_ntoh(void* ndr_data, rpc_pkt_type_t type);
+void rpc_ndr_hton(void* ndr_data, rpc_pkt_type_t type);
 
 #ifdef __cplusplus
 }
