@@ -1,9 +1,11 @@
-#include <endian.h>
 #include <spn/rpc.h>
 #include <spn/sys.h>
 
+#if 0
+#include <endian.h>
 #if __BYTE_ORDER == __BIG_ENDIAN
 #error "big endian is not supported"
+#endif
 #endif
 
 // clang-format off
