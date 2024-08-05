@@ -8,12 +8,12 @@ static void rpc_uuid_swap(rpc_uuid_t* uuid) {
 }
 
 int rpc_is_big_endian(struct rpc_hdr* hdr) {
-  const uint8_t encoding = (hdr->drep1 & 0x70) & 0x07; /* bit[4:7] 0-BE, 1-LE */
+  const uint8_t encoding = hdr->drep1 >> 4; /* bit[4:7] 0-BE, 1-LE */
   return !encoding;
 }
 
-void rpc_hton(struct rpc_hdr* hdr) {
-  const uint8_t encoding = (hdr->drep1 & 0x70) & 0x07; /* bit[4:7] 0-BE, 1-LE */
+void rpc_hdr_hton(struct rpc_hdr* hdr) {
+  const uint8_t encoding = hdr->drep1 >> 4; /* bit[4:7] 0-BE, 1-LE */
   SPN_ASSERT("invalid drep BE/LE flag", encoding < 2);
 
   if (encoding) {
@@ -35,8 +35,8 @@ void rpc_hton(struct rpc_hdr* hdr) {
   hdr->frag_numb = SPN_HTONS(hdr->frag_numb);
 }
 
-void rpc_ntoh(struct rpc_hdr* hdr) {
-  rpc_hton(hdr);
+void rpc_hdr_ntoh(struct rpc_hdr* hdr) {
+  rpc_hdr_hton(hdr);
 }
 
 void rpc_ndr_ntoh(void* ndr_data, rpc_pkt_type_t type) {

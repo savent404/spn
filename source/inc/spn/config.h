@@ -111,6 +111,24 @@
 #endif
 
 /**
+ * Maxium number of channel that can prosess at the same time
+ *
+ * @note for device, it should be 1 for minimal implementation
+ */
+#ifndef SPN_RPC_MAXIUM_CHANNEL
+#define SPN_RPC_MAXIUM_CHANNEL 2
+#endif
+
+/**
+ * Maxium buffer size that can be used for RPC
+ *
+ * @note buffer size should be large enough to hold the largest RPC packet (considering the header and fragment)
+ */
+#ifndef SPN_RPC_MAXIUM_BUFFER_SIZE
+#define SPN_RPC_MAXIUM_BUFFER_SIZE 1500
+#endif
+
+/**
  * @brief SPN GLOBAL DEBUG OPTION
  * @details set as LWIP_DBG_ON to enable it
  */
@@ -126,6 +144,10 @@
 
 #ifndef SPN_PDU_DEBUG
 #define SPN_PDU_DEBUG 0
+#endif
+
+#ifndef SPN_RPC_DEBUG
+#define SPN_RPC_DEBUG 0
 #endif
 
 #else
