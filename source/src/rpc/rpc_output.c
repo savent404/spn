@@ -30,10 +30,28 @@ int rpc_output(struct rpc_channel* ch, void* _p, int _l) {
   SPN_ASSERT("Invalid usage of output_buf\n", offset < (int)sizeof(*out_hdr));
 
   /* Fill all the rpc hdr, many attributes are the same as the input hdr. dont wast time on it */
-  memcpy(out_hdr, input_hdr, sizeof(struct rpc_hdr));
+  if (ch->is_server) {
+    memcpy(out_hdr, input_hdr, sizeof(struct rpc_hdr));
+  } else {
+    out_hdr->version = 4;
+    out_hdr->drep1 = ch->is_le ? 0x10 : 0x00;
+    out_hdr->drep2 = 0x00;
+    out_hdr->drep3 = 0x00;
+    out_hdr->serial_high = 0;
+    memcpy(&out_hdr->object_uuid, rpc_get_object_uuid(), sizeof(rpc_uuid_t));
+    memcpy(&out_hdr->interface_uuid, &ch->if_uuid, sizeof(rpc_uuid_t));
+    memcpy(&out_hdr->activity_uuid, &ch->act_uuid, sizeof(rpc_uuid_t));
+    out_hdr->interface_version_major = 0;
+    out_hdr->interface_version_minor = 1;
+    out_hdr->seq_numb = ch->seq_numb++;
+    out_hdr->operation_numb = ch->req_op;
+    out_hdr->interface_hint = 0xFFFF;
+    out_hdr->activity_hint = 0xFFFF;
+    out_hdr->auth_protocol = 0;
+    out_hdr->serial_low = 0;
+  }
 
-  SPN_ASSERT("I couldn't image there are any other pkt type\n", ch->rsp_pkt_type == RPC_PKT_TYPE_RESP);
-  out_hdr->packet_type = RPC_PKT_TYPE_RESP;
+  out_hdr->packet_type = ch->rsp_pkt_type;
 
   /** FIXME: Shold support frag freature */
   SPN_ASSERT("Not support frag yet\n", ch->output_len < 1500);

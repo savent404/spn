@@ -11,71 +11,6 @@
 #endif
 #endif
 
-// clang-format off
-const rpc_uuid_t device_interface = {
-    .form = {
-        .data1 = 0xDEA00000,
-        .data2 = 0x6C97,
-        .data3 = 0x11D1,
-        .data4 = {0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D}
-    }
-};
-
-const rpc_uuid_t controller_interafce = {
-    .form = {
-        .data1 = 0xDEA00001,
-        .data2 = 0x6C97,
-        .data3 = 0x11D1,
-        .data4 = {0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D}
-    }
-};
-
-const rpc_uuid_t supervisor_interface = {
-    .form = {
-        .data1 = 0xDEA00002,
-        .data2 = 0x6C97,
-        .data3 = 0x11D1,
-        .data4 = {0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D}
-    }
-};
-
-const rpc_uuid_t parameter_server_interface = {
-    .form = {
-        .data1 = 0xDEA00003,
-        .data2 = 0x6C97,
-        .data3 = 0x11D1,
-        .data4 = {0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D}
-    }
-};
-
-const rpc_uuid_t cim_interface = {
-    .form = {
-        .data1 = 0xDEA00004,
-        .data2 = 0x6C97,
-        .data3 = 0x11D1,
-        .data4 = {0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D}
-    }
-};
-
-const rpc_uuid_t epmap_interface = {
-    .form = {
-        .data1 = 0x8A885D04,
-        .data2 = 0x1CEB,
-        .data3 = 0x11C9,
-        .data4 = {0x9F, 0xE8, 0x08, 0x00, 0x2B, 0x10, 0x48, 0x60}
-    }
-};
-
-const rpc_uuid_t epmap_object = {
-    .form = {
-        .data1 = 0x8A885D04,
-        .data2 = 0x1CEB,
-        .data3 = 0x11C9,
-        .data4 = {0x9F, 0xE8, 0x08, 0x00, 0x2B, 0x10, 0x48, 0x60}
-    }
-};
-// clang-format on
-
 int rpc_input(struct rpc_ctx* ctx,
               void* payload,
               int length,
@@ -103,11 +38,13 @@ int rpc_input(struct rpc_ctx* ctx,
       SPN_DEBUG_MSG(SPN_RPC_DEBUG, "No free channel\n");
       return -SPN_ENOMEM;
     }
-    memcpy(&ch->act_uuid, &hdr->object_uuid, sizeof(rpc_uuid_t));
+    memcpy(&ch->act_uuid, &hdr->activity_uuid, sizeof(rpc_uuid_t));
+    memcpy(&ch->if_uuid, &hdr->interface_uuid, sizeof(rpc_uuid_t));
     ch->remote_ip = remote_ip;
     ch->remote_port = remote_port;
     ch->host_port = host_port;
     ch->is_server = 1;
+    ch->is_le = !rpc_is_big_endian(hdr);
     memcpy(&ch->input_buf, payload, length);
     ch->input_len = length;
     ch->output_len = 0;

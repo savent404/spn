@@ -32,6 +32,7 @@ struct rpc : public ::testing::Test {
     udp_out_fn = nullptr;
 
     rpc_init(&ctx);
+    ctx.act_uuid = &self_uuid;
     ctx.fn_rpc_req = rpc_req_fn;
     ctx.fn_udp_out = rpc_udp_out;
   }
@@ -45,6 +46,7 @@ struct rpc : public ::testing::Test {
   }
 
   struct rpc_ctx ctx;
+  rpc_uuid_t self_uuid;
   static std::function<void(struct rpc_channel*, void*, unsigned)> rpc_general_req_fn;
   static std::function<int(void*, int, uint32_t, uint16_t, uint16_t)> udp_out_fn;
 };
@@ -200,6 +202,68 @@ TEST_F(rpc, rpc_implicit_read) {
   for (int i = 0; i < p_len; i++) {
     uint8_t a = ((uint8_t*)p)[i];
     uint8_t b = frsp->at(i);
+    if (a != b) {
+      fprintf(stderr, "i: %d, a: %02X, b: %02X\n", i, a, b);
+    }
+    EXPECT_EQ(a, b);
+  }
+}
+
+TEST_F(rpc, rpc_conn_req) {
+  const uint8_t conn_req[] =
+      "0813a9bc90404ce7053526410800450001e727ec00001e11ed47c0a80246c0a8023cc001889401d3b6040400200000000000dea000006c97"
+      "11d1827100640119002adea000016c9711d1827100a02442df7d000001e60000101080014ce7053526410000000000000001000000000000"
+      "ffffffff017b000000000000017e000001670000017e000000000000016701010045010000016480b757b0bf46a080dff81e784bdb000008"
+      "4ce705352641dea000006c9711d1827100640119002a4000001100c88892000f706c63323030736d6172746d617033010200500100000100"
+      "01889200000002002880000020000400010000ffffffff00030003c0000000000000000001000000000005000100010000000103e8000100"
+      "0180000003000180010004000180020005000001020050010000020002889200000002002880000020000400010000ffffffff00030003c0"
+      "0000000000000000010000000000000005000100010000000103e80001000180000002000180010003000180020004010400580100000100"
+      "00000000018000060000000005000100000001000000010000010103e8200000010001000100010101800000000f00000000010000010180"
+      "0100000f010000000100000101800200000f01000000010000010101030016010000018892000000000001000300000100c000a000";
+  const uint8_t conn_rsp[] =
+      "4ce7053526410813a9bc90400800450000dab869000040113bd7c0a8023cc0a80246cb06c00100c6e55f04020a00100000000000a0de976c"
+      "d111827100640119002a0100a0de976cd111827100a02442df7de60100000000101080014ce705352641b51d000001000000000000000000"
+      "ffffffff6e0000000000000000005a0000007e010000000000005a0000008101001e010000016480b757b0bf46a080dff81e784bdb000008"
+      "0813a9bc90408892810200080100000100018000810200080100000200028000810300080100000100100598810600100100000b706c6332"
+      "3030736d61727400";
+
+  auto freq = make_frame(reinterpret_cast<const char*>(conn_req));
+  auto frsp = make_frame(reinterpret_cast<const char*>(conn_rsp));
+
+  /* Remove UDP header */
+  freq->erase(freq->begin(), freq->begin() + 0x2A);
+  frsp->erase(frsp->begin(), frsp->begin() + 0x2A);
+
+  /* Generate a conn_req, check RPC header */
+  int idx = rpc_get_client_channel(&ctx, rpc_if_type_t::RPC_IF_DEVICE, 0x0, 0x0);
+  ASSERT_EQ(idx, 0);
+  auto ch = rpc_channel_find_by_idx(&ctx, idx);
+  ASSERT_TRUE(ch);
+
+  void* p;
+  int p_len;
+
+  udp_out_fn = [&](void* payload, int length, uint32_t remote_ip, uint16_t remote_port, uint16_t host_port) -> int {
+    p = payload;
+    p_len = length;
+    return 0;
+  };
+
+  // 000001e6-0000-1010-8001-4ce705352641
+  self_uuid = {.form{
+    .data1 = 0x000001E6,
+    .data2 = 0x0000,
+    .data3 = 0x1010,
+    .data4 = {0x80, 0x01, 0x4C, 0xE7, 0x05, 0x35, 0x26, 0x41},
+  }};
+  ch->rsp_pkt_type = rpc_pkt_type::RPC_PKT_TYPE_REQ;
+  ch->req_op = rpc_op::RPC_OP_CONN;
+  memcpy(&ch->act_uuid, &self_uuid, sizeof(rpc_uuid_t));
+  ASSERT_EQ(rpc_output(ch, freq->data() + sizeof(struct rpc_hdr), freq->size() - sizeof(struct rpc_hdr)), 0);
+  ASSERT_EQ(p_len, freq->size());
+  for (int i = 0; i < freq->size(); i++) {
+    uint8_t a = ((uint8_t*)p)[i];
+    uint8_t b = freq->at(i);
     if (a != b) {
       fprintf(stderr, "i: %d, a: %02X, b: %02X\n", i, a, b);
     }

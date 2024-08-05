@@ -17,6 +17,15 @@ typedef enum rpc_pkt_type {
   RPC_PKT_TYPE_ACK_CHANCEL
 } rpc_pkt_type_t;
 
+typedef enum rpc_interface_type {
+  RPC_IF_DEVICE = 0,
+  RPC_IF_CONTROLLER,
+  RPC_IF_SUPERVISOR,
+  RPC_IF_PARAM_SERVER,
+  RPC_IF_CIM,
+  RPC_IF_EPMAP,
+} rpc_if_type_t;
+
 /**
  * @brief operation number
  *
@@ -128,9 +137,13 @@ struct rpc_channel {
 
   /* Internal info */
   rpc_ch_state_t state;
+  rpc_uuid_t if_uuid;
   rpc_uuid_t act_uuid;
   struct rpc_ctx* ctx;
   int is_server;
+  int is_le;
+  int seq_numb; /* Sequence number for the client channel (is_server=0) */
+  enum rpc_op req_op;
 
   char input_buf[SPN_RPC_MAXIUM_BUFFER_SIZE];
   char input_len;
@@ -144,6 +157,7 @@ struct rpc_channel {
 
 typedef void (*rpc_ind_fn_t)(struct rpc_channel* ch, void* payload, unsigned length);
 struct rpc_ctx {
+  const rpc_uuid_t* act_uuid;
   struct rpc_channel channels[SPN_RPC_MAXIUM_CHANNEL];
 
   /* NOTE: Use Denpendency Injection to avoid dependency on the upper/lower layer */
@@ -178,6 +192,7 @@ int rpc_init(struct rpc_ctx* ctx);
  * @param host_port The host port, Little Endian
  *
  * @note The input API should be called by the lower UDP layer or put it in the UDP callback
+ * @note This API will allocate a server channel if the act_uuid is not found
  */
 int rpc_input(struct rpc_ctx* ctx,
               void* payload,
@@ -185,6 +200,18 @@ int rpc_input(struct rpc_ctx* ctx,
               uint32_t remote_ip,
               uint16_t remote_port,
               uint16_t host_port);
+
+/**
+ * @brief RPC allocate a channel acting as a client
+ *
+ * @param ctx RPC context
+ * @param remote_type The remote RPC interface type
+ * @param remote_ip The remote IP address, Big Endian
+ * @param remote_port The remote port, Little Endian
+ * @return The channel index
+ *        -SPN_ENOMEM: No free channel
+ */
+int rpc_get_client_channel(struct rpc_ctx* ctx, rpc_if_type_t remote_type, uint32_t remote_ip, uint16_t remote_port);
 
 /**
  * @brief RPC output API
@@ -210,6 +237,14 @@ void rpc_hdr_ntoh(struct rpc_hdr* hdr);
 void rpc_hdr_hton(struct rpc_hdr* hdr);
 void rpc_ndr_ntoh(void* ndr_data, rpc_pkt_type_t type);
 void rpc_ndr_hton(void* ndr_data, rpc_pkt_type_t type);
+/**
+ * @brief Get the consistent UUID for the RPC interface
+ * @param type The RPC interface type
+ * @return The consistent UUID
+ */
+const rpc_uuid_t* rpc_get_consistent_uuid(enum rpc_interface_type type);
+const rpc_uuid_t* rpc_get_object_uuid(void);
+
 /**
  * @}
  */

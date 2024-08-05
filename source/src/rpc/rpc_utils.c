@@ -1,6 +1,92 @@
 #include <spn/rpc.h>
 #include <spn/sys.h>
 
+// clang-format off
+const rpc_uuid_t object_uuid = {
+  .form = {
+    .data1 = 0xDEA00000,
+    .data2 = 0x6C97,
+    .data3 = 0x11D1,
+    /* FIXME: 0x82, 0x71, <instance id>, <vendor id>, <device id> */
+    .data4 = {0x82, 0x71, 0x00, 0x64, 0x01, 0x19, 0x00, 0x2A}
+  }
+};
+
+const rpc_uuid_t device_interface = {
+    .form = {
+      .data1 = 0xDEA00001,
+      .data2 = 0x6C97,
+      .data3 = 0x11D1,
+      /* FIXME: 0x82,0x71,<instance-id>,<vendor id>,<device id>*/
+      .data4 = {0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D}
+    }
+};
+
+const rpc_uuid_t controller_interafce = {
+    .form = {
+        .data1 = 0xDEA00002,
+        .data2 = 0x6C97,
+        .data3 = 0x11D1,
+        .data4 = {0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D}
+    }
+};
+
+const rpc_uuid_t supervisor_interface = {
+    .form = {
+        .data1 = 0xDEA00003,
+        .data2 = 0x6C97,
+        .data3 = 0x11D1,
+        .data4 = {0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D}
+    }
+};
+
+const rpc_uuid_t parameter_server_interface = {
+    .form = {
+        .data1 = 0xDEA00004,
+        .data2 = 0x6C97,
+        .data3 = 0x11D1,
+        .data4 = {0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D}
+    }
+};
+
+const rpc_uuid_t cim_interface = {
+    .form = {
+        .data1 = 0xDEA00005,
+        .data2 = 0x6C97,
+        .data3 = 0x11D1,
+        .data4 = {0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D}
+    }
+};
+
+const rpc_uuid_t epmap_interface = {
+    .form = {
+        .data1 = 0x8A885D06,
+        .data2 = 0x1CEB,
+        .data3 = 0x11C9,
+        .data4 = {0x9F, 0xE8, 0x08, 0x00, 0x2B, 0x10, 0x48, 0x60}
+    }
+};
+
+const rpc_uuid_t epmap_object = {
+    .form = {
+        .data1 = 0x8A885D04,
+        .data2 = 0x1CEB,
+        .data3 = 0x11C9,
+        .data4 = {0x9F, 0xE8, 0x08, 0x00, 0x2B, 0x10, 0x48, 0x60}
+    }
+};
+
+const rpc_uuid_t* rpc_uuids[] = {
+    &device_interface,
+    &controller_interafce,
+    &supervisor_interface,
+    &parameter_server_interface,
+    &cim_interface,
+    &epmap_interface,
+    &epmap_object
+};
+// clang-format on
+
 static void rpc_uuid_swap(rpc_uuid_t* uuid) {
   uuid->form.data1 = SPN_NTOHL(uuid->form.data1);
   uuid->form.data2 = SPN_NTOHS(uuid->form.data2);
@@ -58,4 +144,12 @@ void rpc_ndr_ntoh(void* ndr_data, rpc_pkt_type_t type) {
 
 void rpc_ndr_hton(void* ndr_data, rpc_pkt_type_t type) {
   rpc_ndr_ntoh(ndr_data, type);
+}
+
+const rpc_uuid_t* rpc_get_consistent_uuid(enum rpc_interface_type type) {
+  return rpc_uuids[type];
+}
+
+const rpc_uuid_t* rpc_get_object_uuid(void) {
+  return &object_uuid;
 }
