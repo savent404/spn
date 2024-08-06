@@ -135,15 +135,16 @@ struct rpc_channel {
   uint16_t remote_port; /* LE */
   uint16_t host_port;   /* LE */
 
-  /* Internal info */
-  rpc_ch_state_t state;
-  rpc_uuid_t if_uuid;
-  rpc_uuid_t act_uuid;
-  struct rpc_ctx* ctx;
+  /* RPC info */
   int is_server;
   int is_le;
-  int seq_numb; /* Sequence number for the client channel (is_server=0) */
   enum rpc_op req_op;
+
+  /* Hidden info (user dont care) */
+  rpc_uuid_t if_uuid;
+  rpc_uuid_t act_uuid;
+  rpc_ch_state_t state;
+  struct rpc_ctx* ctx;
 
   char input_buf[SPN_RPC_MAXIUM_BUFFER_SIZE];
   char input_len;

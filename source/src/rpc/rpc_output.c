@@ -43,7 +43,7 @@ int rpc_output(struct rpc_channel* ch, void* _p, int _l) {
     memcpy(&out_hdr->activity_uuid, &ch->act_uuid, sizeof(rpc_uuid_t));
     out_hdr->interface_version_major = 0;
     out_hdr->interface_version_minor = 1;
-    out_hdr->seq_numb = ch->seq_numb++;
+    out_hdr->seq_numb = 0; /* FIXME: support frag */
     out_hdr->operation_numb = ch->req_op;
     out_hdr->interface_hint = 0xFFFF;
     out_hdr->activity_hint = 0xFFFF;
