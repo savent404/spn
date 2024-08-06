@@ -1,9 +1,15 @@
+#include <spn/errno.h>
 #include <spn/rpc.h>
 #include <string.h>
-#include <spn/errno.h>
 
-int rpc_init(struct rpc_ctx *ctx)
-{
-    memset(ctx, 0, sizeof(*ctx));
-    return SPN_OK;
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
+int rpc_init(struct rpc_ctx* ctx) {
+  unsigned i;
+  memset(ctx, 0, sizeof(*ctx));
+
+  for (i = 0; i < ARRAY_SIZE(ctx->channels); i++) {
+    ctx->channels[i].ctx = ctx;
+  }
+  return SPN_OK;
 }

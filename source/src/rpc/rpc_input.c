@@ -1,5 +1,8 @@
+#include <spn/config.h>
+#include <spn/errno.h>
 #include <spn/rpc.h>
 #include <spn/sys.h>
+#include <string.h>
 
 #if 0
 #include <endian.h>
@@ -8,125 +11,14 @@
 #endif
 #endif
 
-// clang-format off
-const rpc_uuid_t device_interface = {
-    .raw = {
-        0xDE, 0xA0, 0x00, 0x01,
-        0x6C, 0x97,
-        0x11, 0xD1,
-        0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D
-    }
-};
-
-const rpc_uuid_t controller_interafce = {
-    .raw = {
-        0xDE, 0xA0, 0x00, 0x02,
-        0x6C, 0x97,
-        0x11, 0xD1,
-        0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D
-    }
-};
-
-const rpc_uuid_t supervisor_interface = {
-    .raw = {
-        0xDE, 0xA0, 0x00, 0x03,
-        0x6C, 0x97,
-        0x11, 0xD1,
-        0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D
-    }
-};
-
-const rpc_uuid_t parameter_server_interface = {
-    .raw = {
-        0xDE, 0xA0, 0x00, 0x04,
-        0x6C, 0x97,
-        0x11, 0xD1,
-        0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D
-    }
-};
-
-const rpc_uuid_t cim_interface = {
-    .raw = {
-        0xDE, 0xA0, 0x00, 0x05,
-        0x6C, 0x97,
-        0x11, 0xD1,
-        0x82, 0x71, 0x00, 0xA0, 0x24, 0x42, 0xDF, 0x7D
-    }
-};
-
-const rpc_uuid_t epmap_interface = {
-    .raw = {
-        0xE1, 0xAF, 0x83, 0x08,
-        0x5D, 0x1F,
-        0x11, 0xC9,
-        0x91, 0xA4, 0x08, 0x00, 0x2B, 0x14, 0xA0, 0xFA
-    }
-};
-
-const rpc_uuid_t epmap_object = {
-    .raw = {
-        0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00,
-        0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-    }
-};
-// clang-format on
-
-static void rpc_uuid_swap(rpc_uuid_t* uuid) {
-  SPN_UNUSED_ARG(uuid);
-}
-
-static void rpc_hdr_hton(struct rpc_hdr* hdr) {
-  const uint8_t encoding = (hdr->drep1 & 0x70) & 0x07; /* bit[4:7] 0-BE, 1-LE */
-  SPN_ASSERT("invalid drep BE/LE flag", encoding < 2);
-
-  if (encoding) {
-    /* Hdr is LE, no need to do anything */
-    return;
-  }
-
-  rpc_uuid_swap(&hdr->object_uuid);
-  rpc_uuid_swap(&hdr->interface_uuid);
-  rpc_uuid_swap(&hdr->activity_uuid);
-  hdr->boot_time = SPN_HTONL(hdr->boot_time);
-  hdr->interface_version_major = SPN_HTONS(hdr->interface_version_major);
-  hdr->interface_version_minor = SPN_HTONS(hdr->interface_version_minor);
-  hdr->seq_numb = SPN_HTONL(hdr->seq_numb);
-  hdr->operation_numb = SPN_HTONL(hdr->operation_numb);
-  hdr->interface_hint = SPN_HTONS(hdr->interface_hint);
-  hdr->activity_hint = SPN_HTONS(hdr->activity_hint);
-  hdr->length_of_body = SPN_HTONS(hdr->length_of_body);
-  hdr->frag_numb = SPN_HTONS(hdr->frag_numb);
-}
-
-#if 0
-static void rpc_hdr_ntoh(struct rpc_hdr* hdr) {
-  const uint8_t encoding = (hdr->drep1 & 0x70) & 0x07; /* bit[4:7] 0-BE, 1-LE */
-  SPN_ASSERT("invalid drep BE/LE flag", encoding < 2);
-
-  if (encoding) {
-    /* Hdr is LE, no need to do anything */
-    return;
-  }
-
-  rpc_uuid_swap(&hdr->object_uuid);
-  rpc_uuid_swap(&hdr->interface_uuid);
-  rpc_uuid_swap(&hdr->activity_uuid);
-  hdr->boot_time = SPN_NTOHL(hdr->boot_time);
-  hdr->interface_version_major = SPN_NTOHS(hdr->interface_version_major);
-  hdr->interface_version_minor = SPN_NTOHS(hdr->interface_version_minor);
-  hdr->seq_numb = SPN_NTOHL(hdr->seq_numb);
-  hdr->operation_numb = SPN_NTOHL(hdr->operation_numb);
-  hdr->interface_hint = SPN_NTOHS(hdr->interface_hint);
-  hdr->activity_hint = SPN_NTOHS(hdr->activity_hint);
-  hdr->length_of_body = SPN_NTOHS(hdr->length_of_body);
-  hdr->frag_numb = SPN_NTOHS(hdr->frag_numb);
-}
-#endif
-
-int rpc_input(struct rpc_ctx* ctx, void* payload, int length) {
+int rpc_input(struct rpc_ctx* ctx,
+              void* payload,
+              int length,
+              uint32_t remote_ip,
+              uint16_t remote_port,
+              uint16_t host_port) {
   struct rpc_hdr* hdr;
+  struct rpc_channel* ch;
   SPN_UNUSED_ARG(ctx);
   SPN_UNUSED_ARG(length);
 
@@ -137,8 +29,56 @@ int rpc_input(struct rpc_ctx* ctx, void* payload, int length) {
 
   rpc_hdr_hton(hdr);
 
-  /** TODO: Remove this */
-  hdr->boot_time = 0;
+  /* TODO: general check for rpc header */
+
+  ch = rpc_channel_find_by_uuid(ctx, &hdr->object_uuid);
+  if (!ch) {
+    ch = rpc_channel_alloc(ctx);
+    if (!ch) {
+      SPN_DEBUG_MSG(SPN_RPC_DEBUG, "No free channel\n");
+      return -SPN_ENOMEM;
+    }
+    memcpy(&ch->act_uuid, &hdr->activity_uuid, sizeof(rpc_uuid_t));
+    memcpy(&ch->if_uuid, &hdr->interface_uuid, sizeof(rpc_uuid_t));
+    ch->remote_ip = remote_ip;
+    ch->remote_port = remote_port;
+    ch->host_port = host_port;
+    ch->is_server = 1;
+    ch->is_le = !rpc_is_big_endian(hdr);
+    memcpy(&ch->input_buf, payload, length);
+    ch->input_len = length;
+    ch->output_len = 0;
+    /* TODO: more attributes need to be inited */
+  }
+
+  SPN_ASSERT("No frag support", hdr->frag_numb == 0);
+
+  switch (hdr->packet_type) {
+    case RPC_PKT_TYPE_REQ: {
+      SPN_DEBUG_MSG(SPN_RPC_DEBUG, "rpc req\n");
+      struct rpc_ndr_data_req* req_hdr = (struct rpc_ndr_data_req*)hdr->ndr_data;
+      if (rpc_is_big_endian(hdr)) {
+        rpc_ndr_hton(req_hdr, RPC_PKT_TYPE_REQ);
+      }
+      SPN_ASSERT("Stupid RPC, use 2 attrs to present the same value", req_hdr->maxium_count == req_hdr->args_maxium);
+      SPN_ASSERT("Stupid RPC, offset always be zero", req_hdr->offset == 0);
+      ctx->fn_rpc_req(ch, hdr->ndr_data, req_hdr->args_length);
+      break;
+    }
+    case RPC_PKT_TYPE_RESP: {
+      SPN_DEBUG_MSG(SPN_RPC_DEBUG, "rpc rsp\n");
+      ctx->fn_rpc_rsp(ch, NULL, 0);
+      break;
+    }
+    case RPC_PKT_TYPE_PING: {
+      SPN_DEBUG_MSG(SPN_RPC_DEBUG, "rpc ping\n");
+      ctx->fn_rpc_ping(ch, NULL, 0);
+      break;
+    }
+    default:
+      SPN_DEBUG_MSG(SPN_RPC_DEBUG, "Unknown rpc packet type: %02X\n", hdr->packet_type);
+      break;
+  }
 
   return 0;
 }
