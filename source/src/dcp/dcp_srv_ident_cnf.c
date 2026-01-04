@@ -4,9 +4,6 @@
 #include <spn/sys.h>
 #include <string.h>
 
-#define BLOCK_TYPE(option, sub_option) ((option) << 8 | (sub_option))
-#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
-
 int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
                       struct dcp_mcs_ctx* mcs,
                       void* payload,
@@ -40,6 +37,12 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
   /* Reset temp interface */
   memset(&interface, 0, sizeof(interface));
 
+  /*@
+    @ loop invariant sizeof(struct dcp_header) <= offset <= sizeof(struct dcp_header) + dcp_length;
+    @ loop invariant \valid_read((char*)payload + (0 .. length - 1));
+    @ loop assigns offset, block, res, data, i, block_length, obj;
+    @ loop variant sizeof(struct dcp_header) + dcp_length - offset;
+    @*/
   for (offset = sizeof(*hdr); offset < sizeof(*hdr) + dcp_length; offset += dcp_block_next(block)) {
     block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
     SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: ident.cnf: handling block %s(%02x:%02x)\n",
@@ -82,6 +85,11 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
         }
 
         /* Find idx */
+        /*@
+          @ loop invariant 0 <= i <= ARRAY_SIZE(sub_options);
+          @ loop assigns i;
+          @ loop variant ARRAY_SIZE(sub_options) - i;
+          @*/
         for (i = 0; i < ARRAY_SIZE(sub_options); i++) {
           if (sub_options[i] == block->sub_option) {
             break;
@@ -135,6 +143,12 @@ int dcp_srv_ident_cnf(struct dcp_ctx* ctx,
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_DEVICE_OPTIONS):
         block_length = SPN_NTOHS(block->length);
         data.u32 = 0;
+        /*@
+          @ loop invariant 2 <= i <= block_length;
+          @ loop invariant \valid_read((char*)block->data + (0 .. block_length - 1));
+          @ loop assigns i, data.u32;
+          @ loop variant block_length - i;
+          @*/
         for (i = 2; i < block_length; i += 2) {
           uint8_t opt = *(PTR_OFFSET(block->data, i, uint8_t));
           uint8_t sub_opt = *(PTR_OFFSET(block->data, i + 1, uint8_t));

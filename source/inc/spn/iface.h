@@ -20,15 +20,59 @@ typedef void* spn_frame_t;
 extern "C" {
 #endif
 
+/*@
+  @ requires \valid(iface);
+  @ assigns iface->netif;
+  @ ensures \result == 0 || \result < 0;
+  @*/
 int spn_iface_set_addr(spn_iface_t* iface, uint32_t ip, uint32_t mask, uint32_t gw);
 
+/*@
+  @ requires \valid(iface);
+  @ requires frame != \null;
+  @ requires \valid_read(mac + (0 .. 5));
+  @ assigns \nothing;
+  @ ensures \result == 0 || \result < 0;
+  @*/
 int spn_send_frame(spn_iface_t* iface, spn_frame_t frame, const uint8_t* mac);
 
+/*@
+  @ assigns \result;
+  @ ensures \result == \null || \result != \null;
+  @*/
 spn_frame_t spn_alloc_frame(spn_ftype_t type);
+
+/*@
+  @ requires frame != \null;
+  @ assigns \nothing;
+  @*/
 void spn_free_frame(spn_frame_t frame);
+
+/*@
+  @ requires frame != \null;
+  @ assigns \nothing;
+  @ ensures \result != \null;
+  @*/
 void* spn_frame_data(spn_frame_t frame);
+
+/*@
+  @ requires frame != \null;
+  @ assigns \nothing;
+  @ ensures \result >= 0;
+  @*/
 uint16_t spn_frame_size(spn_frame_t frame);
+
+/*@
+  @ requires frame != \null;
+  @ assigns \nothing;
+  @*/
 void spn_frame_set_size(spn_frame_t frame, uint16_t size);
+
+/*@
+  @ requires frame != \null;
+  @ assigns \nothing;
+  @ ensures 0 <= \result < FRAME_TYPE_NUM;
+  @*/
 spn_ftype_t spn_frame_type(spn_frame_t frame);
 
 #ifdef __cplusplus

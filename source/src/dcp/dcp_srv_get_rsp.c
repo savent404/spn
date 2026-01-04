@@ -6,9 +6,6 @@
 #include <spn/sys.h>
 #include <string.h>
 
-#define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
-#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
-
 static uint16_t rsp_block(void* payload, uint16_t option, uint8_t res) {
   struct dcp_block_hdr* block_hdr = (struct dcp_block_hdr*)payload;
   block_hdr->option = DCP_OPT_CONTROL;
@@ -32,8 +29,16 @@ int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
   const unsigned offset_hdr = SPN_PDU_HDR_SIZE + sizeof(*hdr);
   int res;
 
+  //@ assert offset_hdr == 12;
   offset = offset_hdr;
 
+  /*@
+    @ loop invariant 0 <= idx <= DCP_BIT_IDX_NUM;
+    @ loop invariant offset_hdr <= offset <= SPN_RTC_MINIMAL_FRAME_SIZE;
+    @ loop invariant 0 <= bitmap <= ucr->req_options_bitmap;
+    @ loop assigns idx, offset, bitmap, res, object, ((char*)payload)[offset_hdr .. SPN_RTC_MINIMAL_FRAME_SIZE - 1];
+    @ loop variant DCP_BIT_IDX_NUM - idx;
+    @*/
   for (idx = 0; idx < DCP_BIT_IDX_NUM && bitmap; idx++) {
     uint16_t opt;
     struct dcp_block_hdr* block_hdr;
@@ -44,6 +49,8 @@ int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
     bitmap &= ~(1 << idx);
     opt = dcp_option_from_bit_idx(idx);
     block_hdr = PTR_OFFSET(payload, offset, struct dcp_block_hdr);
+    
+    //@ assert offset + sizeof(struct dcp_block_hdr) <= SPN_RTC_MINIMAL_FRAME_SIZE;
     switch (opt) {
       case BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM): {
         res = db_get_interface_object(ctx->db, ctx->interface_id, DB_ID_IP_BLOCK_INFO, &object);
@@ -76,6 +83,7 @@ int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
     }
 
     offset += sizeof(*block_hdr) + ((block_hdr->length + 1) & ~1);
+    //@ assert offset <= SPN_RTC_MINIMAL_FRAME_SIZE;
     block_hdr->option = opt >> 8;
     block_hdr->sub_option = opt & 0xFF;
     block_hdr->length = SPN_HTONS(block_hdr->length);
@@ -83,8 +91,10 @@ int dcp_srv_get_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
     continue;
   rsp_err:
     offset += rsp_block(block_hdr, opt, res);
+    //@ assert offset <= SPN_RTC_MINIMAL_FRAME_SIZE;
   }
 
+  //@ assert offset <= SPN_RTC_MINIMAL_FRAME_SIZE;
   hdr = PTR_OFFSET(payload, SPN_PDU_HDR_SIZE, struct dcp_header);
   hdr->service_id = DCP_SRV_ID_GET;
   hdr->service_type = DCP_SRV_TYPE_RES;

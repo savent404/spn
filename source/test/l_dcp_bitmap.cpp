@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <spn/dcp.h>
 
-#define BLOCK_TYPE(option, sub_option) ((option) << 8 | (sub_option))
+
 
 TEST(dcp_option_bit_idx, maxmium_bit_num) {
   ASSERT_LT(DCP_BIT_IDX_NUM, 32);

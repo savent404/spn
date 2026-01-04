@@ -1,7 +1,6 @@
 #include <spn/dcp.h>
 #include <spn/errno.h>
 
-#define BLOCK_TYPE(option, sub_option) ((option) << 8 | (sub_option))
 
 int dcp_option_bit_idx(uint8_t option, uint8_t sub_option) {
   switch (BLOCK_TYPE(option, sub_option)) {

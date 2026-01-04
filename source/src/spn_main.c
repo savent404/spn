@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
+
 
 static struct spn_ctx* _holly_protected_ctx = NULL;
 

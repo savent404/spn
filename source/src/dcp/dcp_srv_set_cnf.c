@@ -4,9 +4,6 @@
 #include <spn/errno.h>
 #include <spn/timeout.h>
 
-#define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
-#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
-
 static void set_cnf_db_update(struct db_ctx* db, struct dcp_ucs_ctx* ucs, uint16_t options) {
   int res;
   struct db_object* obj;

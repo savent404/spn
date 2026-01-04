@@ -6,9 +6,6 @@
 #include <spn/sys.h>
 #include <string.h>
 
-#define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
-#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)ptr + offset))
-
 const uint16_t mandatory_options[] = {
     BLOCK_TYPE(DCP_OPT_IP, DCP_SUB_OPT_IP_PARAM),
     BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_VENDOR),
@@ -130,6 +127,12 @@ static int pack_ident_rsp(struct dcp_ctx* ctx, uint16_t option, uint16_t block_i
       unsigned i;
       *PTR_OFFSET(block->data, 0, uint16_t) = 0;
 
+      /*@
+        @ loop invariant 0 <= i <= ARRAY_SIZE(supported_options);
+        @ loop invariant \valid((char*)block->data + (0 .. 2 + ARRAY_SIZE(supported_options) * 2 - 1));
+        @ loop assigns i, ((char*)block->data)[2 .. 2 + ARRAY_SIZE(supported_options) * 2 - 1];
+        @ loop variant ARRAY_SIZE(supported_options) - i;
+        @*/
       for (i = 0; i < ARRAY_SIZE(supported_options); i++) {
         uint16_t opt = supported_options[i];
         *PTR_OFFSET(block->data, 2 + i * 2, uint16_t) = SPN_HTONS(opt);
@@ -161,6 +164,13 @@ int dcp_srv_ident_rsp(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   SPN_ASSERT("No ip block info", res >= 0);
   block_info = obj->data.u16;
 
+  /*@
+    @ loop invariant 0 <= idx <= ARRAY_SIZE(mandatory_options);
+    @ loop invariant offset_hdr <= offset <= SPN_RTC_MAXIMAL_FRAME_SIZE;
+    @ loop invariant \valid((char*)payload + (0 .. SPN_RTC_MAXIMAL_FRAME_SIZE - 1));
+    @ loop assigns idx, offset, ((char*)payload)[offset_hdr .. SPN_RTC_MAXIMAL_FRAME_SIZE - 1], res;
+    @ loop variant ARRAY_SIZE(mandatory_options) - idx;
+    @*/
   for (idx = 0; idx < ARRAY_SIZE(mandatory_options); idx++) {
     uint16_t option = mandatory_options[idx];
     struct dcp_block_hdr* block = PTR_OFFSET(payload, offset, struct dcp_block_hdr);

@@ -4,9 +4,16 @@
 #include <spn/sys.h>
 #include <string.h>
 
-#define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
-#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
-
+/*@
+  @ ensures \result == ((bitmap & 
+  @   ((1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_ALIAS) | 
+  @    (1 << DCP_BIT_IDX_CTRL_START) |
+  @    (1 << DCP_BIT_IDX_CTRL_STOP) | 
+  @    (1 << DCP_BIT_IDX_CTRL_SIGNAL) |
+  @    (1 << DCP_BIT_IDX_CTRL_RESPONSE) | 
+  @    (1 << DCP_BIT_IDX_CTRL_FACTORY_RESET) |
+  @    (1 << DCP_BIT_IDX_ALL_SELECTOR))) == 0);
+  @*/
 static inline int has_read_attribute(uint16_t bitmap) {
   const uint32_t read_forbidden = 1 << DCP_BIT_IDX_DEV_PROP_NAME_OF_ALIAS | 1 << DCP_BIT_IDX_CTRL_START |
                                   1 << DCP_BIT_IDX_CTRL_STOP | 1 << DCP_BIT_IDX_CTRL_SIGNAL |
@@ -26,6 +33,13 @@ int dcp_srv_get_ind(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr, void* payload,
 
   num_option = SPN_NTOHS(hdr->data_length) / 2;
   ucr->req_options_bitmap = 0;
+  
+  /*@
+    @ loop invariant 0 <= idx <= num_option;
+    @ loop invariant ucr->req_options_bitmap >= 0;
+    @ loop assigns idx, ucr->req_options_bitmap, offset, option, sub_option, res;
+    @ loop variant num_option - idx;
+    @*/
   for (idx = 0; idx < num_option; idx++) {
     offset = sizeof(*hdr) + idx * 2;
     option = *PTR_OFFSET(payload, offset, uint8_t);

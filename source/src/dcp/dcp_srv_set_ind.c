@@ -6,9 +6,6 @@
 #include <spn/sys.h>
 #include <string.h>
 
-#define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
-#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
-
 static inline int has_upper_case(const char* str, int len) {
   int i;
   for (i = 0; i < len; i++) {

@@ -6,9 +6,6 @@
 #include <spn/timeout.h>
 #include <string.h>
 
-#define BLOCK_TYPE(h, l) ((h << 8) | l)
-#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
-
 #if !SPN_DUMMY
 static void dcp_srv_ident_req_cb(void* arg) {
   struct dcp_mcs_ctx* mcs = (struct dcp_mcs_ctx*)arg;
@@ -46,6 +43,13 @@ int dcp_srv_ident_req(struct dcp_ctx* ctx, struct dcp_mcs_ctx* mcs, void* payloa
 
   offset = offset_hdr;
 
+  /*@
+    @ loop invariant 0 <= idx <= DCP_BIT_IDX_NUM;
+    @ loop invariant offset_hdr <= offset <= SPN_RTC_MAXIMAL_FRAME_SIZE;
+    @ loop invariant \valid((char*)payload + (0 .. SPN_RTC_MAXIMAL_FRAME_SIZE - 1));
+    @ loop assigns idx, offset, options, ((char*)payload)[offset_hdr .. SPN_RTC_MAXIMAL_FRAME_SIZE - 1];
+    @ loop variant DCP_BIT_IDX_NUM - idx;
+    @*/
   for (idx = 0; idx < DCP_BIT_IDX_NUM && options; idx++) {
     if (!(options & (1 << idx))) {
       continue;

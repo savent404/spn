@@ -6,9 +6,6 @@
 #include <spn/timeout.h>
 #include <string.h>
 
-#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
-#define BLOCK_TYPE(h, l) ((h << 8) | l)
-
 static void dcp_mcr_rsp_callback(void* arg) {
   struct dcp_mcr_ctx* mcr_ctx = (struct dcp_mcr_ctx*)arg;
   struct dcp_ctx* ctx = mcr_ctx->dcp_ctx;

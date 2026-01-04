@@ -4,8 +4,6 @@
 #include <spn/sys.h>
 #include <string.h>
 
-#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
-
 int dcp_srv_set_rsp(struct dcp_ctx* ctx, struct dcp_ucr_ctx* ucr_ctx, void* payload, uint16_t* length) {
   struct dcp_header* hdr;
   struct dcp_block_hdr* block;

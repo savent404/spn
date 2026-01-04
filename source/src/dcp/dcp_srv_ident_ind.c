@@ -6,9 +6,6 @@
 #include <spn/sys.h>
 #include <string.h>
 
-#define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
-#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
-
 int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payload, uint16_t length) {
   struct dcp_header* hdr = (struct dcp_header*)payload;
   struct dcp_block_hdr* block = (struct dcp_block_hdr*)(hdr + 1);
@@ -29,6 +26,12 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
   /* occupied MCR context from now on */
   mcr->state = DCP_STATE_IDENT_IND;
 
+  /*@
+    @ loop invariant sizeof(struct dcp_header) <= offset <= length;
+    @ loop invariant \valid_read((char*)payload + (0 .. length - 1));
+    @ loop assigns offset, block, option, data_len, res, obj, options, idx;
+    @ loop variant length - offset;
+    @*/
   for (; offset < length; offset += dcp_block_next(block)) {
     block = PTR_OFFSET(hdr, offset, struct dcp_block_hdr);
     option = BLOCK_TYPE(block->option, block->sub_option);
@@ -100,6 +103,11 @@ int dcp_srv_ident_ind(struct dcp_ctx* ctx, struct dcp_mcr_ctx* mcr, void* payloa
         }
         break;
       case BLOCK_TYPE(DCP_OPT_DEV_PROP, DCP_SUB_OPT_DEV_PROP_NAME_OF_ALIAS):
+        /*@
+          @ loop invariant 0 <= idx <= SPN_CONF_MAX_PORT_PER_INTERFACE;
+          @ loop assigns idx, res, obj;
+          @ loop variant SPN_CONF_MAX_PORT_PER_INTERFACE - idx;
+          @*/
         for (idx = 0; idx < SPN_CONF_MAX_PORT_PER_INTERFACE; idx++) {
           struct db_interface* interface;
           struct db_port* port;

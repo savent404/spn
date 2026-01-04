@@ -2,8 +2,6 @@
 #include <spn/dcp.h>
 #include <spn/sys.h>
 
-#define BLOCK_TYPE(opt, sub_opt) ((opt) << 8 | (sub_opt))
-
 #if SPN_DEBUG
 const char* dcp_option_name(uint8_t option, uint8_t sub_option) {
   switch (BLOCK_TYPE(option, sub_option)) {

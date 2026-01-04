@@ -4,9 +4,6 @@
 #include <spn/timeout.h>
 #include <string.h>
 
-#define BLOCK_TYPE(option, sub_option) ((option << 8) | sub_option)
-#define PTR_OFFSET(ptr, offset, type) ((type*)((uintptr_t)(ptr) + (offset)))
-
 void _dcp_srv_set_req_timeout(void* arg) {
   struct dcp_ucs_ctx* ucs_ctx = (struct dcp_ucs_ctx*)arg;
   SPN_DEBUG_MSG(SPN_DCP_DEBUG, "DCP: set.req timeout!\n");
